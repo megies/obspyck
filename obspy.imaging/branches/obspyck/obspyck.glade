@@ -1,13 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Tue Mar 16 22:36:55 2010 -->
+<!--Generated with glade3 3.4.5 on Wed Mar 17 17:19:23 2010 -->
 <glade-interface>
   <widget class="GtkWindow" id="windowObspyck">
     <property name="visible">True</property>
-    <property name="can_focus">True</property>
-    <property name="has_focus">True</property>
-    <property name="can_default">True</property>
-    <property name="has_default">True</property>
     <property name="title" translatable="yes">ObsPyck</property>
     <property name="window_position">GTK_WIN_POS_CENTER</property>
     <property name="gravity">GDK_GRAVITY_CENTER</property>
@@ -15,25 +11,13 @@
     <child>
       <widget class="GtkVBox" id="vboxObspyck">
         <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="has_focus">True</property>
-        <property name="can_default">True</property>
-        <property name="has_default">True</property>
         <property name="spacing">2</property>
         <child>
           <widget class="GtkAlignment" id="alignmentA">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="has_focus">True</property>
-            <property name="can_default">True</property>
-            <property name="has_default">True</property>
             <child>
               <widget class="GtkHBox" id="hboxObspyck">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="has_focus">True</property>
-                <property name="can_default">True</property>
-                <property name="has_default">True</property>
                 <child>
                   <widget class="GtkVBox" id="vbox1">
                     <property name="visible">True</property>
@@ -49,6 +33,7 @@
                             <property name="visible">True</property>
                             <property name="events">GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK</property>
                             <property name="label" translatable="yes">clear All</property>
+                            <property name="focus_on_click">False</property>
                             <property name="response_id">0</property>
                           </widget>
                         </child>
@@ -57,6 +42,7 @@
                             <property name="visible">True</property>
                             <property name="events">GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK</property>
                             <property name="label" translatable="yes">clear Orig&amp;Mag</property>
+                            <property name="focus_on_click">False</property>
                             <property name="response_id">0</property>
                           </widget>
                           <packing>
@@ -68,6 +54,7 @@
                             <property name="visible">True</property>
                             <property name="events">GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK</property>
                             <property name="label" translatable="yes">clear FocMec</property>
+                            <property name="focus_on_click">False</property>
                             <property name="response_id">0</property>
                           </widget>
                           <packing>
@@ -90,6 +77,7 @@
                             <property name="visible">True</property>
                             <property name="events">GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK</property>
                             <property name="label" translatable="yes">do hyp2000</property>
+                            <property name="focus_on_click">False</property>
                             <property name="response_id">0</property>
                           </widget>
                         </child>
@@ -98,6 +86,7 @@
                             <property name="visible">True</property>
                             <property name="events">GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK</property>
                             <property name="label" translatable="yes">do 3dloc</property>
+                            <property name="focus_on_click">False</property>
                             <property name="response_id">0</property>
                           </widget>
                           <packing>
@@ -109,6 +98,7 @@
                             <property name="visible">True</property>
                             <property name="events">GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK</property>
                             <property name="label" translatable="yes">calc Mag</property>
+                            <property name="focus_on_click">False</property>
                             <property name="response_id">0</property>
                           </widget>
                           <packing>
@@ -120,6 +110,7 @@
                             <property name="visible">True</property>
                             <property name="events">GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK</property>
                             <property name="label" translatable="yes">do focmec</property>
+                            <property name="focus_on_click">False</property>
                             <property name="response_id">0</property>
                           </widget>
                           <packing>
@@ -143,6 +134,7 @@
                             <property name="visible">True</property>
                             <property name="events">GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK</property>
                             <property name="label" translatable="yes">show Map</property>
+                            <property name="focus_on_click">False</property>
                             <property name="response_id">0</property>
                           </widget>
                         </child>
@@ -151,6 +143,7 @@
                             <property name="visible">True</property>
                             <property name="events">GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK</property>
                             <property name="label" translatable="yes">show FocMec</property>
+                            <property name="focus_on_click">False</property>
                             <property name="response_id">0</property>
                           </widget>
                           <packing>
@@ -162,6 +155,7 @@
                             <property name="visible">True</property>
                             <property name="events">GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK</property>
                             <property name="label" translatable="yes">next FocMec</property>
+                            <property name="focus_on_click">False</property>
                             <property name="response_id">0</property>
                           </widget>
                           <packing>
@@ -173,6 +167,7 @@
                             <property name="visible">True</property>
                             <property name="events">GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK</property>
                             <property name="label" translatable="yes">show Wadati</property>
+                            <property name="focus_on_click">False</property>
                             <property name="response_id">0</property>
                           </widget>
                           <packing>
@@ -196,6 +191,7 @@
                             <property name="visible">True</property>
                             <property name="events">GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK</property>
                             <property name="label" translatable="yes">get Next Event</property>
+                            <property name="focus_on_click">False</property>
                             <property name="response_id">0</property>
                           </widget>
                         </child>
@@ -204,6 +200,7 @@
                             <property name="visible">True</property>
                             <property name="events">GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK</property>
                             <property name="label" translatable="yes">send Event</property>
+                            <property name="focus_on_click">False</property>
                             <property name="response_id">0</property>
                           </widget>
                           <packing>
@@ -215,6 +212,7 @@
                             <property name="visible">True</property>
                             <property name="events">GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK</property>
                             <property name="label" translatable="yes">public Event</property>
+                            <property name="focus_on_click">False</property>
                             <property name="response_id">0</property>
                             <property name="active">True</property>
                             <property name="draw_indicator">True</property>
@@ -238,13 +236,44 @@
                         <property name="events">GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK</property>
                         <property name="layout_style">GTK_BUTTONBOX_SPREAD</property>
                         <child>
+                          <widget class="GtkButton" id="buttonSetFocusOnPlot">
+                            <property name="visible">True</property>
+                            <property name="label" translatable="yes">set focus on plot</property>
+                            <property name="focus_on_click">False</property>
+                            <property name="response_id">0</property>
+                            <signal name="clicked" handler="on_buttonSetFocusOnPlot_clicked"/>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkButton" id="buttonDebug">
+                            <property name="visible">True</property>
+                            <property name="label" translatable="yes">debug</property>
+                            <property name="focus_on_click">False</property>
+                            <property name="response_id">0</property>
+                            <signal name="clicked" handler="on_buttonDebug_clicked"/>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
                           <widget class="GtkButton" id="buttonQuit">
                             <property name="visible">True</property>
                             <property name="events">GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK</property>
                             <property name="label" translatable="yes">quit</property>
+                            <property name="focus_on_click">False</property>
                             <property name="response_id">0</property>
                             <signal name="clicked" handler="on_buttonQuit_clicked"/>
                           </widget>
+                          <packing>
+                            <property name="position">2</property>
+                          </packing>
                         </child>
                       </widget>
                       <packing>
@@ -262,12 +291,6 @@
                 <child>
                   <widget class="GtkVBox" id="vbox2">
                     <property name="visible">True</property>
-                    <property name="app_paintable">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="has_focus">True</property>
-                    <property name="is_focus">True</property>
-                    <property name="can_default">True</property>
-                    <property name="has_default">True</property>
                     <child>
                       <placeholder/>
                     </child>
@@ -283,6 +306,7 @@
         <child>
           <widget class="GtkAlignment" id="alignmentC">
             <property name="visible">True</property>
+            <property name="xalign">1</property>
             <property name="yalign">0</property>
             <child>
               <widget class="GtkHBox" id="hbox1">
@@ -291,11 +315,13 @@
                 <child>
                   <widget class="GtkAlignment" id="alignmentAA">
                     <property name="visible">True</property>
+                    <property name="xalign">1</property>
                     <property name="yscale">0</property>
                     <child>
                       <widget class="GtkComboBox" id="comboboxPhaseType">
                         <property name="visible">True</property>
                         <property name="events">GDK_BUTTON_PRESS_MASK | GDK_KEY_PRESS_MASK | GDK_STRUCTURE_MASK | GDK_SCROLL_MASK</property>
+                        <property name="focus_on_click">False</property>
                         <property name="items" translatable="yes">P
 S
 Mag</property>
@@ -311,6 +337,7 @@ Mag</property>
                 <child>
                   <widget class="GtkAlignment" id="alignmentAB">
                     <property name="visible">True</property>
+                    <property name="xalign">1</property>
                     <child>
                       <widget class="GtkHBox" id="hbox3">
                         <property name="visible">True</property>
@@ -322,6 +349,7 @@ Mag</property>
                                 <property name="visible">True</property>
                                 <property name="events">GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK</property>
                                 <property name="label" translatable="yes">Filter</property>
+                                <property name="focus_on_click">False</property>
                                 <property name="response_id">0</property>
                               </widget>
                             </child>
@@ -338,6 +366,7 @@ Mag</property>
                               <widget class="GtkComboBox" id="comboboxFilterType">
                                 <property name="visible">True</property>
                                 <property name="events">GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK | GDK_SCROLL_MASK</property>
+                                <property name="focus_on_click">False</property>
                                 <property name="items" translatable="yes">Bandpass
 Bandstop
 Lowpass
@@ -360,6 +389,7 @@ Highpass</property>
                                 <property name="visible">True</property>
                                 <property name="events">GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK</property>
                                 <property name="label" translatable="yes">Zero Phase</property>
+                                <property name="focus_on_click">False</property>
                                 <property name="response_id">0</property>
                                 <property name="draw_indicator">True</property>
                               </widget>
@@ -392,9 +422,11 @@ Highpass</property>
                         <child>
                           <widget class="GtkAlignment" id="alignment7">
                             <property name="visible">True</property>
+                            <property name="can_focus">True</property>
                             <child>
                               <widget class="GtkSpinButton" id="spinbuttonHighpass">
                                 <property name="visible">True</property>
+                                <property name="can_focus">True</property>
                                 <property name="max_length">6</property>
                                 <property name="width_chars">6</property>
                                 <property name="xalign">1</property>
@@ -431,6 +463,7 @@ Highpass</property>
                         <child>
                           <widget class="GtkAlignment" id="alignment9">
                             <property name="visible">True</property>
+                            <property name="can_focus">True</property>
                             <child>
                               <widget class="GtkSpinButton" id="spinbuttonLowpass">
                                 <property name="visible">True</property>
@@ -468,6 +501,7 @@ Highpass</property>
                         <property name="visible">True</property>
                         <property name="events">GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK</property>
                         <property name="label" translatable="yes">Spectrogram</property>
+                        <property name="focus_on_click">False</property>
                         <property name="response_id">0</property>
                       </widget>
                     </child>
