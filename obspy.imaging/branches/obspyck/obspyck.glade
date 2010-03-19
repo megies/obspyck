@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Thu Mar 18 03:44:52 2010 -->
+<!--Generated with glade3 3.4.5 on Fri Mar 19 11:20:02 2010 -->
 <glade-interface>
   <widget class="GtkWindow" id="windowObspyck">
     <property name="visible">True</property>
@@ -332,6 +332,7 @@
                         <property name="items" translatable="yes">P
 S
 Mag</property>
+                        <signal name="changed" handler="on_comboboxPhaseType_changed"/>
                       </widget>
                     </child>
                   </widget>
@@ -379,6 +380,7 @@ Mag</property>
 Bandstop
 Lowpass
 Highpass</property>
+                                <signal name="changed" handler="on_comboboxFilterType_changed"/>
                               </widget>
                             </child>
                           </widget>
