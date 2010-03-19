@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Fri Mar 19 11:20:02 2010 -->
+<!--Generated with glade3 3.4.5 on Fri Mar 19 17:34:24 2010 -->
 <glade-interface>
   <widget class="GtkWindow" id="windowObspyck">
     <property name="visible">True</property>
