@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Sat Mar 20 14:44:46 2010 -->
+<!--Generated with glade3 3.4.5 on Sun Mar 21 23:34:27 2010 -->
 <glade-interface>
   <widget class="GtkWindow" id="windowObspyck">
     <property name="visible">True</property>
@@ -138,23 +138,21 @@
                         <property name="events">GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK</property>
                         <property name="layout_style">GTK_BUTTONBOX_SPREAD</property>
                         <child>
-                          <widget class="GtkButton" id="buttonShowMap">
+                          <widget class="GtkToggleButton" id="togglebuttonShowMap">
                             <property name="visible">True</property>
-                            <property name="events">GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK</property>
                             <property name="label" translatable="yes">show Map</property>
                             <property name="focus_on_click">False</property>
                             <property name="response_id">0</property>
-                            <signal name="clicked" handler="on_buttonShowMap_clicked"/>
+                            <signal name="clicked" handler="on_togglebuttonShowMap_clicked"/>
                           </widget>
                         </child>
                         <child>
-                          <widget class="GtkButton" id="buttonShowFocMec">
+                          <widget class="GtkToggleButton" id="togglebuttonShowFocMec">
                             <property name="visible">True</property>
-                            <property name="events">GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK</property>
                             <property name="label" translatable="yes">show FocMec</property>
                             <property name="focus_on_click">False</property>
                             <property name="response_id">0</property>
-                            <signal name="clicked" handler="on_buttonShowFocMec_clicked"/>
+                            <signal name="clicked" handler="on_togglebuttonShowFocMec_clicked"/>
                           </widget>
                           <packing>
                             <property name="position">1</property>
@@ -174,13 +172,12 @@
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkButton" id="buttonShowWadati">
+                          <widget class="GtkToggleButton" id="togglebuttonShowWadati">
                             <property name="visible">True</property>
-                            <property name="events">GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK</property>
                             <property name="label" translatable="yes">show Wadati</property>
                             <property name="focus_on_click">False</property>
                             <property name="response_id">0</property>
-                            <signal name="clicked" handler="on_buttonShowWadati_clicked"/>
+                            <signal name="clicked" handler="on_togglebuttonShowWadati_clicked"/>
                           </widget>
                           <packing>
                             <property name="position">3</property>
