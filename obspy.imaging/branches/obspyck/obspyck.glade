@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Wed Mar 24 10:47:34 2010 -->
+<!--Generated with glade3 3.4.5 on Wed Mar 24 22:03:06 2010 -->
 <glade-interface>
   <widget class="GtkWindow" id="windowObspyck">
     <property name="visible">True</property>
@@ -611,13 +611,34 @@ Highpass</property>
                   <widget class="GtkAlignment" id="alignmentAC">
                     <property name="visible">True</property>
                     <child>
-                      <widget class="GtkToggleButton" id="togglebuttonSpectrogram">
+                      <widget class="GtkHButtonBox" id="hbuttonbox1">
                         <property name="visible">True</property>
-                        <property name="events">GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK</property>
-                        <property name="label" translatable="yes">Spectrogram</property>
-                        <property name="focus_on_click">False</property>
-                        <property name="response_id">0</property>
-                        <signal name="toggled" handler="on_togglebuttonSpectrogram_toggled"/>
+                        <child>
+                          <widget class="GtkToggleButton" id="togglebuttonSpectrogram">
+                            <property name="visible">True</property>
+                            <property name="events">GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK</property>
+                            <property name="label" translatable="yes">Spectrogram</property>
+                            <property name="focus_on_click">False</property>
+                            <property name="response_id">0</property>
+                            <signal name="toggled" handler="on_togglebuttonSpectrogram_toggled"/>
+                          </widget>
+                        </child>
+                        <child>
+                          <widget class="GtkCheckButton" id="checkbuttonSpectrogramLog">
+                            <property name="visible">True</property>
+                            <property name="events">GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK</property>
+                            <property name="label" translatable="yes">log</property>
+                            <property name="focus_on_click">False</property>
+                            <property name="response_id">0</property>
+                            <property name="draw_indicator">True</property>
+                            <signal name="toggled" handler="on_checkbuttonSpectrogramLog_toggled"/>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
                       </widget>
                     </child>
                   </widget>
