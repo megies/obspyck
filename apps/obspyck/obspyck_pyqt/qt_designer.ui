@@ -1,102 +1,107 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<ui version="4.0">
- <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow">
-  <property name="geometry">
+<ui version="4.0" >
+ <class>ObsPyck</class>
+ <widget class="QMainWindow" name="ObsPyck" >
+  <property name="geometry" >
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1188</width>
-    <height>1109</height>
+    <width>1027</width>
+    <height>838</height>
    </rect>
   </property>
-  <property name="windowTitle">
+  <property name="sizePolicy" >
+   <sizepolicy vsizetype="Maximum" hsizetype="Maximum" >
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle" >
    <string>MainWindow</string>
   </property>
-  <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout_4">
+  <widget class="QWidget" name="centralwidget" >
+   <layout class="QVBoxLayout" name="verticalLayout_4" >
     <item>
-     <widget class="QSplitter" name="splitter">
-      <property name="orientation">
+     <widget class="QSplitter" name="splitter" >
+      <property name="orientation" >
        <enum>Qt::Vertical</enum>
       </property>
-      <widget class="QWidget" name="layoutWidget">
-       <layout class="QHBoxLayout" name="horizontalLayout_7">
+      <widget class="QWidget" name="layoutWidget" >
+       <layout class="QHBoxLayout" name="horizontalLayout_7" >
         <item>
-         <layout class="QVBoxLayout" name="leftVerticalLayout">
-          <property name="sizeConstraint">
+         <layout class="QVBoxLayout" name="leftVerticalLayout" >
+          <property name="sizeConstraint" >
            <enum>QLayout::SetDefaultConstraint</enum>
           </property>
-          <property name="topMargin">
+          <property name="topMargin" >
            <number>0</number>
           </property>
           <item>
-           <widget class="QToolButton" name="toolButton">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+           <widget class="QToolButton" name="qToolButton_clearAll" >
+            <property name="sizePolicy" >
+             <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <property name="font">
+            <property name="font" >
              <font>
               <pointsize>10</pointsize>
               <kerning>true</kerning>
              </font>
             </property>
-            <property name="styleSheet">
-             <string notr="true"/>
+            <property name="styleSheet" >
+             <string notr="true" />
             </property>
-            <property name="text">
+            <property name="text" >
              <string>clear All</string>
             </property>
-            <property name="checkable">
+            <property name="checkable" >
              <bool>false</bool>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QToolButton" name="toolButton_2">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+           <widget class="QToolButton" name="qToolButton_clearOrigMag" >
+            <property name="sizePolicy" >
+             <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <property name="font">
+            <property name="font" >
              <font>
               <pointsize>10</pointsize>
              </font>
             </property>
-            <property name="text">
-             <string>clear Orig&amp;Mag</string>
+            <property name="text" >
+             <string>clear Orig&amp;&amp;Mag</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QToolButton" name="toolButton_4">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+           <widget class="QToolButton" name="qToolButton_clearFocMec" >
+            <property name="sizePolicy" >
+             <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <property name="font">
+            <property name="font" >
              <font>
               <pointsize>10</pointsize>
              </font>
             </property>
-            <property name="text">
-             <string>clear FogMec</string>
+            <property name="text" >
+             <string>clear FocMec</string>
             </property>
            </widget>
           </item>
           <item>
-           <spacer name="verticalSpacer_2">
-            <property name="orientation">
+           <spacer name="verticalSpacer_2" >
+            <property name="orientation" >
              <enum>Qt::Vertical</enum>
             </property>
-            <property name="sizeHint" stdset="0">
+            <property name="sizeHint" stdset="0" >
              <size>
               <width>20</width>
               <height>40</height>
@@ -105,120 +110,142 @@
            </spacer>
           </item>
           <item>
-           <widget class="QToolButton" name="toolButton_5">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <widget class="QToolButton" name="qToolButton_doHyp2000" >
+            <property name="sizePolicy" >
+             <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <property name="font">
+            <property name="font" >
              <font>
               <pointsize>10</pointsize>
              </font>
             </property>
-            <property name="text">
+            <property name="text" >
              <string>do hyp2000</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QToolButton" name="toolButton_6">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <widget class="QToolButton" name="qToolButton_do3dloc" >
+            <property name="sizePolicy" >
+             <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <property name="font">
+            <property name="font" >
              <font>
               <pointsize>10</pointsize>
              </font>
             </property>
-            <property name="text">
+            <property name="text" >
              <string>do 3dloc</string>
             </property>
            </widget>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_3">
+           <layout class="QHBoxLayout" name="horizontalLayout_3" >
             <item>
-             <widget class="QToolButton" name="toolButton_13">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <widget class="QToolButton" name="qToolButton_doNlloc" >
+              <property name="sizePolicy" >
+               <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
-              <property name="font">
+              <property name="font" >
                <font>
                 <pointsize>10</pointsize>
                </font>
               </property>
-              <property name="text">
-               <string>do NNLoc</string>
+              <property name="text" >
+               <string>do NLLoc</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QComboBox" name="comboBox">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <widget class="QComboBox" name="qComboBox_nllocModel" >
+              <property name="sizePolicy" >
+               <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
-              <property name="font">
+              <property name="font" >
                <font>
+                <family>Monospace</family>
                 <pointsize>10</pointsize>
+                <weight>50</weight>
+                <italic>false</italic>
+                <bold>false</bold>
                </font>
               </property>
+              <property name="styleSheet" >
+               <string notr="true" />
+              </property>
+              <item>
+               <property name="text" >
+                <string>BY</string>
+               </property>
+              </item>
+              <item>
+               <property name="text" >
+                <string>RH</string>
+               </property>
+              </item>
+              <item>
+               <property name="text" >
+                <string>UH</string>
+               </property>
+              </item>
              </widget>
             </item>
            </layout>
           </item>
           <item>
-           <widget class="QToolButton" name="toolButton_7">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <widget class="QToolButton" name="qToolButton_calcMag" >
+            <property name="sizePolicy" >
+             <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <property name="font">
+            <property name="font" >
              <font>
               <pointsize>10</pointsize>
              </font>
             </property>
-            <property name="text">
+            <property name="text" >
              <string>calc Mag</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QToolButton" name="toolButton_8">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <widget class="QToolButton" name="qToolButton_doFocMec" >
+            <property name="sizePolicy" >
+             <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <property name="font">
+            <property name="font" >
              <font>
               <pointsize>10</pointsize>
              </font>
             </property>
-            <property name="text">
+            <property name="text" >
              <string>do focmec</string>
             </property>
            </widget>
           </item>
           <item>
-           <spacer name="verticalSpacer_3">
-            <property name="orientation">
+           <spacer name="verticalSpacer_3" >
+            <property name="orientation" >
              <enum>Qt::Vertical</enum>
             </property>
-            <property name="sizeHint" stdset="0">
+            <property name="sizeHint" stdset="0" >
              <size>
               <width>20</width>
               <height>40</height>
@@ -227,83 +254,83 @@
            </spacer>
           </item>
           <item>
-           <widget class="QToolButton" name="toolButton_9">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <widget class="QToolButton" name="qToolButton_showMap" >
+            <property name="sizePolicy" >
+             <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <property name="font">
+            <property name="font" >
              <font>
               <pointsize>10</pointsize>
              </font>
             </property>
-            <property name="text">
+            <property name="text" >
              <string>show Map</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QToolButton" name="toolButton_10">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <widget class="QToolButton" name="qToolButton_showFocMec" >
+            <property name="sizePolicy" >
+             <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <property name="font">
+            <property name="font" >
              <font>
               <pointsize>10</pointsize>
              </font>
             </property>
-            <property name="text">
+            <property name="text" >
              <string>show FocMec</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QToolButton" name="toolButton_11">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <widget class="QToolButton" name="qToolButton_nextFocMec" >
+            <property name="sizePolicy" >
+             <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <property name="font">
+            <property name="font" >
              <font>
               <pointsize>10</pointsize>
              </font>
             </property>
-            <property name="text">
+            <property name="text" >
              <string>next FocMec</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QToolButton" name="toolButton_12">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <widget class="QToolButton" name="qToolButton_showWadati" >
+            <property name="sizePolicy" >
+             <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <property name="font">
+            <property name="font" >
              <font>
               <pointsize>10</pointsize>
              </font>
             </property>
-            <property name="text">
+            <property name="text" >
              <string>show Wadati</string>
             </property>
            </widget>
           </item>
           <item>
-           <spacer name="verticalSpacer_4">
-            <property name="orientation">
+           <spacer name="verticalSpacer_4" >
+            <property name="orientation" >
              <enum>Qt::Vertical</enum>
             </property>
-            <property name="sizeHint" stdset="0">
+            <property name="sizeHint" stdset="0" >
              <size>
               <width>20</width>
               <height>40</height>
@@ -312,124 +339,124 @@
            </spacer>
           </item>
           <item>
-           <widget class="QToolButton" name="toolButton_14">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <widget class="QToolButton" name="qToolButton_getNextEvent" >
+            <property name="sizePolicy" >
+             <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <property name="font">
+            <property name="font" >
              <font>
               <pointsize>10</pointsize>
              </font>
             </property>
-            <property name="text">
+            <property name="text" >
              <string>get Next Event</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QToolButton" name="toolButton_15">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <widget class="QToolButton" name="qToolButton_updateEventList" >
+            <property name="sizePolicy" >
+             <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <property name="font">
+            <property name="font" >
              <font>
               <pointsize>10</pointsize>
              </font>
             </property>
-            <property name="text">
+            <property name="text" >
              <string>update Event List</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QToolButton" name="toolButton_16">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <widget class="QToolButton" name="qToolButton_sendEvent" >
+            <property name="sizePolicy" >
+             <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <property name="font">
+            <property name="font" >
              <font>
               <pointsize>10</pointsize>
              </font>
             </property>
-            <property name="text">
+            <property name="text" >
              <string>send Event</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="checkBox_2">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+           <widget class="QCheckBox" name="qCheckBox_publishEvent" >
+            <property name="sizePolicy" >
+             <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <property name="font">
+            <property name="font" >
              <font>
               <pointsize>10</pointsize>
              </font>
             </property>
-            <property name="text">
+            <property name="text" >
              <string>publish Event</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QToolButton" name="toolButton_17">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <widget class="QToolButton" name="qToolButton_deleteEvent" >
+            <property name="sizePolicy" >
+             <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <property name="font">
+            <property name="font" >
              <font>
               <pointsize>10</pointsize>
              </font>
             </property>
-            <property name="text">
+            <property name="text" >
              <string>delete Event</string>
             </property>
            </widget>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <layout class="QHBoxLayout" name="horizontalLayout_4" >
             <item>
-             <widget class="QCheckBox" name="checkBox_3">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+             <widget class="QCheckBox" name="qCheckBox_sysop" >
+              <property name="sizePolicy" >
+               <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
-              <property name="font">
+              <property name="font" >
                <font>
                 <pointsize>10</pointsize>
                </font>
               </property>
-              <property name="text">
+              <property name="text" >
                <string>sysop</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
+             <widget class="QLineEdit" name="qLineEdit_sysopPassword" >
+              <property name="sizePolicy" >
+               <sizepolicy vsizetype="Minimum" hsizetype="Fixed" >
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
-              <property name="font">
+              <property name="font" >
                <font>
                 <pointsize>10</pointsize>
                </font>
@@ -439,11 +466,11 @@
            </layout>
           </item>
           <item>
-           <spacer name="verticalSpacer_5">
-            <property name="orientation">
+           <spacer name="verticalSpacer_5" >
+            <property name="orientation" >
              <enum>Qt::Vertical</enum>
             </property>
-            <property name="sizeHint" stdset="0">
+            <property name="sizeHint" stdset="0" >
              <size>
               <width>20</width>
               <height>40</height>
@@ -452,51 +479,33 @@
            </spacer>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_5">
+           <layout class="QHBoxLayout" name="horizontalLayout_5" >
             <item>
-             <widget class="QToolButton" name="toolButton_18">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <widget class="QToolButton" name="qToolButton_debug" >
+              <property name="sizePolicy" >
+               <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
-              <property name="font">
+              <property name="font" >
                <font>
                 <pointsize>10</pointsize>
                </font>
               </property>
-              <property name="text">
+              <property name="text" >
                <string>debug</string>
               </property>
              </widget>
             </item>
-            <item>
-             <widget class="QToolButton" name="quitButton">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>quit</string>
-              </property>
-             </widget>
-            </item>
            </layout>
           </item>
           <item>
-           <spacer name="verticalSpacer">
-            <property name="orientation">
+           <spacer name="verticalSpacer" >
+            <property name="orientation" >
              <enum>Qt::Vertical</enum>
             </property>
-            <property name="sizeHint" stdset="0">
+            <property name="sizeHint" stdset="0" >
              <size>
               <width>20</width>
               <height>40</height>
@@ -505,103 +514,115 @@
            </spacer>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_6">
+           <layout class="QHBoxLayout" name="horizontalLayout_6" >
             <item>
-             <widget class="QToolButton" name="toolButton_20">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+             <widget class="QToolButton" name="qToolButton_previousStream" >
+              <property name="sizePolicy" >
+               <sizepolicy vsizetype="Expanding" hsizetype="Minimum" >
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
-              <property name="font">
+              <property name="font" >
                <font>
                 <pointsize>10</pointsize>
                </font>
               </property>
-              <property name="text">
+              <property name="text" >
                <string>&lt;</string>
               </property>
              </widget>
             </item>
             <item>
-             <layout class="QVBoxLayout" name="VerticalLayout">
-              <property name="spacing">
-               <number>-1</number>
+             <layout class="QVBoxLayout" name="VerticalLayout" >
+              <property name="spacing" >
+               <number>6</number>
               </property>
-              <property name="sizeConstraint">
+              <property name="sizeConstraint" >
                <enum>QLayout::SetDefaultConstraint</enum>
               </property>
-              <property name="topMargin">
+              <property name="topMargin" >
                <number>0</number>
               </property>
               <item>
-               <widget class="QLabel" name="labelStreamNumber">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <widget class="QLabel" name="qLabel_streamNumber" >
+                <property name="sizePolicy" >
+                 <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
-                <property name="font">
+                <property name="font" >
                  <font>
+                  <family>Monospace</family>
                   <pointsize>10</pointsize>
                  </font>
                 </property>
-                <property name="text">
-                 <string>01/02</string>
+                <property name="styleSheet" >
+                 <string notr="true" />
+                </property>
+                <property name="text" >
+                 <string>&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">
+&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;style type="text/css">
+p, li { white-space: pre-wrap; }
+&lt;/style>&lt;/head>&lt;body style=" font-family:'Monospace'; font-size:10pt; font-weight:400; font-style:normal;">
+&lt;p align="center" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">01/02&lt;/p>&lt;/body>&lt;/html></string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QComboBox" name="comboboxStreamName">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <widget class="QComboBox" name="qComboBox_streamName" >
+                <property name="sizePolicy" >
+                 <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
-                <property name="font">
+                <property name="font" >
                  <font>
+                  <family>Monospace</family>
                   <pointsize>10</pointsize>
                  </font>
+                </property>
+                <property name="styleSheet" >
+                 <string notr="true" />
                 </property>
                </widget>
               </item>
              </layout>
             </item>
             <item>
-             <widget class="QToolButton" name="toolButton_21">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+             <widget class="QToolButton" name="qToolButton_nextStream" >
+              <property name="sizePolicy" >
+               <sizepolicy vsizetype="Expanding" hsizetype="Minimum" >
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
-              <property name="font">
+              <property name="font" >
                <font>
                 <pointsize>10</pointsize>
                </font>
               </property>
-              <property name="text">
-               <string>&gt;</string>
+              <property name="text" >
+               <string>></string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QToolButton" name="toolButton_22">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <widget class="QToolButton" name="qToolButton_overview" >
+              <property name="sizePolicy" >
+               <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
-              <property name="font">
+              <property name="font" >
                <font>
                 <pointsize>10</pointsize>
                </font>
               </property>
-              <property name="text">
+              <property name="text" >
                <string>Overview</string>
               </property>
              </widget>
@@ -611,18 +632,22 @@
          </layout>
         </item>
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout_2">
+         <layout class="QVBoxLayout" name="verticalLayout_2" >
           <item>
-           <widget class="Qt4MplCanvas" name="canvas" native="true"/>
+           <widget class="QMplCanvas" native="1" name="canvas" >
+            <property name="focusPolicy" >
+             <enum>Qt::StrongFocus</enum>
+            </property>
+           </widget>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <layout class="QHBoxLayout" name="horizontalLayout_2" >
             <item>
-             <spacer name="horizontalSpacer">
-              <property name="orientation">
+             <spacer name="horizontalSpacer" >
+              <property name="orientation" >
                <enum>Qt::Horizontal</enum>
               </property>
-              <property name="sizeHint" stdset="0">
+              <property name="sizeHint" stdset="0" >
                <size>
                 <width>40</width>
                 <height>20</height>
@@ -631,36 +656,43 @@
              </spacer>
             </item>
             <item>
-             <widget class="QComboBox" name="comboBox_3">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <widget class="QPushButton" name="qPushButton_phaseType" >
+              <property name="text" >
+               <string>PushButton</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="qComboBox_phaseType" >
+              <property name="sizePolicy" >
+               <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
               <item>
-               <property name="text">
+               <property name="text" >
                 <string>P</string>
                </property>
               </item>
               <item>
-               <property name="text">
+               <property name="text" >
                 <string>S</string>
                </property>
               </item>
               <item>
-               <property name="text">
+               <property name="text" >
                 <string>Mag</string>
                </property>
               </item>
              </widget>
             </item>
             <item>
-             <spacer name="horizontalSpacer_2">
-              <property name="orientation">
+             <spacer name="horizontalSpacer_2" >
+              <property name="orientation" >
                <enum>Qt::Horizontal</enum>
               </property>
-              <property name="sizeHint" stdset="0">
+              <property name="sizeHint" stdset="0" >
                <size>
                 <width>40</width>
                 <height>20</height>
@@ -669,69 +701,69 @@
              </spacer>
             </item>
             <item>
-             <widget class="QToolButton" name="toolButton_3">
-              <property name="text">
+             <widget class="QToolButton" name="qToolButton_filter" >
+              <property name="text" >
                <string>Filter</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QComboBox" name="comboBox_4">
+             <widget class="QComboBox" name="qComboBox_filterType" >
               <item>
-               <property name="text">
+               <property name="text" >
                 <string>Bandpass</string>
                </property>
               </item>
               <item>
-               <property name="text">
+               <property name="text" >
                 <string>Bandstop</string>
                </property>
               </item>
               <item>
-               <property name="text">
+               <property name="text" >
                 <string>Lowpass</string>
                </property>
               </item>
               <item>
-               <property name="text">
+               <property name="text" >
                 <string>Highpass</string>
                </property>
               </item>
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="checkBox_4">
-              <property name="text">
+             <widget class="QCheckBox" name="qCheckBox_zerophase" >
+              <property name="text" >
                <string>Zero Phase</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="label_2">
-              <property name="text">
+             <widget class="QLabel" name="qLabel_highpass" >
+              <property name="text" >
                <string>Highpass</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QDoubleSpinBox" name="spinbuttonHighpass"/>
+             <widget class="QDoubleSpinBox" name="qDoubleSpinBox_highpass" />
             </item>
             <item>
-             <widget class="QLabel" name="label_3">
-              <property name="text">
+             <widget class="QLabel" name="qLabel_lowpass" >
+              <property name="text" >
                <string>Lowpass</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QDoubleSpinBox" name="spinbuttonLowpass"/>
+             <widget class="QDoubleSpinBox" name="qDoubleSpinBox_lowpass" />
             </item>
             <item>
-             <spacer name="horizontalSpacer_3">
-              <property name="orientation">
+             <spacer name="horizontalSpacer_3" >
+              <property name="orientation" >
                <enum>Qt::Horizontal</enum>
               </property>
-              <property name="sizeHint" stdset="0">
+              <property name="sizeHint" stdset="0" >
                <size>
                 <width>40</width>
                 <height>20</height>
@@ -740,15 +772,15 @@
              </spacer>
             </item>
             <item>
-             <widget class="QToolButton" name="toolButton_3">
-              <property name="text">
+             <widget class="QToolButton" name="qToolButton_Spectrogram" >
+              <property name="text" >
                <string>Spectrogram</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="checkBox">
-              <property name="text">
+             <widget class="QCheckBox" name="qCheckBox_spectrogramLog" >
+              <property name="text" >
                <string>log</string>
               </property>
              </widget>
@@ -759,25 +791,49 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="layoutWidget">
-       <layout class="QHBoxLayout" name="horizontalLayout">
+      <widget class="QWidget" name="layoutWidget" >
+       <layout class="QHBoxLayout" name="horizontalLayout" >
         <item>
-         <widget class="QPlainTextEdit" name="stdoutPlainTextEdit">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <widget class="QPlainTextEdit" name="qPlainTextEdit_stdout" >
+          <property name="sizePolicy" >
+           <sizepolicy vsizetype="MinimumExpanding" hsizetype="Expanding" >
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="minimumSize" >
+           <size>
+            <width>0</width>
+            <height>70</height>
+           </size>
+          </property>
+          <property name="font" >
+           <font>
+            <family>Monospace</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
          </widget>
         </item>
         <item>
-         <widget class="QPlainTextEdit" name="stderrPlainTextEdit">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <widget class="QPlainTextEdit" name="qPlainTextEdit_stderr" >
+          <property name="sizePolicy" >
+           <sizepolicy vsizetype="MinimumExpanding" hsizetype="Expanding" >
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
+          </property>
+          <property name="minimumSize" >
+           <size>
+            <width>0</width>
+            <height>70</height>
+           </size>
+          </property>
+          <property name="font" >
+           <font>
+            <family>Monospace</family>
+            <pointsize>10</pointsize>
+           </font>
           </property>
          </widget>
         </item>
@@ -787,23 +843,23 @@
     </item>
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
+  <widget class="QMenuBar" name="menubar" >
+   <property name="geometry" >
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1188</width>
-     <height>22</height>
+     <width>1027</width>
+     <height>26</height>
     </rect>
    </property>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QStatusBar" name="statusbar" />
  </widget>
  <customwidgets>
   <customwidget>
-   <class>Qt4MplCanvas</class>
+   <class>QMplCanvas</class>
    <extends>QWidget</extends>
-   <header>qt4mplcanvas.h</header>
+   <header>util.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
