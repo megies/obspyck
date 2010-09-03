@@ -1,4 +1,4 @@
-all: interface
+all: qt_designer
 
-interface: interface.ui
-	pyuic4 interface.ui > interface.py
+qt_designer: qt_designer.ui
+	pyuic4 qt_designer.ui > qt_designer.py

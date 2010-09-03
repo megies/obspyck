@@ -1,12 +1,12 @@
 <ui version="4.0" >
- <class>ObsPyck</class>
- <widget class="QMainWindow" name="ObsPyck" >
+ <class>qMainWindow_obsPyck</class>
+ <widget class="QMainWindow" name="qMainWindow_obsPyck" >
   <property name="geometry" >
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1027</width>
-    <height>838</height>
+    <width>1052</width>
+    <height>846</height>
    </rect>
   </property>
   <property name="sizePolicy" >
@@ -16,141 +16,37 @@
    </sizepolicy>
   </property>
   <property name="windowTitle" >
-   <string>MainWindow</string>
+   <string>ObsPyck</string>
   </property>
   <widget class="QWidget" name="centralwidget" >
+   <property name="mouseTracking" >
+    <bool>true</bool>
+   </property>
    <layout class="QVBoxLayout" name="verticalLayout_4" >
     <item>
-     <widget class="QSplitter" name="splitter" >
-      <property name="orientation" >
-       <enum>Qt::Vertical</enum>
-      </property>
-      <widget class="QWidget" name="layoutWidget" >
-       <layout class="QHBoxLayout" name="horizontalLayout_7" >
-        <item>
-         <layout class="QVBoxLayout" name="leftVerticalLayout" >
-          <property name="sizeConstraint" >
-           <enum>QLayout::SetDefaultConstraint</enum>
-          </property>
-          <property name="topMargin" >
-           <number>0</number>
-          </property>
+     <layout class="QVBoxLayout" name="verticalLayout" >
+      <item>
+       <widget class="QSplitter" name="splitter" >
+        <property name="orientation" >
+         <enum>Qt::Vertical</enum>
+        </property>
+        <widget class="QWidget" name="layoutWidget" >
+         <layout class="QHBoxLayout" name="horizontalLayout_7" >
           <item>
-           <widget class="QToolButton" name="qToolButton_clearAll" >
-            <property name="sizePolicy" >
-             <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
+           <layout class="QVBoxLayout" name="leftVerticalLayout" >
+            <property name="spacing" >
+             <number>1</number>
             </property>
-            <property name="font" >
-             <font>
-              <pointsize>10</pointsize>
-              <kerning>true</kerning>
-             </font>
+            <property name="sizeConstraint" >
+             <enum>QLayout::SetDefaultConstraint</enum>
             </property>
-            <property name="styleSheet" >
-             <string notr="true" />
+            <property name="margin" >
+             <number>1</number>
             </property>
-            <property name="text" >
-             <string>clear All</string>
-            </property>
-            <property name="checkable" >
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QToolButton" name="qToolButton_clearOrigMag" >
-            <property name="sizePolicy" >
-             <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="font" >
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="text" >
-             <string>clear Orig&amp;&amp;Mag</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QToolButton" name="qToolButton_clearFocMec" >
-            <property name="sizePolicy" >
-             <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="font" >
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="text" >
-             <string>clear FocMec</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="verticalSpacer_2" >
-            <property name="orientation" >
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0" >
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QToolButton" name="qToolButton_doHyp2000" >
-            <property name="sizePolicy" >
-             <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="font" >
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="text" >
-             <string>do hyp2000</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QToolButton" name="qToolButton_do3dloc" >
-            <property name="sizePolicy" >
-             <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="font" >
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="text" >
-             <string>do 3dloc</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_3" >
             <item>
-             <widget class="QToolButton" name="qToolButton_doNlloc" >
+             <widget class="QToolButton" name="qToolButton_clearAll" >
               <property name="sizePolicy" >
-               <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+               <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
@@ -158,280 +54,22 @@
               <property name="font" >
                <font>
                 <pointsize>10</pointsize>
-               </font>
-              </property>
-              <property name="text" >
-               <string>do NLLoc</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QComboBox" name="qComboBox_nllocModel" >
-              <property name="sizePolicy" >
-               <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="font" >
-               <font>
-                <family>Monospace</family>
-                <pointsize>10</pointsize>
-                <weight>50</weight>
-                <italic>false</italic>
-                <bold>false</bold>
+                <kerning>true</kerning>
                </font>
               </property>
               <property name="styleSheet" >
                <string notr="true" />
               </property>
-              <item>
-               <property name="text" >
-                <string>BY</string>
-               </property>
-              </item>
-              <item>
-               <property name="text" >
-                <string>RH</string>
-               </property>
-              </item>
-              <item>
-               <property name="text" >
-                <string>UH</string>
-               </property>
-              </item>
+              <property name="text" >
+               <string>clear All</string>
+              </property>
+              <property name="checkable" >
+               <bool>false</bool>
+              </property>
              </widget>
             </item>
-           </layout>
-          </item>
-          <item>
-           <widget class="QToolButton" name="qToolButton_calcMag" >
-            <property name="sizePolicy" >
-             <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="font" >
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="text" >
-             <string>calc Mag</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QToolButton" name="qToolButton_doFocMec" >
-            <property name="sizePolicy" >
-             <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="font" >
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="text" >
-             <string>do focmec</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="verticalSpacer_3" >
-            <property name="orientation" >
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0" >
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QToolButton" name="qToolButton_showMap" >
-            <property name="sizePolicy" >
-             <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="font" >
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="text" >
-             <string>show Map</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QToolButton" name="qToolButton_showFocMec" >
-            <property name="sizePolicy" >
-             <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="font" >
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="text" >
-             <string>show FocMec</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QToolButton" name="qToolButton_nextFocMec" >
-            <property name="sizePolicy" >
-             <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="font" >
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="text" >
-             <string>next FocMec</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QToolButton" name="qToolButton_showWadati" >
-            <property name="sizePolicy" >
-             <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="font" >
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="text" >
-             <string>show Wadati</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="verticalSpacer_4" >
-            <property name="orientation" >
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0" >
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QToolButton" name="qToolButton_getNextEvent" >
-            <property name="sizePolicy" >
-             <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="font" >
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="text" >
-             <string>get Next Event</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QToolButton" name="qToolButton_updateEventList" >
-            <property name="sizePolicy" >
-             <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="font" >
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="text" >
-             <string>update Event List</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QToolButton" name="qToolButton_sendEvent" >
-            <property name="sizePolicy" >
-             <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="font" >
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="text" >
-             <string>send Event</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="qCheckBox_publishEvent" >
-            <property name="sizePolicy" >
-             <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="font" >
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="text" >
-             <string>publish Event</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QToolButton" name="qToolButton_deleteEvent" >
-            <property name="sizePolicy" >
-             <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="font" >
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="text" >
-             <string>delete Event</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_4" >
             <item>
-             <widget class="QCheckBox" name="qCheckBox_sysop" >
+             <widget class="QToolButton" name="qToolButton_clearOrigMag" >
               <property name="sizePolicy" >
                <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
                 <horstretch>0</horstretch>
@@ -444,14 +82,14 @@
                </font>
               </property>
               <property name="text" >
-               <string>sysop</string>
+               <string>clear Orig&amp;&amp;Mag</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="qLineEdit_sysopPassword" >
+             <widget class="QToolButton" name="qToolButton_clearFocMec" >
               <property name="sizePolicy" >
-               <sizepolicy vsizetype="Minimum" hsizetype="Fixed" >
+               <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
@@ -461,27 +99,26 @@
                 <pointsize>10</pointsize>
                </font>
               </property>
+              <property name="text" >
+               <string>clear FocMec</string>
+              </property>
              </widget>
             </item>
-           </layout>
-          </item>
-          <item>
-           <spacer name="verticalSpacer_5" >
-            <property name="orientation" >
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0" >
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_5" >
             <item>
-             <widget class="QToolButton" name="qToolButton_debug" >
+             <spacer name="verticalSpacer_2" >
+              <property name="orientation" >
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0" >
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QToolButton" name="qToolButton_doHyp2000" >
               <property name="sizePolicy" >
                <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
                 <horstretch>0</horstretch>
@@ -494,31 +131,14 @@
                </font>
               </property>
               <property name="text" >
-               <string>debug</string>
+               <string>do hyp2000</string>
               </property>
              </widget>
             </item>
-           </layout>
-          </item>
-          <item>
-           <spacer name="verticalSpacer" >
-            <property name="orientation" >
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0" >
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_6" >
             <item>
-             <widget class="QToolButton" name="qToolButton_previousStream" >
+             <widget class="QToolButton" name="qToolButton_do3dloc" >
               <property name="sizePolicy" >
-               <sizepolicy vsizetype="Expanding" hsizetype="Minimum" >
+               <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
@@ -529,51 +149,34 @@
                </font>
               </property>
               <property name="text" >
-               <string>&lt;</string>
+               <string>do 3dloc</string>
               </property>
              </widget>
             </item>
             <item>
-             <layout class="QVBoxLayout" name="VerticalLayout" >
-              <property name="spacing" >
-               <number>6</number>
-              </property>
-              <property name="sizeConstraint" >
-               <enum>QLayout::SetDefaultConstraint</enum>
-              </property>
-              <property name="topMargin" >
-               <number>0</number>
-              </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_3" >
               <item>
-               <widget class="QLabel" name="qLabel_streamNumber" >
+               <widget class="QToolButton" name="qToolButton_doNlloc" >
                 <property name="sizePolicy" >
-                 <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
+                 <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
                 <property name="font" >
                  <font>
-                  <family>Monospace</family>
                   <pointsize>10</pointsize>
                  </font>
                 </property>
-                <property name="styleSheet" >
-                 <string notr="true" />
-                </property>
                 <property name="text" >
-                 <string>&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">
-&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;style type="text/css">
-p, li { white-space: pre-wrap; }
-&lt;/style>&lt;/head>&lt;body style=" font-family:'Monospace'; font-size:10pt; font-weight:400; font-style:normal;">
-&lt;p align="center" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">01/02&lt;/p>&lt;/body>&lt;/html></string>
+                 <string>do NLLoc</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QComboBox" name="qComboBox_streamName" >
+               <widget class="QComboBox" name="qComboBox_nllocModel" >
                 <property name="sizePolicy" >
-                 <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
+                 <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
@@ -582,264 +185,745 @@ p, li { white-space: pre-wrap; }
                  <font>
                   <family>Monospace</family>
                   <pointsize>10</pointsize>
+                  <weight>50</weight>
+                  <italic>false</italic>
+                  <bold>false</bold>
                  </font>
                 </property>
                 <property name="styleSheet" >
                  <string notr="true" />
+                </property>
+                <item>
+                 <property name="text" >
+                  <string>BY</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text" >
+                  <string>RH</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text" >
+                  <string>UH</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QToolButton" name="qToolButton_calcMag" >
+              <property name="sizePolicy" >
+               <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="font" >
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text" >
+               <string>calc Mag</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="qToolButton_doFocMec" >
+              <property name="sizePolicy" >
+               <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="font" >
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text" >
+               <string>do focmec</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_3" >
+              <property name="orientation" >
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0" >
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QToolButton" name="qToolButton_showMap" >
+              <property name="sizePolicy" >
+               <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="font" >
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text" >
+               <string>show Map</string>
+              </property>
+              <property name="checkable" >
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="qToolButton_showFocMec" >
+              <property name="sizePolicy" >
+               <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="font" >
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text" >
+               <string>show FocMec</string>
+              </property>
+              <property name="checkable" >
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="qToolButton_nextFocMec" >
+              <property name="sizePolicy" >
+               <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="font" >
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text" >
+               <string>next FocMec</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="qToolButton_showWadati" >
+              <property name="sizePolicy" >
+               <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="font" >
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text" >
+               <string>show Wadati</string>
+              </property>
+              <property name="checkable" >
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_4" >
+              <property name="orientation" >
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0" >
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QToolButton" name="qToolButton_getNextEvent" >
+              <property name="sizePolicy" >
+               <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="font" >
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text" >
+               <string>get Next Event</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="qToolButton_updateEventList" >
+              <property name="sizePolicy" >
+               <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="font" >
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text" >
+               <string>update Event List</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="qToolButton_sendEvent" >
+              <property name="sizePolicy" >
+               <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="font" >
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text" >
+               <string>send Event</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="qCheckBox_publishEvent" >
+              <property name="sizePolicy" >
+               <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="font" >
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text" >
+               <string>publish Event</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="qToolButton_deleteEvent" >
+              <property name="sizePolicy" >
+               <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="font" >
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text" >
+               <string>delete Event</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_4" >
+              <item>
+               <widget class="QCheckBox" name="qCheckBox_sysop" >
+                <property name="sizePolicy" >
+                 <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="font" >
+                 <font>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
+                <property name="text" >
+                 <string>sysop</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="qLineEdit_sysopPassword" >
+                <property name="sizePolicy" >
+                 <sizepolicy vsizetype="Minimum" hsizetype="Fixed" >
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="font" >
+                 <font>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
+                <property name="echoMode" >
+                 <enum>QLineEdit::Password</enum>
                 </property>
                </widget>
               </item>
              </layout>
             </item>
             <item>
-             <widget class="QToolButton" name="qToolButton_nextStream" >
-              <property name="sizePolicy" >
-               <sizepolicy vsizetype="Expanding" hsizetype="Minimum" >
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
+             <spacer name="verticalSpacer_5" >
+              <property name="orientation" >
+               <enum>Qt::Vertical</enum>
               </property>
-              <property name="font" >
-               <font>
-                <pointsize>10</pointsize>
-               </font>
+              <property name="sizeHint" stdset="0" >
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
               </property>
-              <property name="text" >
-               <string>></string>
+             </spacer>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_5" >
+              <item>
+               <widget class="QToolButton" name="qToolButton_debug" >
+                <property name="sizePolicy" >
+                 <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="font" >
+                 <font>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
+                <property name="text" >
+                 <string>debug</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <spacer name="verticalSpacer" >
+              <property name="orientation" >
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0" >
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_6" >
+              <item>
+               <widget class="QToolButton" name="qToolButton_previousStream" >
+                <property name="sizePolicy" >
+                 <sizepolicy vsizetype="Expanding" hsizetype="Minimum" >
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="font" >
+                 <font>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
+                <property name="text" >
+                 <string>&lt;</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <layout class="QVBoxLayout" name="VerticalLayout" >
+                <property name="spacing" >
+                 <number>6</number>
+                </property>
+                <property name="sizeConstraint" >
+                 <enum>QLayout::SetDefaultConstraint</enum>
+                </property>
+                <property name="topMargin" >
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QLabel" name="qLabel_streamNumber" >
+                  <property name="sizePolicy" >
+                   <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="font" >
+                   <font>
+                    <family>Monospace</family>
+                    <pointsize>10</pointsize>
+                   </font>
+                  </property>
+                  <property name="styleSheet" >
+                   <string notr="true" />
+                  </property>
+                  <property name="text" >
+                   <string>&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">
+&lt;  html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;style type="text/css">
+p, l  i { white-space: pre-wrap; }
+&lt;  /style>&lt;/head>&lt;body style=" font-family:'Monospace'; font-size:10pt; font-weight:400; font-style:normal;">
+&lt;  p align="center" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">00/00&lt;/p>&lt;/body>&lt;/html></string>
+                  </property>
+                  <property name="alignment" >
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="qComboBox_streamName" >
+                  <property name="sizePolicy" >
+                   <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="font" >
+                   <font>
+                    <family>Monospace</family>
+                    <pointsize>10</pointsize>
+                   </font>
+                  </property>
+                  <property name="styleSheet" >
+                   <string notr="true" />
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="QToolButton" name="qToolButton_nextStream" >
+                <property name="sizePolicy" >
+                 <sizepolicy vsizetype="Expanding" hsizetype="Minimum" >
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="font" >
+                 <font>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
+                <property name="text" >
+                 <string>></string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="qToolButton_overview" >
+                <property name="sizePolicy" >
+                 <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="font" >
+                 <font>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
+                <property name="text" >
+                 <string>Overview</string>
+                </property>
+                <property name="checkable" >
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_2" >
+            <item>
+             <widget class="QMplCanvas" native="1" name="qMplCanvas" >
+              <property name="focusPolicy" >
+               <enum>Qt::StrongFocus</enum>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QToolButton" name="qToolButton_overview" >
-              <property name="sizePolicy" >
-               <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="font" >
-               <font>
-                <pointsize>10</pointsize>
-               </font>
-              </property>
-              <property name="text" >
-               <string>Overview</string>
-              </property>
-             </widget>
+             <layout class="QHBoxLayout" name="horizontalLayout_2" >
+              <item>
+               <spacer name="horizontalSpacer" >
+                <property name="orientation" >
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0" >
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QPushButton" name="qPushButton_phaseType" >
+                <property name="focusPolicy" >
+                 <enum>Qt::NoFocus</enum>
+                </property>
+                <property name="text" >
+                 <string/>
+                </property>
+                <property name="flat" >
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QComboBox" name="qComboBox_phaseType" >
+                <property name="sizePolicy" >
+                 <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <item>
+                 <property name="text" >
+                  <string>P</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text" >
+                  <string>S</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text" >
+                  <string>Mag</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_2" >
+                <property name="orientation" >
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0" >
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QToolButton" name="qToolButton_filter" >
+                <property name="text" >
+                 <string>Filter</string>
+                </property>
+                <property name="checkable" >
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QComboBox" name="qComboBox_filterType" >
+                <item>
+                 <property name="text" >
+                  <string>Bandpass</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text" >
+                  <string>Bandstop</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text" >
+                  <string>Lowpass</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text" >
+                  <string>Highpass</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="qCheckBox_zerophase" >
+                <property name="text" >
+                 <string>Zero Phase</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="qLabel_highpass" >
+                <property name="text" >
+                 <string>Highpass</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QDoubleSpinBox" name="qDoubleSpinBox_highpass" />
+              </item>
+              <item>
+               <widget class="QLabel" name="qLabel_lowpass" >
+                <property name="text" >
+                 <string>Lowpass</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QDoubleSpinBox" name="qDoubleSpinBox_lowpass" />
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_3" >
+                <property name="orientation" >
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0" >
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QToolButton" name="qToolButton_spectrogram" >
+                <property name="text" >
+                 <string>Spectrogram</string>
+                </property>
+                <property name="checkable" >
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="qCheckBox_spectrogramLog" >
+                <property name="text" >
+                 <string>log</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
            </layout>
           </item>
          </layout>
-        </item>
-        <item>
-         <layout class="QVBoxLayout" name="verticalLayout_2" >
+        </widget>
+        <widget class="QWidget" name="layoutWidget" >
+         <layout class="QHBoxLayout" name="horizontalLayout" >
           <item>
-           <widget class="QMplCanvas" native="1" name="canvas" >
-            <property name="focusPolicy" >
-             <enum>Qt::StrongFocus</enum>
+           <widget class="QPlainTextEdit" name="qPlainTextEdit_stdout" >
+            <property name="sizePolicy" >
+             <sizepolicy vsizetype="MinimumExpanding" hsizetype="Expanding" >
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize" >
+             <size>
+              <width>0</width>
+              <height>70</height>
+             </size>
+            </property>
+            <property name="font" >
+             <font>
+              <family>Monospace</family>
+              <pointsize>8</pointsize>
+             </font>
+            </property>
+            <property name="acceptDrops" >
+             <bool>false</bool>
+            </property>
+            <property name="undoRedoEnabled" >
+             <bool>false</bool>
+            </property>
+            <property name="readOnly" >
+             <bool>true</bool>
+            </property>
+            <property name="textInteractionFlags" >
+             <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
             </property>
            </widget>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_2" >
-            <item>
-             <spacer name="horizontalSpacer" >
-              <property name="orientation" >
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0" >
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item>
-             <widget class="QPushButton" name="qPushButton_phaseType" >
-              <property name="text" >
-               <string>PushButton</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QComboBox" name="qComboBox_phaseType" >
-              <property name="sizePolicy" >
-               <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <item>
-               <property name="text" >
-                <string>P</string>
-               </property>
-              </item>
-              <item>
-               <property name="text" >
-                <string>S</string>
-               </property>
-              </item>
-              <item>
-               <property name="text" >
-                <string>Mag</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-            <item>
-             <spacer name="horizontalSpacer_2" >
-              <property name="orientation" >
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0" >
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item>
-             <widget class="QToolButton" name="qToolButton_filter" >
-              <property name="text" >
-               <string>Filter</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QComboBox" name="qComboBox_filterType" >
-              <item>
-               <property name="text" >
-                <string>Bandpass</string>
-               </property>
-              </item>
-              <item>
-               <property name="text" >
-                <string>Bandstop</string>
-               </property>
-              </item>
-              <item>
-               <property name="text" >
-                <string>Lowpass</string>
-               </property>
-              </item>
-              <item>
-               <property name="text" >
-                <string>Highpass</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="qCheckBox_zerophase" >
-              <property name="text" >
-               <string>Zero Phase</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="qLabel_highpass" >
-              <property name="text" >
-               <string>Highpass</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QDoubleSpinBox" name="qDoubleSpinBox_highpass" />
-            </item>
-            <item>
-             <widget class="QLabel" name="qLabel_lowpass" >
-              <property name="text" >
-               <string>Lowpass</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QDoubleSpinBox" name="qDoubleSpinBox_lowpass" />
-            </item>
-            <item>
-             <spacer name="horizontalSpacer_3" >
-              <property name="orientation" >
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0" >
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item>
-             <widget class="QToolButton" name="qToolButton_Spectrogram" >
-              <property name="text" >
-               <string>Spectrogram</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="qCheckBox_spectrogramLog" >
-              <property name="text" >
-               <string>log</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
+           <widget class="QPlainTextEdit" name="qPlainTextEdit_stderr" >
+            <property name="sizePolicy" >
+             <sizepolicy vsizetype="MinimumExpanding" hsizetype="Expanding" >
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize" >
+             <size>
+              <width>0</width>
+              <height>70</height>
+             </size>
+            </property>
+            <property name="font" >
+             <font>
+              <family>Monospace</family>
+              <pointsize>8</pointsize>
+             </font>
+            </property>
+            <property name="acceptDrops" >
+             <bool>false</bool>
+            </property>
+            <property name="undoRedoEnabled" >
+             <bool>false</bool>
+            </property>
+            <property name="readOnly" >
+             <bool>true</bool>
+            </property>
+            <property name="textInteractionFlags" >
+             <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+            </property>
+           </widget>
           </item>
          </layout>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="layoutWidget" >
-       <layout class="QHBoxLayout" name="horizontalLayout" >
+        </widget>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_tb" >
         <item>
-         <widget class="QPlainTextEdit" name="qPlainTextEdit_stdout" >
+         <widget class="QWidget" native="1" name="qWidget_toolbar" >
           <property name="sizePolicy" >
-           <sizepolicy vsizetype="MinimumExpanding" hsizetype="Expanding" >
+           <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
           <property name="minimumSize" >
            <size>
-            <width>0</width>
-            <height>70</height>
+            <width>800</width>
+            <height>40</height>
            </size>
-          </property>
-          <property name="font" >
-           <font>
-            <family>Monospace</family>
-            <pointsize>10</pointsize>
-           </font>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPlainTextEdit" name="qPlainTextEdit_stderr" >
-          <property name="sizePolicy" >
-           <sizepolicy vsizetype="MinimumExpanding" hsizetype="Expanding" >
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize" >
-           <size>
-            <width>0</width>
-            <height>70</height>
-           </size>
-          </property>
-          <property name="font" >
-           <font>
-            <family>Monospace</family>
-            <pointsize>10</pointsize>
-           </font>
           </property>
          </widget>
         </item>
        </layout>
-      </widget>
-     </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>
@@ -848,12 +932,22 @@ p, li { white-space: pre-wrap; }
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1027</width>
-     <height>26</height>
+     <width>1052</width>
+     <height>21</height>
     </rect>
    </property>
   </widget>
-  <widget class="QStatusBar" name="statusbar" />
+  <widget class="QStatusBar" name="statusbar" >
+   <property name="enabled" >
+    <bool>false</bool>
+   </property>
+   <property name="sizePolicy" >
+    <sizepolicy vsizetype="Ignored" hsizetype="Ignored" >
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+  </widget>
  </widget>
  <customwidgets>
   <customwidget>
