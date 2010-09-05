@@ -1,12 +1,10 @@
-- rewrite popup info window in checkForSysopEventDuplicates()
-- rewrite popup dialog window in on_qToolButton_deleteEvent_clicked()
 - handling of special keys on linux?!?
 - try on Windows/Mac (also with compiled external programs)
 
 
 low priority:
 - make toolbar expand to right end of window
-- scroll textedits to the end on write/append
+- scroll textedits to the end on write/append (use QPlainTExtEdit.move(QtGui.QTextCursor.End))
 - link not clickable in textedit (using showMap with origin data present)
 - move all combobox initializations from the qt_designer to dynamic setup using (new) dicts in util.py (see setup of phase_type combobox in __init__)
 - check if extending SEISMIC_PHASES works dynamically
