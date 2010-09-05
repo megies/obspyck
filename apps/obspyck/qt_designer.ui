@@ -18,6 +18,10 @@
   <property name="windowTitle" >
    <string>ObsPyck</string>
   </property>
+  <property name="windowIcon" >
+   <iconset>
+    <normaloff>obspyck.gif</normaloff>obspyck.gif</iconset>
+  </property>
   <widget class="QWidget" name="centralwidget" >
    <property name="mouseTracking" >
     <bool>true</bool>
