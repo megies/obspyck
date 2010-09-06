@@ -8,7 +8,6 @@ low priority:
 - link not clickable in textedit (using showMap with origin data present)
 - move all combobox initializations from the qt_designer to dynamic setup using (new) dicts in util.py (see setup of phase_type combobox in __init__)
 - check if extending SEISMIC_PHASES works dynamically
-- write all output to both console and textboxes in GUI (override sys.stdout/err with methods that write to stdout/err and textboxes)
 - replace rpy in wadati plot by scipy routines
 - remove most of the info messages?? they take lots of lines and are really not that interesting (initially partly for debugging)
 - check if starttime_global and starttime_local work correctly, not really happy with the way it is
