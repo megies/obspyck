@@ -2,8 +2,6 @@
 
 
 low priority:
-- make toolbar expand to right end of window
-- scroll textedits to the end on write/append (use QPlainTExtEdit.move(QtGui.QTextCursor.End))
 - link not clickable in textedit (using showMap with origin data present)
 - move all combobox initializations from the qt_designer to dynamic setup using (new) dicts in util.py (see setup of phase_type combobox in __init__)
 - check if extending SEISMIC_PHASES works dynamically
@@ -12,3 +10,4 @@ low priority:
 - check if starttime_global and starttime_local work correctly, not really happy with the way it is
 - check if we really ned all the axes remembering and manual deleting, somehow this was necessary at some point but I still think this could be done easier/simpler/clearer...
 - write some doc, esp. on internal structure of data (all the dicts and stuff)
+- on OSX the home button of the toolbar only works as long as the graph has been changed using the toolbar (e.g. zooming using the scroll wheel will result in a false working home button.)
