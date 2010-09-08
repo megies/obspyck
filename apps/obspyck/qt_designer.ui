@@ -5,7 +5,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>974</width>
+    <width>1109</width>
     <height>756</height>
    </rect>
   </property>
@@ -14,6 +14,11 @@
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
+  </property>
+  <property name="font" >
+   <font>
+    <pointsize>11</pointsize>
+   </font>
   </property>
   <property name="windowTitle" >
    <string>ObsPyck</string>
@@ -77,7 +82,6 @@
              </property>
              <property name="font" >
               <font>
-               <pointsize>10</pointsize>
                <kerning>true</kerning>
               </font>
              </property>
@@ -103,11 +107,6 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
-             <property name="font" >
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
              <property name="focusPolicy" >
               <enum>Qt::NoFocus</enum>
              </property>
@@ -123,11 +122,6 @@
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
-             </property>
-             <property name="font" >
-              <font>
-               <pointsize>10</pointsize>
-              </font>
              </property>
              <property name="focusPolicy" >
               <enum>Qt::NoFocus</enum>
@@ -158,11 +152,6 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
-             <property name="font" >
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
              <property name="focusPolicy" >
               <enum>Qt::NoFocus</enum>
              </property>
@@ -178,11 +167,6 @@
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
-             </property>
-             <property name="font" >
-              <font>
-               <pointsize>10</pointsize>
-              </font>
              </property>
              <property name="focusPolicy" >
               <enum>Qt::NoFocus</enum>
@@ -205,11 +189,6 @@
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
-               <property name="font" >
-                <font>
-                 <pointsize>10</pointsize>
-                </font>
-               </property>
                <property name="focusPolicy" >
                 <enum>Qt::NoFocus</enum>
                </property>
@@ -229,7 +208,6 @@
                <property name="font" >
                 <font>
                  <family>Monospace</family>
-                 <pointsize>10</pointsize>
                  <weight>50</weight>
                  <italic>false</italic>
                  <bold>false</bold>
@@ -268,11 +246,6 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
-             <property name="font" >
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
              <property name="focusPolicy" >
               <enum>Qt::NoFocus</enum>
              </property>
@@ -288,11 +261,6 @@
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
-             </property>
-             <property name="font" >
-              <font>
-               <pointsize>10</pointsize>
-              </font>
              </property>
              <property name="focusPolicy" >
               <enum>Qt::NoFocus</enum>
@@ -323,11 +291,6 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
-             <property name="font" >
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
              <property name="focusPolicy" >
               <enum>Qt::NoFocus</enum>
              </property>
@@ -346,11 +309,6 @@
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
-             </property>
-             <property name="font" >
-              <font>
-               <pointsize>10</pointsize>
-              </font>
              </property>
              <property name="focusPolicy" >
               <enum>Qt::NoFocus</enum>
@@ -371,11 +329,6 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
-             <property name="font" >
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
              <property name="focusPolicy" >
               <enum>Qt::NoFocus</enum>
              </property>
@@ -391,11 +344,6 @@
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
-             </property>
-             <property name="font" >
-              <font>
-               <pointsize>10</pointsize>
-              </font>
              </property>
              <property name="focusPolicy" >
               <enum>Qt::NoFocus</enum>
@@ -429,11 +377,6 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
-             <property name="font" >
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
              <property name="focusPolicy" >
               <enum>Qt::NoFocus</enum>
              </property>
@@ -449,11 +392,6 @@
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
-             </property>
-             <property name="font" >
-              <font>
-               <pointsize>10</pointsize>
-              </font>
              </property>
              <property name="focusPolicy" >
               <enum>Qt::NoFocus</enum>
@@ -471,11 +409,6 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
-             <property name="font" >
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
              <property name="focusPolicy" >
               <enum>Qt::NoFocus</enum>
              </property>
@@ -492,11 +425,6 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
-             <property name="font" >
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
              <property name="focusPolicy" >
               <enum>Qt::NoFocus</enum>
              </property>
@@ -512,11 +440,6 @@
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
-             </property>
-             <property name="font" >
-              <font>
-               <pointsize>10</pointsize>
-              </font>
              </property>
              <property name="focusPolicy" >
               <enum>Qt::NoFocus</enum>
@@ -539,11 +462,6 @@
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
-               <property name="font" >
-                <font>
-                 <pointsize>10</pointsize>
-                </font>
-               </property>
                <property name="focusPolicy" >
                 <enum>Qt::NoFocus</enum>
                </property>
@@ -559,11 +477,6 @@
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
-               </property>
-               <property name="font" >
-                <font>
-                 <pointsize>10</pointsize>
-                </font>
                </property>
                <property name="focusPolicy" >
                 <enum>Qt::NoFocus</enum>
@@ -604,11 +517,6 @@
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
-               <property name="font" >
-                <font>
-                 <pointsize>10</pointsize>
-                </font>
-               </property>
                <property name="focusPolicy" >
                 <enum>Qt::NoFocus</enum>
                </property>
@@ -645,11 +553,6 @@
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
-               <property name="font" >
-                <font>
-                 <pointsize>10</pointsize>
-                </font>
-               </property>
                <property name="focusPolicy" >
                 <enum>Qt::NoFocus</enum>
                </property>
@@ -680,7 +583,6 @@
                  <property name="font" >
                   <font>
                    <family>Monospace</family>
-                   <pointsize>10</pointsize>
                   </font>
                  </property>
                  <property name="styleSheet" >
@@ -709,7 +611,6 @@ p, l  i { white-space: pre-wrap; }
                  <property name="font" >
                   <font>
                    <family>Monospace</family>
-                   <pointsize>10</pointsize>
                   </font>
                  </property>
                  <property name="focusPolicy" >
@@ -730,11 +631,6 @@ p, l  i { white-space: pre-wrap; }
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
-               <property name="font" >
-                <font>
-                 <pointsize>10</pointsize>
-                </font>
-               </property>
                <property name="focusPolicy" >
                 <enum>Qt::NoFocus</enum>
                </property>
@@ -752,11 +648,6 @@ p, l  i { white-space: pre-wrap; }
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
-                 </property>
-                 <property name="font" >
-                  <font>
-                   <pointsize>10</pointsize>
-                  </font>
                  </property>
                  <property name="focusPolicy" >
                   <enum>Qt::NoFocus</enum>
@@ -797,6 +688,9 @@ p, l  i { white-space: pre-wrap; }
                <horstretch>99</horstretch>
                <verstretch>99</verstretch>
               </sizepolicy>
+             </property>
+             <property name="cursor" >
+              <cursorShape>CrossCursor</cursorShape>
              </property>
              <property name="focusPolicy" >
               <enum>Qt::StrongFocus</enum>
@@ -932,6 +826,71 @@ p, l  i { white-space: pre-wrap; }
                </property>
               </widget>
              </item>
+             <item>
+              <spacer name="horizontalSpacer" >
+               <property name="orientation" >
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0" >
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_2" >
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_8" >
+                 <item>
+                  <widget class="QLabel" name="qLabel_x" >
+                   <property name="text" >
+                    <string>x:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="qLabel_xdata" >
+                   <property name="text" >
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_7" >
+                 <item>
+                  <widget class="QLabel" name="qLabel_y" >
+                   <property name="text" >
+                    <string>y:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="qLabel_ydata" >
+                   <property name="sizePolicy" >
+                    <sizepolicy vsizetype="Preferred" hsizetype="Preferred" >
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="baseSize" >
+                    <size>
+                     <width>0</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="text" >
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </item>
             </layout>
            </item>
           </layout>
@@ -942,7 +901,7 @@ p, l  i { white-space: pre-wrap; }
           <item>
            <widget class="QPlainTextEdit" name="qPlainTextEdit_stdout" >
             <property name="sizePolicy" >
-             <sizepolicy vsizetype="MinimumExpanding" hsizetype="Expanding" >
+             <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -950,13 +909,13 @@ p, l  i { white-space: pre-wrap; }
             <property name="minimumSize" >
              <size>
               <width>0</width>
-              <height>70</height>
+              <height>50</height>
              </size>
             </property>
             <property name="font" >
              <font>
               <family>Monospace</family>
-              <pointsize>8</pointsize>
+              <pointsize>10</pointsize>
              </font>
             </property>
             <property name="focusPolicy" >
@@ -979,7 +938,7 @@ p, l  i { white-space: pre-wrap; }
           <item>
            <widget class="QPlainTextEdit" name="qPlainTextEdit_stderr" >
             <property name="sizePolicy" >
-             <sizepolicy vsizetype="MinimumExpanding" hsizetype="Expanding" >
+             <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -987,13 +946,13 @@ p, l  i { white-space: pre-wrap; }
             <property name="minimumSize" >
              <size>
               <width>0</width>
-              <height>70</height>
+              <height>50</height>
              </size>
             </property>
             <property name="font" >
              <font>
               <family>Monospace</family>
-              <pointsize>8</pointsize>
+              <pointsize>10</pointsize>
              </font>
             </property>
             <property name="focusPolicy" >
@@ -1026,7 +985,7 @@ p, l  i { white-space: pre-wrap; }
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>974</width>
+     <width>1109</width>
      <height>21</height>
     </rect>
    </property>
