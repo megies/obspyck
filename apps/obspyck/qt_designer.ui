@@ -81,6 +81,9 @@
                <kerning>true</kerning>
               </font>
              </property>
+             <property name="focusPolicy" >
+              <enum>Qt::NoFocus</enum>
+             </property>
              <property name="styleSheet" >
               <string notr="true" />
              </property>
@@ -105,6 +108,9 @@
                <pointsize>10</pointsize>
               </font>
              </property>
+             <property name="focusPolicy" >
+              <enum>Qt::NoFocus</enum>
+             </property>
              <property name="text" >
               <string>clear Orig&amp;&amp;Mag</string>
              </property>
@@ -122,6 +128,9 @@
               <font>
                <pointsize>10</pointsize>
               </font>
+             </property>
+             <property name="focusPolicy" >
+              <enum>Qt::NoFocus</enum>
              </property>
              <property name="text" >
               <string>clear FocMec</string>
@@ -154,6 +163,9 @@
                <pointsize>10</pointsize>
               </font>
              </property>
+             <property name="focusPolicy" >
+              <enum>Qt::NoFocus</enum>
+             </property>
              <property name="text" >
               <string>do hyp2000</string>
              </property>
@@ -171,6 +183,9 @@
               <font>
                <pointsize>10</pointsize>
               </font>
+             </property>
+             <property name="focusPolicy" >
+              <enum>Qt::NoFocus</enum>
              </property>
              <property name="text" >
               <string>do 3dloc</string>
@@ -195,6 +210,9 @@
                  <pointsize>10</pointsize>
                 </font>
                </property>
+               <property name="focusPolicy" >
+                <enum>Qt::NoFocus</enum>
+               </property>
                <property name="text" >
                 <string>do NLLoc</string>
                </property>
@@ -216,6 +234,9 @@
                  <italic>false</italic>
                  <bold>false</bold>
                 </font>
+               </property>
+               <property name="focusPolicy" >
+                <enum>Qt::NoFocus</enum>
                </property>
                <property name="styleSheet" >
                 <string notr="true" />
@@ -252,6 +273,9 @@
                <pointsize>10</pointsize>
               </font>
              </property>
+             <property name="focusPolicy" >
+              <enum>Qt::NoFocus</enum>
+             </property>
              <property name="text" >
               <string>calc Mag</string>
              </property>
@@ -269,6 +293,9 @@
               <font>
                <pointsize>10</pointsize>
               </font>
+             </property>
+             <property name="focusPolicy" >
+              <enum>Qt::NoFocus</enum>
              </property>
              <property name="text" >
               <string>do focmec</string>
@@ -301,6 +328,9 @@
                <pointsize>10</pointsize>
               </font>
              </property>
+             <property name="focusPolicy" >
+              <enum>Qt::NoFocus</enum>
+             </property>
              <property name="text" >
               <string>show Map</string>
              </property>
@@ -321,6 +351,9 @@
               <font>
                <pointsize>10</pointsize>
               </font>
+             </property>
+             <property name="focusPolicy" >
+              <enum>Qt::NoFocus</enum>
              </property>
              <property name="text" >
               <string>show FocMec</string>
@@ -343,6 +376,9 @@
                <pointsize>10</pointsize>
               </font>
              </property>
+             <property name="focusPolicy" >
+              <enum>Qt::NoFocus</enum>
+             </property>
              <property name="text" >
               <string>next FocMec</string>
              </property>
@@ -360,6 +396,9 @@
               <font>
                <pointsize>10</pointsize>
               </font>
+             </property>
+             <property name="focusPolicy" >
+              <enum>Qt::NoFocus</enum>
              </property>
              <property name="text" >
               <string>show Wadati</string>
@@ -395,6 +434,9 @@
                <pointsize>10</pointsize>
               </font>
              </property>
+             <property name="focusPolicy" >
+              <enum>Qt::NoFocus</enum>
+             </property>
              <property name="text" >
               <string>get Next Event</string>
              </property>
@@ -412,6 +454,9 @@
               <font>
                <pointsize>10</pointsize>
               </font>
+             </property>
+             <property name="focusPolicy" >
+              <enum>Qt::NoFocus</enum>
              </property>
              <property name="text" >
               <string>update Event List</string>
@@ -431,6 +476,9 @@
                <pointsize>10</pointsize>
               </font>
              </property>
+             <property name="focusPolicy" >
+              <enum>Qt::NoFocus</enum>
+             </property>
              <property name="text" >
               <string>send Event</string>
              </property>
@@ -449,6 +497,9 @@
                <pointsize>10</pointsize>
               </font>
              </property>
+             <property name="focusPolicy" >
+              <enum>Qt::NoFocus</enum>
+             </property>
              <property name="text" >
               <string>publish Event</string>
              </property>
@@ -466,6 +517,9 @@
               <font>
                <pointsize>10</pointsize>
               </font>
+             </property>
+             <property name="focusPolicy" >
+              <enum>Qt::NoFocus</enum>
              </property>
              <property name="text" >
               <string>delete Event</string>
@@ -490,6 +544,9 @@
                  <pointsize>10</pointsize>
                 </font>
                </property>
+               <property name="focusPolicy" >
+                <enum>Qt::NoFocus</enum>
+               </property>
                <property name="text" >
                 <string>sysop</string>
                </property>
@@ -507,6 +564,12 @@
                 <font>
                  <pointsize>10</pointsize>
                 </font>
+               </property>
+               <property name="focusPolicy" >
+                <enum>Qt::NoFocus</enum>
+               </property>
+               <property name="acceptDrops" >
+                <bool>false</bool>
                </property>
                <property name="echoMode" >
                 <enum>QLineEdit::Password</enum>
@@ -546,6 +609,9 @@
                  <pointsize>10</pointsize>
                 </font>
                </property>
+               <property name="focusPolicy" >
+                <enum>Qt::NoFocus</enum>
+               </property>
                <property name="text" >
                 <string>debug</string>
                </property>
@@ -583,6 +649,9 @@
                 <font>
                  <pointsize>10</pointsize>
                 </font>
+               </property>
+               <property name="focusPolicy" >
+                <enum>Qt::NoFocus</enum>
                </property>
                <property name="text" >
                 <string>&lt;</string>
@@ -643,6 +712,9 @@ p, l  i { white-space: pre-wrap; }
                    <pointsize>10</pointsize>
                   </font>
                  </property>
+                 <property name="focusPolicy" >
+                  <enum>Qt::NoFocus</enum>
+                 </property>
                  <property name="styleSheet" >
                   <string notr="true" />
                  </property>
@@ -662,6 +734,9 @@ p, l  i { white-space: pre-wrap; }
                 <font>
                  <pointsize>10</pointsize>
                 </font>
+               </property>
+               <property name="focusPolicy" >
+                <enum>Qt::NoFocus</enum>
                </property>
                <property name="text" >
                 <string>></string>
@@ -683,6 +758,9 @@ p, l  i { white-space: pre-wrap; }
                    <pointsize>10</pointsize>
                   </font>
                  </property>
+                 <property name="focusPolicy" >
+                  <enum>Qt::NoFocus</enum>
+                 </property>
                  <property name="text" >
                   <string>Overview</string>
                  </property>
@@ -698,6 +776,9 @@ p, l  i { white-space: pre-wrap; }
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
+                 </property>
+                 <property name="focusPolicy" >
+                  <enum>Qt::NoFocus</enum>
                  </property>
                 </widget>
                </item>
@@ -739,6 +820,9 @@ p, l  i { white-space: pre-wrap; }
              </item>
              <item>
               <widget class="QToolButton" name="qToolButton_filter" >
+               <property name="focusPolicy" >
+                <enum>Qt::NoFocus</enum>
+               </property>
                <property name="text" >
                 <string>Filter</string>
                </property>
@@ -749,6 +833,9 @@ p, l  i { white-space: pre-wrap; }
              </item>
              <item>
               <widget class="QComboBox" name="qComboBox_filterType" >
+               <property name="focusPolicy" >
+                <enum>Qt::NoFocus</enum>
+               </property>
                <item>
                 <property name="text" >
                  <string>Bandpass</string>
@@ -773,6 +860,9 @@ p, l  i { white-space: pre-wrap; }
              </item>
              <item>
               <widget class="QCheckBox" name="qCheckBox_zerophase" >
+               <property name="focusPolicy" >
+                <enum>Qt::NoFocus</enum>
+               </property>
                <property name="text" >
                 <string>Zero Phase</string>
                </property>
@@ -786,7 +876,11 @@ p, l  i { white-space: pre-wrap; }
               </widget>
              </item>
              <item>
-              <widget class="QDoubleSpinBox" name="qDoubleSpinBox_highpass" />
+              <widget class="QDoubleSpinBox" name="qDoubleSpinBox_highpass" >
+               <property name="focusPolicy" >
+                <enum>Qt::NoFocus</enum>
+               </property>
+              </widget>
              </item>
              <item>
               <widget class="QLabel" name="qLabel_lowpass" >
@@ -796,7 +890,11 @@ p, l  i { white-space: pre-wrap; }
               </widget>
              </item>
              <item>
-              <widget class="QDoubleSpinBox" name="qDoubleSpinBox_lowpass" />
+              <widget class="QDoubleSpinBox" name="qDoubleSpinBox_lowpass" >
+               <property name="focusPolicy" >
+                <enum>Qt::NoFocus</enum>
+               </property>
+              </widget>
              </item>
              <item>
               <spacer name="horizontalSpacer_3" >
@@ -813,6 +911,9 @@ p, l  i { white-space: pre-wrap; }
              </item>
              <item>
               <widget class="QToolButton" name="qToolButton_spectrogram" >
+               <property name="focusPolicy" >
+                <enum>Qt::NoFocus</enum>
+               </property>
                <property name="text" >
                 <string>Spectrogram</string>
                </property>
@@ -823,6 +924,9 @@ p, l  i { white-space: pre-wrap; }
              </item>
              <item>
               <widget class="QCheckBox" name="qCheckBox_spectrogramLog" >
+               <property name="focusPolicy" >
+                <enum>Qt::NoFocus</enum>
+               </property>
                <property name="text" >
                 <string>log</string>
                </property>
@@ -854,6 +958,9 @@ p, l  i { white-space: pre-wrap; }
               <family>Monospace</family>
               <pointsize>8</pointsize>
              </font>
+            </property>
+            <property name="focusPolicy" >
+             <enum>Qt::NoFocus</enum>
             </property>
             <property name="acceptDrops" >
              <bool>false</bool>
@@ -888,6 +995,9 @@ p, l  i { white-space: pre-wrap; }
               <family>Monospace</family>
               <pointsize>8</pointsize>
              </font>
+            </property>
+            <property name="focusPolicy" >
+             <enum>Qt::NoFocus</enum>
             </property>
             <property name="acceptDrops" >
              <bool>false</bool>
