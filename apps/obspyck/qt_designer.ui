@@ -5,7 +5,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1109</width>
+    <width>1149</width>
     <height>756</height>
    </rect>
   </property>
@@ -17,7 +17,9 @@
   </property>
   <property name="font" >
    <font>
+    <family>Arial</family>
     <pointsize>11</pointsize>
+    <stylestrategy>PreferAntialias</stylestrategy>
    </font>
   </property>
   <property name="windowTitle" >
@@ -985,8 +987,8 @@ p, l  i { white-space: pre-wrap; }
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1109</width>
-     <height>21</height>
+     <width>1149</width>
+     <height>28</height>
     </rect>
    </property>
   </widget>
