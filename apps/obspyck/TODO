@@ -1,4 +1,3 @@
-- try on Windows/Mac (also with compiled external programs)
 
 
 low priority:
@@ -7,7 +6,5 @@ low priority:
 - check if extending SEISMIC_PHASES works dynamically
 - replace rpy in wadati plot by scipy routines
 - remove most of the info messages?? they take lots of lines and are really not that interesting (initially partly for debugging)
-- check if starttime_global and starttime_local work correctly, not really happy with the way it is
 - check if we really ned all the axes remembering and manual deleting, somehow this was necessary at some point but I still think this could be done easier/simpler/clearer...
 - write some doc, esp. on internal structure of data (all the dicts and stuff)
-- on OSX the home button of the toolbar only works as long as the graph has been changed using the toolbar (e.g. zooming using the scroll wheel will result in a false working home button.)

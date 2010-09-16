@@ -5,7 +5,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1149</width>
+    <width>1176</width>
     <height>756</height>
    </rect>
   </property>
@@ -844,46 +844,68 @@ p, l  i { white-space: pre-wrap; }
              <item>
               <layout class="QVBoxLayout" name="verticalLayout_2" >
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_8" >
+                <layout class="QHBoxLayout" name="horizontalLayout_9" >
                  <item>
-                  <widget class="QLabel" name="qLabel_x" >
-                   <property name="text" >
-                    <string>x:</string>
-                   </property>
-                  </widget>
+                  <layout class="QHBoxLayout" name="horizontalLayout_8" >
+                   <item>
+                    <widget class="QLabel" name="qLabel_x_rel" >
+                     <property name="text" >
+                      <string>x (rel):</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="qLabel_xdata_rel" >
+                     <property name="text" >
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
                  </item>
                  <item>
-                  <widget class="QLabel" name="qLabel_xdata" >
-                   <property name="text" >
-                    <string/>
-                   </property>
-                  </widget>
+                  <layout class="QHBoxLayout" name="horizontalLayout_7" >
+                   <item>
+                    <widget class="QLabel" name="qLabel_y" >
+                     <property name="text" >
+                      <string>y:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="qLabel_ydata" >
+                     <property name="sizePolicy" >
+                      <sizepolicy vsizetype="Preferred" hsizetype="Preferred" >
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="baseSize" >
+                      <size>
+                       <width>0</width>
+                       <height>0</height>
+                      </size>
+                     </property>
+                     <property name="text" >
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
                  </item>
                 </layout>
                </item>
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_7" >
+                <layout class="QHBoxLayout" name="horizontalLayout_8b" >
                  <item>
-                  <widget class="QLabel" name="qLabel_y" >
+                  <widget class="QLabel" name="qLabel_x_abs" >
                    <property name="text" >
-                    <string>y:</string>
+                    <string>x (abs):</string>
                    </property>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QLabel" name="qLabel_ydata" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Preferred" hsizetype="Preferred" >
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="baseSize" >
-                    <size>
-                     <width>0</width>
-                     <height>0</height>
-                    </size>
-                   </property>
+                  <widget class="QLabel" name="qLabel_xdata_abs" >
                    <property name="text" >
                     <string/>
                    </property>
@@ -987,7 +1009,7 @@ p, l  i { white-space: pre-wrap; }
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1149</width>
+     <width>1176</width>
      <height>28</height>
     </rect>
    </property>
