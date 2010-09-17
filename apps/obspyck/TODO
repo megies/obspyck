@@ -1,4 +1,4 @@
-
+- need to check the hopping to sample time during picking, esp. on data from arclink with 20Hz, also with varying starttimes
 
 low priority:
 - link not clickable in textedit (using showMap with origin data present)
