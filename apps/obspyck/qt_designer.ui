@@ -481,7 +481,7 @@
                 </sizepolicy>
                </property>
                <property name="focusPolicy" >
-                <enum>Qt::NoFocus</enum>
+                <enum>Qt::ClickFocus</enum>
                </property>
                <property name="acceptDrops" >
                 <bool>false</bool>
@@ -1010,7 +1010,7 @@ p, l  i { white-space: pre-wrap; }
      <x>0</x>
      <y>0</y>
      <width>1176</width>
-     <height>28</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
