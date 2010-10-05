@@ -5,7 +5,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1176</width>
+    <width>1130</width>
     <height>756</height>
    </rect>
   </property>
@@ -529,156 +529,6 @@
              </item>
             </layout>
            </item>
-           <item>
-            <spacer name="verticalSpacer" >
-             <property name="orientation" >
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0" >
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_6" >
-             <property name="sizeConstraint" >
-              <enum>QLayout::SetMinimumSize</enum>
-             </property>
-             <item>
-              <widget class="QToolButton" name="qToolButton_previousStream" >
-               <property name="sizePolicy" >
-                <sizepolicy vsizetype="Expanding" hsizetype="Maximum" >
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="focusPolicy" >
-                <enum>Qt::NoFocus</enum>
-               </property>
-               <property name="text" >
-                <string>&lt;</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <layout class="QVBoxLayout" name="VerticalLayout" >
-               <property name="spacing" >
-                <number>6</number>
-               </property>
-               <property name="sizeConstraint" >
-                <enum>QLayout::SetDefaultConstraint</enum>
-               </property>
-               <property name="topMargin" >
-                <number>0</number>
-               </property>
-               <item>
-                <widget class="QLabel" name="qLabel_streamNumber" >
-                 <property name="sizePolicy" >
-                  <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="font" >
-                  <font>
-                   <family>Monospace</family>
-                  </font>
-                 </property>
-                 <property name="styleSheet" >
-                  <string notr="true" />
-                 </property>
-                 <property name="text" >
-                  <string>&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">
-&lt;  html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;style type="text/css">
-p, l  i { white-space: pre-wrap; }
-&lt;  /style>&lt;/head>&lt;body style=" font-family:'Monospace'; font-size:10pt; font-weight:400; font-style:normal;">
-&lt;  p align="center" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">00/00&lt;/p>&lt;/body>&lt;/html></string>
-                 </property>
-                 <property name="alignment" >
-                  <set>Qt::AlignCenter</set>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QComboBox" name="qComboBox_streamName" >
-                 <property name="sizePolicy" >
-                  <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="font" >
-                  <font>
-                   <family>Monospace</family>
-                  </font>
-                 </property>
-                 <property name="focusPolicy" >
-                  <enum>Qt::NoFocus</enum>
-                 </property>
-                 <property name="styleSheet" >
-                  <string notr="true" />
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-             <item>
-              <widget class="QToolButton" name="qToolButton_nextStream" >
-               <property name="sizePolicy" >
-                <sizepolicy vsizetype="Minimum" hsizetype="Maximum" >
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="focusPolicy" >
-                <enum>Qt::NoFocus</enum>
-               </property>
-               <property name="text" >
-                <string>></string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <layout class="QVBoxLayout" name="verticalLayout_3" >
-               <item>
-                <widget class="QToolButton" name="qToolButton_overview" >
-                 <property name="sizePolicy" >
-                  <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="focusPolicy" >
-                  <enum>Qt::NoFocus</enum>
-                 </property>
-                 <property name="text" >
-                  <string>Overview</string>
-                 </property>
-                 <property name="checkable" >
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QComboBox" name="qComboBox_phaseType" >
-                 <property name="sizePolicy" >
-                  <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="focusPolicy" >
-                  <enum>Qt::NoFocus</enum>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-            </layout>
-           </item>
           </layout>
          </widget>
          <widget class="QWidget" name="qWidget_mpl" >
@@ -694,13 +544,158 @@ p, l  i { white-space: pre-wrap; }
              <property name="cursor" >
               <cursorShape>CrossCursor</cursorShape>
              </property>
+             <property name="mouseTracking" >
+              <bool>true</bool>
+             </property>
              <property name="focusPolicy" >
               <enum>Qt::StrongFocus</enum>
              </property>
+             <zorder>verticalLayoutWidget</zorder>
             </widget>
            </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_2" >
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_6" >
+               <property name="sizeConstraint" >
+                <enum>QLayout::SetMinimumSize</enum>
+               </property>
+               <item>
+                <layout class="QVBoxLayout" name="VerticalLayout" >
+                 <property name="spacing" >
+                  <number>6</number>
+                 </property>
+                 <property name="sizeConstraint" >
+                  <enum>QLayout::SetDefaultConstraint</enum>
+                 </property>
+                 <property name="topMargin" >
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_13" >
+                   <item>
+                    <widget class="QToolButton" name="qToolButton_previousStream" >
+                     <property name="sizePolicy" >
+                      <sizepolicy vsizetype="Expanding" hsizetype="Maximum" >
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="focusPolicy" >
+                      <enum>Qt::NoFocus</enum>
+                     </property>
+                     <property name="text" >
+                      <string>&lt;</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="qLabel_streamNumber" >
+                     <property name="sizePolicy" >
+                      <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="font" >
+                      <font>
+                       <family>Monospace</family>
+                      </font>
+                     </property>
+                     <property name="styleSheet" >
+                      <string notr="true" />
+                     </property>
+                     <property name="text" >
+                      <string>&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">
+&lt;  html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;style type="text/css">
+p, l  i { white-space: pre-wrap; }
+&lt;  /style>&lt;/head>&lt;body style=" font-family:'Monospace'; font-size:10pt; font-weight:400; font-style:normal;">
+&lt;  p align="center" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">00/00&lt;/p>&lt;/body>&lt;/html></string>
+                     </property>
+                     <property name="alignment" >
+                      <set>Qt::AlignCenter</set>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QToolButton" name="qToolButton_nextStream" >
+                     <property name="sizePolicy" >
+                      <sizepolicy vsizetype="Minimum" hsizetype="Maximum" >
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="focusPolicy" >
+                      <enum>Qt::NoFocus</enum>
+                     </property>
+                     <property name="text" >
+                      <string>></string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="qComboBox_streamName" >
+                   <property name="sizePolicy" >
+                    <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="font" >
+                    <font>
+                     <family>Monospace</family>
+                    </font>
+                   </property>
+                   <property name="focusPolicy" >
+                    <enum>Qt::NoFocus</enum>
+                   </property>
+                   <property name="styleSheet" >
+                    <string notr="true" />
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QVBoxLayout" name="verticalLayout_3" >
+                 <item>
+                  <widget class="QToolButton" name="qToolButton_overview" >
+                   <property name="sizePolicy" >
+                    <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="focusPolicy" >
+                    <enum>Qt::NoFocus</enum>
+                   </property>
+                   <property name="text" >
+                    <string>Overview</string>
+                   </property>
+                   <property name="checkable" >
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="qComboBox_phaseType" >
+                   <property name="sizePolicy" >
+                    <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="focusPolicy" >
+                    <enum>Qt::NoFocus</enum>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </item>
              <item>
               <spacer name="horizontalSpacer_2" >
                <property name="orientation" >
@@ -728,69 +723,89 @@ p, l  i { white-space: pre-wrap; }
               </widget>
              </item>
              <item>
-              <widget class="QComboBox" name="qComboBox_filterType" >
-               <property name="focusPolicy" >
-                <enum>Qt::NoFocus</enum>
-               </property>
+              <layout class="QHBoxLayout" name="horizontalLayout_12" >
                <item>
-                <property name="text" >
-                 <string>Bandpass</string>
-                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_6" >
+                 <item>
+                  <widget class="QComboBox" name="qComboBox_filterType" >
+                   <property name="focusPolicy" >
+                    <enum>Qt::NoFocus</enum>
+                   </property>
+                   <item>
+                    <property name="text" >
+                     <string>Bandpass</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>Bandstop</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>Lowpass</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>Highpass</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QCheckBox" name="qCheckBox_zerophase" >
+                   <property name="focusPolicy" >
+                    <enum>Qt::NoFocus</enum>
+                   </property>
+                   <property name="text" >
+                    <string>Zero Phase</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
                </item>
                <item>
-                <property name="text" >
-                 <string>Bandstop</string>
-                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_5" >
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_11" >
+                   <item>
+                    <widget class="QLabel" name="qLabel_lowpass" >
+                     <property name="text" >
+                      <string>Lowpass</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QDoubleSpinBox" name="qDoubleSpinBox_lowpass" >
+                     <property name="focusPolicy" >
+                      <enum>Qt::NoFocus</enum>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_10" >
+                   <item>
+                    <widget class="QLabel" name="qLabel_highpass" >
+                     <property name="text" >
+                      <string>Highpass</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QDoubleSpinBox" name="qDoubleSpinBox_highpass" >
+                     <property name="focusPolicy" >
+                      <enum>Qt::NoFocus</enum>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                </layout>
                </item>
-               <item>
-                <property name="text" >
-                 <string>Lowpass</string>
-                </property>
-               </item>
-               <item>
-                <property name="text" >
-                 <string>Highpass</string>
-                </property>
-               </item>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="qCheckBox_zerophase" >
-               <property name="focusPolicy" >
-                <enum>Qt::NoFocus</enum>
-               </property>
-               <property name="text" >
-                <string>Zero Phase</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="qLabel_highpass" >
-               <property name="text" >
-                <string>Highpass</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QDoubleSpinBox" name="qDoubleSpinBox_highpass" >
-               <property name="focusPolicy" >
-                <enum>Qt::NoFocus</enum>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="qLabel_lowpass" >
-               <property name="text" >
-                <string>Lowpass</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QDoubleSpinBox" name="qDoubleSpinBox_lowpass" >
-               <property name="focusPolicy" >
-                <enum>Qt::NoFocus</enum>
-               </property>
-              </widget>
+              </layout>
              </item>
              <item>
               <spacer name="horizontalSpacer_3" >
@@ -806,27 +821,31 @@ p, l  i { white-space: pre-wrap; }
               </spacer>
              </item>
              <item>
-              <widget class="QToolButton" name="qToolButton_spectrogram" >
-               <property name="focusPolicy" >
-                <enum>Qt::NoFocus</enum>
-               </property>
-               <property name="text" >
-                <string>Spectrogram</string>
-               </property>
-               <property name="checkable" >
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="qCheckBox_spectrogramLog" >
-               <property name="focusPolicy" >
-                <enum>Qt::NoFocus</enum>
-               </property>
-               <property name="text" >
-                <string>log</string>
-               </property>
-              </widget>
+              <layout class="QVBoxLayout" name="verticalLayout_7" >
+               <item>
+                <widget class="QToolButton" name="qToolButton_spectrogram" >
+                 <property name="focusPolicy" >
+                  <enum>Qt::NoFocus</enum>
+                 </property>
+                 <property name="text" >
+                  <string>Spectrogram</string>
+                 </property>
+                 <property name="checkable" >
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="qCheckBox_spectrogramLog" >
+                 <property name="focusPolicy" >
+                  <enum>Qt::NoFocus</enum>
+                 </property>
+                 <property name="text" >
+                  <string>log</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </item>
              <item>
               <spacer name="horizontalSpacer" >
@@ -903,7 +922,7 @@ p, l  i { white-space: pre-wrap; }
                  <item>
                   <widget class="QLabel" name="qLabel_x_abs" >
                    <property name="text" >
-                    <string>x (abs):</string>
+                    <string>x:</string>
                    </property>
                   </widget>
                  </item>
@@ -1012,8 +1031,8 @@ p, l  i { white-space: pre-wrap; }
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1176</width>
-     <height>21</height>
+     <width>1130</width>
+     <height>28</height>
     </rect>
    </property>
   </widget>
