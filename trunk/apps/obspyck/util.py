@@ -591,6 +591,9 @@ def setup_external_programs(options):
     :type options: options as returned by :meth:`optparse.OptionParser.parse_args`
     :returns: String representation of temporary directory with program files.
     """
+    if not os.path.isdir(options.pluginpath):
+        msg = "No such directory: '%s'" % options.pluginpath
+        raise IOError(msg)
     tmp_dir = tempfile.mkdtemp()
     # set binary names to use depending on architecture and platform...
     env = os.environ

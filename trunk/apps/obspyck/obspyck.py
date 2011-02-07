@@ -139,7 +139,7 @@ class ObsPyck(QtGui.QMainWindow):
         check_keybinding_conflicts(KEYS)
         try:
             self.tmp_dir = setup_external_programs(options)
-        except OSError:
+        except IOError:
             msg = "Cannot find external programs dir, localization " + \
                   "methods/functions are deactivated"
             warnings.warn(msg)
