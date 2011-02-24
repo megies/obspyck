@@ -3653,7 +3653,7 @@ def main():
         return
     # check for necessary options
     if not any([getattr(parser.values, parser.get_option(opt).dest) \
-                for opt in ("--seishub-ids", "--arclink-ids", "--fissures-ids")]) \
+                for opt in ("--seishub-ids", "--arclink-ids", "--fissures-ids", "-f")]) \
        or not all([getattr(parser.values, parser.get_option(opt).dest) \
                    for opt in ('-d', '-t')]):
         parser.print_usage()
