@@ -35,10 +35,11 @@ except ImportError:
 
 #sys.path.append('/baysoft/obspy/misc/symlink')
 #os.chdir("/baysoft/obspyck/")
-from obspy.core import UTCDateTime
+from obspy.core import UTCDateTime, Stream
 try:
     from obspy.signal.util import utlLonLat, utlGeoKm
     from obspy.signal.invsim import estimateMagnitude
+    from obspy.signal import rotate_ZNE_LQT
 except ImportError:
     msg = "Unable to import obspy.signal. Locating and estimating " + \
           "magnitudes will not work."
@@ -209,10 +210,12 @@ class ObsPyck(QtGui.QMainWindow):
                   for st in self.streams]
         self.widgets.qComboBox_streamName.addItems(labels)
 
-        # set the filter default values according to command line options
-        # or optionparser default values
+        # set the filter/trigger default values according to command line
+        # options or optionparser default values
         self.widgets.qDoubleSpinBox_highpass.setValue(self.options.highpass)
         self.widgets.qDoubleSpinBox_lowpass.setValue(self.options.lowpass)
+        self.widgets.qDoubleSpinBox_sta.setValue(self.options.sta)
+        self.widgets.qDoubleSpinBox_lta.setValue(self.options.lta)
         self.updateStreamLabels()
 
         print >> sys.stderr, warn_msg
@@ -627,6 +630,20 @@ class ObsPyck(QtGui.QMainWindow):
     def on_qToolButton_filter_toggled(self):
         self.updatePlot()
 
+    def on_qToolButton_rotate_toggled(self):
+        self.updatePlot()
+
+    def on_qToolButton_trigger_toggled(self):
+        self.updatePlot()
+        ymax = max([max(abs(p.get_ydata())) for p in self.plts])
+        if self.widgets.qToolButton_trigger.isChecked():
+            ymin = 0
+        else:
+            ymin = -ymax
+        for ax in self.axs:
+            ax.set_ybound(upper=ymax, lower=ymin)
+        self.redraw()
+
     def on_qComboBox_filterType_currentIndexChanged(self, newvalue):
         if self.widgets.qToolButton_filter.isChecked():
             self.updatePlot()
@@ -681,12 +698,33 @@ class ObsPyck(QtGui.QMainWindow):
         # reset focus to matplotlib figure
         self.canv.setFocus() # XXX needed??
 
+    def on_qDoubleSpinBox_sta_valueChanged(self, newvalue):
+        widgets = self.widgets
+        # if the trigger flag is not set, we don't have to update the plot
+        if not widgets.qToolButton_trigger.isChecked():
+            self.canv.setFocus() # XXX needed??
+            return
+        self.updatePlot()
+        # reset focus to matplotlib figure
+        self.canv.setFocus() # XXX needed?? # XXX do we still need this focus grabbing with QT??? XXX XXX XXX XXX
+
+    def on_qDoubleSpinBox_lta_valueChanged(self, newvalue):
+        widgets = self.widgets
+        # if the trigger flag is not set, we don't have to update the plot
+        if not widgets.qToolButton_trigger.isChecked():
+            self.canv.setFocus() # XXX needed??
+            return
+        self.updatePlot()
+        # reset focus to matplotlib figure
+        self.canv.setFocus() # XXX needed?? # XXX do we still need this focus grabbing with QT??? XXX XXX XXX XXX
+
     def on_qToolButton_spectrogram_toggled(self):
         state = self.widgets.qToolButton_spectrogram.isChecked()
         widgets_deactivate = ("qToolButton_filter", "qToolButton_overview",
                 "qComboBox_filterType", "qCheckBox_zerophase",
                 "qLabel_highpass", "qLabel_lowpass", "qDoubleSpinBox_highpass",
-                "qDoubleSpinBox_lowpass")
+                "qDoubleSpinBox_lowpass", "qToolButton_rotate",
+                "qToolButton_trigger")
         for name in widgets_deactivate:
             widget = getattr(self.widgets, name)
             widget.setEnabled(not state)
@@ -743,6 +781,32 @@ class ObsPyck(QtGui.QMainWindow):
         except:
             err = "Error during filtering. Showing unfiltered data."
             print >> sys.stderr, err
+
+    def _rotate(self, stream, inci, azim):
+        """
+        Rotates stream to LQT with respect to origin and ray information.
+        Exception handling should be done outside this function.
+        Also displays a message.
+        """
+        z = stream.select(component="Z")[0].data
+        n = stream.select(component="N")[0].data
+        e = stream.select(component="E")[0].data
+        l, q, t = rotate_ZNE_LQT(z, n, e, inci, azim)
+        stream.select(component="Z")[0].data = l
+        stream.select(component="N")[0].data = q
+        stream.select(component="E")[0].data = t
+        print "Showing traces rotated to LQT."
+
+    def _trigger(self, stream):
+        """
+        Run recSTALTA trigger on stream/trace.
+        Exception handling should be done outside this function.
+        Also displays a message.
+        """
+        sta = self.widgets.qDoubleSpinBox_sta.value()
+        lta = self.widgets.qDoubleSpinBox_lta.value()
+        stream.trigger("recstalta", sta=sta, lta=lta)
+        print "Showing recSTALTA triggered traces."
 
     def debug(self):
         sys.stdout = self.stdout_backup
@@ -878,6 +942,48 @@ class ObsPyck(QtGui.QMainWindow):
         self.delLabel(key)
         self.drawLabel(key)
 
+    def drawIds(self):
+        """
+        draws the trace ids plotted as text into each axes.
+        """
+        # make a Stream with the traces that are plotted
+        if self.widgets.qToolButton_overview.isChecked():
+            tmp_stream = Stream([st.select(component="Z")[0] for st in self.streams])
+        else:
+            tmp_stream = self.streams[self.stPt]
+        for ax, tr in zip(self.axs, tmp_stream):
+            ax.text(0.01, 0.95, tr.id, va="top", ha="left", fontsize=18,
+                    family='monospace', color="blue", zorder=10000,
+                    transform=ax.transAxes)
+
+    def updateIds(self, textcolor):
+        """
+        updates the trace ids plotted as text into each axes.
+        if "rotate" button is on map the component key to LQT.
+        """
+        # make a Stream with the traces that are plotted
+        # if in overview mode this is not one of the original streams but a
+        # stream with all the Z traces of all streams
+        if self.widgets.qToolButton_overview.isChecked():
+            tmp_stream = Stream([st.select(component="Z")[0] for st in self.streams])
+        else:
+            tmp_stream = self.streams[self.stPt]
+        for ax, tr in zip(self.axs, tmp_stream):
+            tr_id = tr.id
+            # if rotate button is on: change trace id's component character
+            if self.widgets.qToolButton_rotate.isChecked():
+                if tr_id[-1].isalpha():
+                    tr_id = tr_id[:-1] + ROTATE_COMP_MAP[tr_id[-1]]
+                else:
+                    tr_id += ROTATE_COMP_MAP[tr_id[-1]]
+            # if trigger button is on: add to trace ids
+            if self.widgets.qToolButton_trigger.isChecked():
+                tr_id += " (recSTALTA)"
+            # trace ids are first text-plot so its at position 0
+            t = ax.texts[0]
+            t.set_text(tr_id)
+            t.set_color(textcolor)
+
     def drawMagMarker(self, key):
         """
         Draw a magnitude marker for pick of given key in the current stream.
@@ -975,10 +1081,7 @@ class ObsPyck(QtGui.QMainWindow):
                 else:
                     plts.append(ax.plot(sampletimes, tr.data, color='k', zorder=1000)[0])
                 textcolor = "blue"
-            tr_id = "%s.%s.%s.%s" % (tr.stats.network, tr.stats.station, tr.stats.location, tr.stats.channel)
-            ax.text(0.01, 0.95, tr_id, va="top", ha="left", fontsize=18,
-                    family='monospace', color=textcolor, zorder=10000,
-                    transform=ax.transAxes)
+        self.drawIds()
         axs[-1].xaxis.set_ticks_position("both")
         label = self.T0.isoformat().replace("T", "  ")
         self.supTit = fig.suptitle(label, ha="left", va="bottom",
@@ -1003,16 +1106,38 @@ class ObsPyck(QtGui.QMainWindow):
     def updatePlot(self):
         """
         Update plot either with raw data or filter data and use filtered data.
-        Depending on status of "Filter" Button.
+        Depending on status of "Filter" Button. Also check "Rotate" button if
+        data should be rotated to LQT coordinates.
         """
-        st = self.streams[self.stPt]
+        # XXX copying is only necessary if "Filter" or "Rotate" is selected
+        # XXX it is simpler for teh code to just copy in any case..
+        st = self.streams[self.stPt].copy()
         # To display filtered data we overwrite our alias to current stream
         # and replace it with the filtered data.
         if self.widgets.qToolButton_filter.isChecked():
-            st = st.copy()
             self._filter(st)
         else:
             print "Unfiltered Traces."
+        if self.widgets.qToolButton_rotate.isChecked():
+            d = self.dicts[self.stPt]
+            try:
+                self._rotate(st, d['PInci'], d['PAzim'])
+            except:
+                self.widgets.qToolButton_rotate.setChecked(False)
+                err = "Error during rotating to LQT. Showing unrotated data."
+                print >> sys.stderr, err
+        if self.widgets.qToolButton_trigger.isChecked():
+            d = self.dicts[self.stPt]
+            try:
+                self._trigger(st)
+            except:
+                self.widgets.qToolButton_trigger.setChecked(False)
+                err = "Error during triggering. Showing waveform data."
+                print >> sys.stderr, err
+                
+        self.updateIds("blue")
+        self.redraw()
+            
         # Update all plots' y data
         for tr, plot in zip(st, self.plts):
             plot.set_ydata(tr.data)
@@ -2410,9 +2535,19 @@ class ObsPyck(QtGui.QMainWindow):
             axs.append(ax)
             trans.append(matplotlib.transforms.blended_transform_factory(ax.transData, ax.transAxes))
             ax.xaxis.set_major_formatter(FuncFormatter(formatXTicklabels))
-            if self.widgets.qToolButton_filter.isChecked():
+            # we have to rotate first, because we have to copy the whole stream..
+            if self.widgets.qToolButton_rotate.isChecked():
+                d = self.dicts[i]
+                tmp_st = self.streams[i].copy()
+                self._rotate(tmp_st, d['PInci'], d['PAzim'])
+                tr = tmp_st.select(component="Z")[0]
+            else:
                 tr = tr.copy()
+            # rotation needs to be done first!
+            if self.widgets.qToolButton_filter.isChecked():
                 self._filter(tr)
+            if self.widgets.qToolButton_trigger.isChecked():
+                self._trigger(tr)
             # normalize with overall sensitivity and convert to nm/s
             # if not explicitly deactivated on command line
             if not self.options.nonormalization:
@@ -2423,10 +2558,7 @@ class ObsPyck(QtGui.QMainWindow):
                 plts.append(ax.plot(sampletimes, tr.data * 1e9 / tr.stats.paz.sensitivity / calib, color='k', zorder=1000)[0])
             else:
                 plts.append(ax.plot(sampletimes, tr.data, color='k', zorder=1000)[0])
-            tr_id = "%s.%s.%s.%s" % (tr.stats.network, tr.stats.station, tr.stats.location, tr.stats.channel)
-            ax.text(0.01, 0.95, tr_id, va="top", ha="left", fontsize=18,
-                    family='monospace', color="b", zorder=10000,
-                    transform=ax.transAxes)
+        self.drawIds()
         axs[-1].xaxis.set_ticks_position("both")
         label = self.T0.isoformat().replace("T", "  ")
         self.supTit = fig.suptitle(label, ha="left", va="bottom",

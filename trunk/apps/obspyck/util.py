@@ -73,6 +73,10 @@ COMMANDLINE_OPTIONS = (
                 'help': "Frequency for Lowpass-Slider"}),
         (("--highpass",), {'type': "float", 'dest': "highpass", 'default': 1.0,
                 'help': "Frequency for Highpass-Slider"}),
+        (("--sta",), {'type': "float", 'dest': "sta", 'default': 0.5,
+                'help': "Window length for STA-Slider"}),
+        (("--lta",), {'type': "float", 'dest': "lta", 'default': 10.0,
+                'help': "Window length for LTA-Slider"}),
         (("--nozeromean",), {'action': "store_true", 'dest': "nozeromean",
                 'default': False,
                 'help': "Deactivate offset removal of traces"}),
@@ -168,14 +172,18 @@ WIDGET_NAMES = ("qToolButton_clearAll", "qToolButton_clearOrigMag", "qToolButton
         "qComboBox_nllocModel", "qToolButton_calcMag", "qToolButton_doFocMec",
         "qToolButton_showMap", "qToolButton_showFocMec", "qToolButton_nextFocMec",
         "qToolButton_showWadati", "qToolButton_getNextEvent",
-        "qToolButton_updateEventList", "qToolButton_sendEvent", "qCheckBox_publishEvent",
-        "qToolButton_deleteEvent", "qCheckBox_sysop", "qLineEdit_sysopPassword",
-        "qToolButton_previousStream", "qLabel_streamNumber", "qComboBox_streamName",
+        "qToolButton_updateEventList", "qToolButton_sendEvent",
+        "qCheckBox_publishEvent", "qToolButton_deleteEvent", "qCheckBox_sysop",
+        "qLineEdit_sysopPassword", "qToolButton_previousStream",
+        "qLabel_streamNumber", "qComboBox_streamName",
         "qToolButton_nextStream", "qToolButton_overview",
-        "qComboBox_phaseType", "qToolButton_filter", "qComboBox_filterType",
-        "qCheckBox_zerophase", "qLabel_highpass", "qDoubleSpinBox_highpass",
-        "qLabel_lowpass", "qDoubleSpinBox_lowpass", "qToolButton_spectrogram",
-        "qCheckBox_spectrogramLog", "qPlainTextEdit_stdout", "qPlainTextEdit_stderr")
+        "qComboBox_phaseType", "qToolButton_rotate", "qToolButton_filter",
+        "qToolButton_trigger", "qComboBox_filterType", "qCheckBox_zerophase",
+        "qLabel_highpass", "qDoubleSpinBox_highpass", "qLabel_lowpass",
+        "qDoubleSpinBox_lowpass", "qLabel_sta", "qDoubleSpinBox_sta",
+        "qLabel_lta", "qDoubleSpinBox_lta", "qToolButton_spectrogram",
+        "qCheckBox_spectrogramLog", "qPlainTextEdit_stdout",
+        "qPlainTextEdit_stderr")
 #Estimating the maximum/minimum in a sample-window around click
 MAG_PICKWINDOW = 10
 MAG_MARKER = {'marker': "x", 'edgewidth': 1.8, 'size': 20}
@@ -201,6 +209,7 @@ POLARITY_CHARS = {'up': "U", 'down': "D", 'poorup': "+", 'poordown': "-"}
 ONSET_CHARS = {'impulsive': "I", 'emergent': "E",
                'implusive': "I"} # XXX some old events have a typo there... =)
 
+ROTATE_COMP_MAP = {"Z": "L", "N": "Q", "E": "T"}
 
 class QMplCanvas(QFigureCanvas):
     """
@@ -414,6 +423,8 @@ def merge_check_and_cleanup_streams(streams, options):
     :returns: (warn_msg, merge_msg, list(:class:`obspy.core.stream.Stream`s))
     """
     # Merge on every stream if this option is passed on command line:
+    for st in streams:
+        st.merge(method=-1)
     if options.merge:
         if options.merge.lower() == "safe":
             for st in streams:

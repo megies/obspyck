@@ -550,7 +550,6 @@
              <property name="focusPolicy" >
               <enum>Qt::StrongFocus</enum>
              </property>
-             <zorder>verticalLayoutWidget</zorder>
             </widget>
            </item>
            <item>
@@ -710,20 +709,71 @@ p, l  i { white-space: pre-wrap; }
               </spacer>
              </item>
              <item>
-              <widget class="QToolButton" name="qToolButton_filter" >
-               <property name="focusPolicy" >
-                <enum>Qt::NoFocus</enum>
-               </property>
-               <property name="text" >
-                <string>Filter</string>
-               </property>
-               <property name="checkable" >
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
               <layout class="QHBoxLayout" name="horizontalLayout_12" >
+               <item>
+                <layout class="QVBoxLayout" name="verticalLayout_8" >
+                 <property name="spacing" >
+                  <number>3</number>
+                 </property>
+                 <item>
+                  <widget class="QToolButton" name="qToolButton_filter" >
+                   <property name="sizePolicy" >
+                    <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="focusPolicy" >
+                    <enum>Qt::NoFocus</enum>
+                   </property>
+                   <property name="text" >
+                    <string>Filter</string>
+                   </property>
+                   <property name="checkable" >
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QToolButton" name="qToolButton_rotate" >
+                   <property name="sizePolicy" >
+                    <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="focusPolicy" >
+                    <enum>Qt::NoFocus</enum>
+                   </property>
+                   <property name="text" >
+                    <string>LQT</string>
+                   </property>
+                   <property name="checkable" >
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QToolButton" name="qToolButton_trigger" >
+                   <property name="sizePolicy" >
+                    <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="focusPolicy" >
+                    <enum>Qt::NoFocus</enum>
+                   </property>
+                   <property name="text" >
+                    <string>recSTALTA</string>
+                   </property>
+                   <property name="checkable" >
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
                <item>
                 <layout class="QVBoxLayout" name="verticalLayout_6" >
                  <item>
@@ -796,6 +846,49 @@ p, l  i { white-space: pre-wrap; }
                    </item>
                    <item>
                     <widget class="QDoubleSpinBox" name="qDoubleSpinBox_highpass" >
+                     <property name="focusPolicy" >
+                      <enum>Qt::NoFocus</enum>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QVBoxLayout" name="verticalLayout_9" >
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_16" >
+                   <item>
+                    <widget class="QLabel" name="qLabel_sta" >
+                     <property name="text" >
+                      <string>STA</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QDoubleSpinBox" name="qDoubleSpinBox_sta" >
+                     <property name="focusPolicy" >
+                      <enum>Qt::NoFocus</enum>
+                     </property>
+                     <property name="singleStep" >
+                      <double>0.100000000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_14" >
+                   <item>
+                    <widget class="QLabel" name="qLabel_lta" >
+                     <property name="text" >
+                      <string>LTA</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QDoubleSpinBox" name="qDoubleSpinBox_lta" >
                      <property name="focusPolicy" >
                       <enum>Qt::NoFocus</enum>
                      </property>
@@ -1032,7 +1125,7 @@ p, l  i { white-space: pre-wrap; }
      <x>0</x>
      <y>0</y>
      <width>1130</width>
-     <height>28</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
