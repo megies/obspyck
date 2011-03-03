@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'qt_designer.ui'
 #
-# Created: Thu Mar  3 14:21:04 2011
+# Created: Thu Mar  3 15:30:11 2011
 #      by: PyQt4 UI code generator 4.4.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,7 +12,7 @@ from PyQt4 import QtCore, QtGui
 class Ui_qMainWindow_obsPyck(object):
     def setupUi(self, qMainWindow_obsPyck):
         qMainWindow_obsPyck.setObjectName("qMainWindow_obsPyck")
-        qMainWindow_obsPyck.resize(1130,756)
+        qMainWindow_obsPyck.resize(1185,756)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum,QtGui.QSizePolicy.Maximum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -311,6 +311,7 @@ class Ui_qMainWindow_obsPyck(object):
         sizePolicy.setHeightForWidth(self.qToolButton_previousStream.sizePolicy().hasHeightForWidth())
         self.qToolButton_previousStream.setSizePolicy(sizePolicy)
         self.qToolButton_previousStream.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.qToolButton_previousStream.setArrowType(QtCore.Qt.LeftArrow)
         self.qToolButton_previousStream.setObjectName("qToolButton_previousStream")
         self.horizontalLayout_13.addWidget(self.qToolButton_previousStream)
         self.qLabel_streamNumber = QtGui.QLabel(self.qWidget_mpl)
@@ -332,6 +333,7 @@ class Ui_qMainWindow_obsPyck(object):
         sizePolicy.setHeightForWidth(self.qToolButton_nextStream.sizePolicy().hasHeightForWidth())
         self.qToolButton_nextStream.setSizePolicy(sizePolicy)
         self.qToolButton_nextStream.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.qToolButton_nextStream.setArrowType(QtCore.Qt.RightArrow)
         self.qToolButton_nextStream.setObjectName("qToolButton_nextStream")
         self.horizontalLayout_13.addWidget(self.qToolButton_nextStream)
         self.VerticalLayout.addLayout(self.horizontalLayout_13)
@@ -378,6 +380,8 @@ class Ui_qMainWindow_obsPyck(object):
         self.verticalLayout_8 = QtGui.QVBoxLayout()
         self.verticalLayout_8.setSpacing(3)
         self.verticalLayout_8.setObjectName("verticalLayout_8")
+        self.horizontalLayout_17 = QtGui.QHBoxLayout()
+        self.horizontalLayout_17.setObjectName("horizontalLayout_17")
         self.qToolButton_filter = QtGui.QToolButton(self.qWidget_mpl)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum,QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -387,7 +391,7 @@ class Ui_qMainWindow_obsPyck(object):
         self.qToolButton_filter.setFocusPolicy(QtCore.Qt.NoFocus)
         self.qToolButton_filter.setCheckable(True)
         self.qToolButton_filter.setObjectName("qToolButton_filter")
-        self.verticalLayout_8.addWidget(self.qToolButton_filter)
+        self.horizontalLayout_17.addWidget(self.qToolButton_filter)
         self.qToolButton_rotate = QtGui.QToolButton(self.qWidget_mpl)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum,QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -397,7 +401,10 @@ class Ui_qMainWindow_obsPyck(object):
         self.qToolButton_rotate.setFocusPolicy(QtCore.Qt.NoFocus)
         self.qToolButton_rotate.setCheckable(True)
         self.qToolButton_rotate.setObjectName("qToolButton_rotate")
-        self.verticalLayout_8.addWidget(self.qToolButton_rotate)
+        self.horizontalLayout_17.addWidget(self.qToolButton_rotate)
+        self.verticalLayout_8.addLayout(self.horizontalLayout_17)
+        self.horizontalLayout_15 = QtGui.QHBoxLayout()
+        self.horizontalLayout_15.setObjectName("horizontalLayout_15")
         self.qToolButton_trigger = QtGui.QToolButton(self.qWidget_mpl)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum,QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -407,7 +414,18 @@ class Ui_qMainWindow_obsPyck(object):
         self.qToolButton_trigger.setFocusPolicy(QtCore.Qt.NoFocus)
         self.qToolButton_trigger.setCheckable(True)
         self.qToolButton_trigger.setObjectName("qToolButton_trigger")
-        self.verticalLayout_8.addWidget(self.qToolButton_trigger)
+        self.horizontalLayout_15.addWidget(self.qToolButton_trigger)
+        self.qToolButton_arpicker = QtGui.QToolButton(self.qWidget_mpl)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum,QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.qToolButton_arpicker.sizePolicy().hasHeightForWidth())
+        self.qToolButton_arpicker.setSizePolicy(sizePolicy)
+        self.qToolButton_arpicker.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.qToolButton_arpicker.setArrowType(QtCore.Qt.NoArrow)
+        self.qToolButton_arpicker.setObjectName("qToolButton_arpicker")
+        self.horizontalLayout_15.addWidget(self.qToolButton_arpicker)
+        self.verticalLayout_8.addLayout(self.horizontalLayout_15)
         self.horizontalLayout_12.addLayout(self.verticalLayout_8)
         self.verticalLayout_6 = QtGui.QVBoxLayout()
         self.verticalLayout_6.setObjectName("verticalLayout_6")
@@ -569,7 +587,7 @@ class Ui_qMainWindow_obsPyck(object):
         self.verticalLayout_4.addLayout(self.verticalLayout)
         qMainWindow_obsPyck.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(qMainWindow_obsPyck)
-        self.menubar.setGeometry(QtCore.QRect(0,0,1130,21))
+        self.menubar.setGeometry(QtCore.QRect(0,0,1185,21))
         self.menubar.setObjectName("menubar")
         qMainWindow_obsPyck.setMenuBar(self.menubar)
         self.statusbar = QtGui.QStatusBar(qMainWindow_obsPyck)
@@ -620,6 +638,7 @@ class Ui_qMainWindow_obsPyck(object):
         self.qToolButton_filter.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "Filter", None, QtGui.QApplication.UnicodeUTF8))
         self.qToolButton_rotate.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "LQT", None, QtGui.QApplication.UnicodeUTF8))
         self.qToolButton_trigger.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "recSTALTA", None, QtGui.QApplication.UnicodeUTF8))
+        self.qToolButton_arpicker.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "arPicker", None, QtGui.QApplication.UnicodeUTF8))
         self.qComboBox_filterType.addItem(QtGui.QApplication.translate("qMainWindow_obsPyck", "Bandpass", None, QtGui.QApplication.UnicodeUTF8))
         self.qComboBox_filterType.addItem(QtGui.QApplication.translate("qMainWindow_obsPyck", "Bandstop", None, QtGui.QApplication.UnicodeUTF8))
         self.qComboBox_filterType.addItem(QtGui.QApplication.translate("qMainWindow_obsPyck", "Lowpass", None, QtGui.QApplication.UnicodeUTF8))

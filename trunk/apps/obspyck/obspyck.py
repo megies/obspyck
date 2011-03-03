@@ -40,6 +40,7 @@ try:
     from obspy.signal.util import utlLonLat, utlGeoKm
     from obspy.signal.invsim import estimateMagnitude
     from obspy.signal import rotate_ZNE_LQT
+    from obspy.signal import arPick
 except ImportError:
     msg = "Unable to import obspy.signal. Locating and estimating " + \
           "magnitudes will not work."
@@ -644,6 +645,18 @@ class ObsPyck(QtGui.QMainWindow):
             ax.set_ybound(upper=ymax, lower=ymin)
         self.redraw()
 
+    def on_qToolButton_arpicker_clicked(self, *args):
+        """
+        Set automatic P/S picks using the AR picker.
+        """
+        if args:
+            return
+        self.clearDictionaries()
+        self.updateAllItems()
+        self._arpicker()
+        self.updateAllItems()
+        self.redraw()
+        
     def on_qComboBox_filterType_currentIndexChanged(self, newvalue):
         if self.widgets.qToolButton_filter.isChecked():
             self.updatePlot()
@@ -807,6 +820,41 @@ class ObsPyck(QtGui.QMainWindow):
         lta = self.widgets.qDoubleSpinBox_lta.value()
         stream.trigger("recstalta", sta=sta, lta=lta)
         print "Showing recSTALTA triggered traces."
+
+    def _arpicker(self):
+        """
+        Run AR picker on all streams and set P/S picks accordingly.
+        Also displays a message.
+        """
+        f1 = self.options.ar_f1
+        f2 = self.options.ar_f2
+        sta_p = self.options.ar_sta_p
+        lta_p = self.options.ar_lta_p
+        sta_s = self.options.ar_sta_s
+        lta_s = self.options.ar_lta_s
+        m_p = self.options.ar_m_p
+        m_s = self.options.ar_m_s
+        l_p = self.options.ar_l_p
+        l_s = self.options.ar_l_s
+        print "Setting automatic picks using AR picker:"
+        for i, st in enumerate(self.streams):
+            z = st.select(component="Z")[0].data
+            n = st.select(component="N")[0].data
+            e = st.select(component="E")[0].data
+            spr = st[0].stats.sampling_rate
+            p, s = arPick(z, n, e, spr, f1, f2, lta_p, sta_p, lta_s, sta_s,
+                          m_p, m_s, l_p, l_s)
+            net = st[0].stats.network
+            sta = st[0].stats.station
+            print "%s.%s: P set at %.3f (%s)" % (net, sta, p, self.time_rel2abs(p))
+            print "%s.%s: S set at %.3f (%s)" % (net, sta, s, self.time_rel2abs(s))
+            d = self.dicts[i]
+            d['P'] = p
+            d['S'] = s
+            for key in ['P', 'S']:
+                self.updateLine(key)
+                self.updateLabel(key)
+        return            
 
     def debug(self):
         sys.stdout = self.stdout_backup
@@ -1169,12 +1217,15 @@ class ObsPyck(QtGui.QMainWindow):
             # the time value of the nearest sample:
             samp_rate = st[0].stats.sampling_rate
             pickSample = (ev.xdata - t[0]) * samp_rate
+            print pickSample
             pickSample = round(pickSample)
+            print pickSample
             # we need the position of the cursor location
             # in the seismogram array:
             xpos = pickSample
             # Determine the time of the nearest sample
             pickSample = t[pickSample]
+            print pickSample
 
         if ev.key == keys['setPick']:
             # some keyPress events only make sense inside our matplotlib axes

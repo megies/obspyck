@@ -5,7 +5,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1130</width>
+    <width>1185</width>
     <height>756</height>
    </rect>
   </property>
@@ -586,6 +586,9 @@
                      <property name="text" >
                       <string>&lt;</string>
                      </property>
+                     <property name="arrowType" >
+                      <enum>Qt::LeftArrow</enum>
+                     </property>
                     </widget>
                    </item>
                    <item>
@@ -629,6 +632,9 @@ p, l  i { white-space: pre-wrap; }
                      </property>
                      <property name="text" >
                       <string>></string>
+                     </property>
+                     <property name="arrowType" >
+                      <enum>Qt::RightArrow</enum>
                      </property>
                     </widget>
                    </item>
@@ -716,61 +722,88 @@ p, l  i { white-space: pre-wrap; }
                   <number>3</number>
                  </property>
                  <item>
-                  <widget class="QToolButton" name="qToolButton_filter" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="focusPolicy" >
-                    <enum>Qt::NoFocus</enum>
-                   </property>
-                   <property name="text" >
-                    <string>Filter</string>
-                   </property>
-                   <property name="checkable" >
-                    <bool>true</bool>
-                   </property>
-                  </widget>
+                  <layout class="QHBoxLayout" name="horizontalLayout_17" >
+                   <item>
+                    <widget class="QToolButton" name="qToolButton_filter" >
+                     <property name="sizePolicy" >
+                      <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="focusPolicy" >
+                      <enum>Qt::NoFocus</enum>
+                     </property>
+                     <property name="text" >
+                      <string>Filter</string>
+                     </property>
+                     <property name="checkable" >
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QToolButton" name="qToolButton_rotate" >
+                     <property name="sizePolicy" >
+                      <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="focusPolicy" >
+                      <enum>Qt::NoFocus</enum>
+                     </property>
+                     <property name="text" >
+                      <string>LQT</string>
+                     </property>
+                     <property name="checkable" >
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
                  </item>
                  <item>
-                  <widget class="QToolButton" name="qToolButton_rotate" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="focusPolicy" >
-                    <enum>Qt::NoFocus</enum>
-                   </property>
-                   <property name="text" >
-                    <string>LQT</string>
-                   </property>
-                   <property name="checkable" >
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QToolButton" name="qToolButton_trigger" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="focusPolicy" >
-                    <enum>Qt::NoFocus</enum>
-                   </property>
-                   <property name="text" >
-                    <string>recSTALTA</string>
-                   </property>
-                   <property name="checkable" >
-                    <bool>true</bool>
-                   </property>
-                  </widget>
+                  <layout class="QHBoxLayout" name="horizontalLayout_15" >
+                   <item>
+                    <widget class="QToolButton" name="qToolButton_trigger" >
+                     <property name="sizePolicy" >
+                      <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="focusPolicy" >
+                      <enum>Qt::NoFocus</enum>
+                     </property>
+                     <property name="text" >
+                      <string>recSTALTA</string>
+                     </property>
+                     <property name="checkable" >
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QToolButton" name="qToolButton_arpicker" >
+                     <property name="sizePolicy" >
+                      <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="focusPolicy" >
+                      <enum>Qt::NoFocus</enum>
+                     </property>
+                     <property name="text" >
+                      <string>arPicker</string>
+                     </property>
+                     <property name="arrowType" >
+                      <enum>Qt::NoArrow</enum>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
                  </item>
                 </layout>
                </item>
@@ -1124,7 +1157,7 @@ p, l  i { white-space: pre-wrap; }
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1130</width>
+     <width>1185</width>
      <height>21</height>
     </rect>
    </property>
