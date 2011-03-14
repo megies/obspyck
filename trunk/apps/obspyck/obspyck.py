@@ -41,6 +41,7 @@ try:
     from obspy.signal.invsim import estimateMagnitude
     from obspy.signal import rotate_ZNE_LQT
     from obspy.signal import arPick
+    from obspy.signal.util import az2baz2az
 except ImportError:
     msg = "Unable to import obspy.signal. Locating and estimating " + \
           "magnitudes will not work."
@@ -795,16 +796,18 @@ class ObsPyck(QtGui.QMainWindow):
             err = "Error during filtering. Showing unfiltered data."
             print >> sys.stderr, err
 
-    def _rotate(self, stream, inci, azim):
+    def _rotate(self, stream, azim, inci):
         """
         Rotates stream to LQT with respect to origin and ray information.
         Exception handling should be done outside this function.
         Also displays a message.
+        Caution: Input is expected to be azimuth, not backazimuth!
         """
         z = stream.select(component="Z")[0].data
         n = stream.select(component="N")[0].data
         e = stream.select(component="E")[0].data
-        l, q, t = rotate_ZNE_LQT(z, n, e, inci, azim)
+        print "using baz, inci:", az2baz2az(azim), inci
+        l, q, t = rotate_ZNE_LQT(z, n, e, az2baz2az(azim), inci)
         stream.select(component="Z")[0].data = l
         stream.select(component="N")[0].data = q
         stream.select(component="E")[0].data = t
@@ -1169,7 +1172,7 @@ class ObsPyck(QtGui.QMainWindow):
         if self.widgets.qToolButton_rotate.isChecked():
             d = self.dicts[self.stPt]
             try:
-                self._rotate(st, d['PInci'], d['PAzim'])
+                self._rotate(st, d['PAzim'], d['PInci'])
             except:
                 self.widgets.qToolButton_rotate.setChecked(False)
                 err = "Error during rotating to LQT. Showing unrotated data."
@@ -2081,6 +2084,69 @@ class ObsPyck(QtGui.QMainWindow):
         dO['used S Count'] = 0
 
         # go through all phase info lines
+        """
+        Order of fields:
+        ID Ins Cmp On Pha FM Q Date HrMn Sec Coda Amp Per PriorWt > Err ErrMag
+        TTpred Res Weight StaLoc(X Y Z) SDist SAzim RAz RDip RQual Tcorr
+        TTerrTcorr
+        
+        Fields:
+        ID (char*6)
+            station name or code 
+        Ins (char*4)
+            instrument identification for the trace for which the time pick corresponds (i.e. SP, BRB, VBB) 
+        Cmp (char*4)
+            component identification for the trace for which the time pick corresponds (i.e. Z, N, E, H) 
+        On (char*1)
+            description of P phase arrival onset; i, e 
+        Pha (char*6)
+            Phase identification (i.e. P, S, PmP) 
+        FM (char*1)
+            first motion direction of P arrival; c, C, u, U = compression; d, D = dilatation; +, -, Z, N; . or ? = not readable. 
+        Date (yyyymmdd) (int*6)
+            year (with century), month, day 
+        HrMn (hhmm) (int*4)
+            Hour, min 
+        Sec (float*7.4)
+            seconds of phase arrival 
+        Err (char*3)
+            Error/uncertainty type; GAU 
+        ErrMag (expFloat*9.2)
+            Error/uncertainty magnitude in seconds 
+        Coda (expFloat*9.2)
+            coda duration reading 
+        Amp (expFloat*9.2)
+            Maxumim peak-to-peak amplitude 
+        Per (expFloat*9.2)
+            Period of amplitude reading 
+        PriorWt (expFloat*9.2)
+            A-priori phase weight 
+        > (char*1)
+            Required separator between first part (observations) and second part (calculated values) of phase record. 
+        TTpred (float*9.4)
+            Predicted travel time 
+        Res (float*9.4)
+            Residual (observed - predicted arrival time) 
+        Weight (float*9.4)
+            Phase weight (covariance matrix weight for LOCMETH GAU_ANALYTIC, posterior weight for LOCMETH EDT EDT_OT_WT) 
+        StaLoc(X Y Z) (3 * float*9.4)
+            Non-GLOBAL: x, y, z location of station in transformed, rectangular coordinates 
+            GLOBAL: longitude, latitude, z location of station 
+        SDist (float*9.4)
+            Maximum likelihood hypocenter to station epicentral distance in kilometers 
+        SAzim (float*6.2)
+            Maximum likelihood hypocenter to station epicentral azimuth in degrees CW from North 
+        RAz (float*5.1)
+            Ray take-off azimuth at maximum likelihood hypocenter in degrees CW from North 
+        RDip (float*5.1)
+            Ray take-off dip at maximum likelihood hypocenter in degrees upwards from vertical down (0 = down, 180 = up) 
+        RQual (float*5.1)
+            Quality of take-off angle estimation (0 = unreliable, 10 = best) 
+        Tcorr (float*9.4)
+            Time correction (station delay) used for location
+        TTerr (expFloat*9.2)
+            Traveltime error used for location 
+        """
         for line in lines:
             line = line.split()
             # check which type of phase
@@ -2590,7 +2656,7 @@ class ObsPyck(QtGui.QMainWindow):
             if self.widgets.qToolButton_rotate.isChecked():
                 d = self.dicts[i]
                 tmp_st = self.streams[i].copy()
-                self._rotate(tmp_st, d['PInci'], d['PAzim'])
+                self._rotate(tmp_st, d['PAzim'], d['PInci'])
                 tr = tmp_st.select(component="Z")[0]
             else:
                 tr = tr.copy()
