@@ -39,7 +39,7 @@ from obspy.core import UTCDateTime, Stream
 try:
     from obspy.signal.util import utlLonLat, utlGeoKm
     from obspy.signal.invsim import estimateMagnitude
-    from obspy.signal import rotate_ZNE_LQT
+    from obspy.signal import rotate_ZNE_LQT, rotate_NE_RT
     from obspy.signal import arPick
     from obspy.signal.util import az2baz2az
 except ImportError:
@@ -632,7 +632,14 @@ class ObsPyck(QtGui.QMainWindow):
     def on_qToolButton_filter_toggled(self):
         self.updatePlot()
 
-    def on_qToolButton_rotate_toggled(self):
+    def on_qToolButton_rotateLQT_toggled(self):
+        if self.widgets.qToolButton_rotateLQT.isChecked():
+            self.widgets.qToolButton_rotateZRT.setChecked(False)
+        self.updatePlot()
+
+    def on_qToolButton_rotateZRT_toggled(self):
+        if self.widgets.qToolButton_rotateZRT.isChecked():
+            self.widgets.qToolButton_rotateLQT.setChecked(False)
         self.updatePlot()
 
     def on_qToolButton_trigger_toggled(self):
@@ -737,8 +744,8 @@ class ObsPyck(QtGui.QMainWindow):
         widgets_deactivate = ("qToolButton_filter", "qToolButton_overview",
                 "qComboBox_filterType", "qCheckBox_zerophase",
                 "qLabel_highpass", "qLabel_lowpass", "qDoubleSpinBox_highpass",
-                "qDoubleSpinBox_lowpass", "qToolButton_rotate",
-                "qToolButton_trigger")
+                "qDoubleSpinBox_lowpass", "qToolButton_rotateLQT",
+                "qToolButton_rotateZRT", "qToolButton_trigger")
         for name in widgets_deactivate:
             widget = getattr(self.widgets, name)
             widget.setEnabled(not state)
@@ -796,7 +803,7 @@ class ObsPyck(QtGui.QMainWindow):
             err = "Error during filtering. Showing unfiltered data."
             print >> sys.stderr, err
 
-    def _rotate(self, stream, azim, inci):
+    def _rotateLQT(self, stream, azim, inci):
         """
         Rotates stream to LQT with respect to origin and ray information.
         Exception handling should be done outside this function.
@@ -812,6 +819,21 @@ class ObsPyck(QtGui.QMainWindow):
         stream.select(component="N")[0].data = q
         stream.select(component="E")[0].data = t
         print "Showing traces rotated to LQT."
+
+    def _rotateZRT(self, stream, azim):
+        """
+        Rotates stream to ZRT with respect to origin and ray information.
+        Exception handling should be done outside this function.
+        Also displays a message.
+        Caution: Input is expected to be azimuth, not backazimuth!
+        """
+        n = stream.select(component="N")[0].data
+        e = stream.select(component="E")[0].data
+        print "using baz:", az2baz2az(azim)
+        r, t = rotate_NE_RT(n, e, az2baz2az(azim))
+        stream.select(component="N")[0].data = r
+        stream.select(component="E")[0].data = t
+        print "Showing traces rotated to ZRT."
 
     def _trigger(self, stream):
         """
@@ -1021,12 +1043,19 @@ class ObsPyck(QtGui.QMainWindow):
             tmp_stream = self.streams[self.stPt]
         for ax, tr in zip(self.axs, tmp_stream):
             tr_id = tr.id
-            # if rotate button is on: change trace id's component character
-            if self.widgets.qToolButton_rotate.isChecked():
+            # if a rotate button is on: change trace id's component character
+            if self.widgets.qToolButton_rotateLQT.isChecked() or \
+                    self.widgets.qToolButton_rotateZRT.isChecked():
+                # which mapping of component keys to use?
+                if self.widgets.qToolButton_rotateLQT.isChecked():
+                    comp_map = ROTATE_LQT_COMP_MAP
+                elif self.widgets.qToolButton_rotateZRT.isChecked():
+                    comp_map = ROTATE_ZRT_COMP_MAP
+                # do the component key mapping
                 if tr_id[-1].isalpha():
-                    tr_id = tr_id[:-1] + ROTATE_COMP_MAP[tr_id[-1]]
+                    tr_id = tr_id[:-1] + comp_map[tr_id[-1]]
                 else:
-                    tr_id += ROTATE_COMP_MAP[tr_id[-1]]
+                    tr_id += comp_map[tr_id[-1]]
             # if trigger button is on: add to trace ids
             if self.widgets.qToolButton_trigger.isChecked():
                 tr_id += " (recSTALTA)"
@@ -1157,28 +1186,36 @@ class ObsPyck(QtGui.QMainWindow):
     def updatePlot(self):
         """
         Update plot either with raw data or filter data and use filtered data.
-        Depending on status of "Filter" Button. Also check "Rotate" button if
-        data should be rotated to LQT coordinates.
+        Depending on status of "Filter" Button. Also check "Rotate" buttons if
+        data should be rotated to LQT or ZRT coordinates.
         """
         # XXX copying is only necessary if "Filter" or "Rotate" is selected
         # XXX it is simpler for teh code to just copy in any case..
         st = self.streams[self.stPt].copy()
+        d = self.dicts[self.stPt]
         # To display filtered data we overwrite our alias to current stream
         # and replace it with the filtered data.
         if self.widgets.qToolButton_filter.isChecked():
             self._filter(st)
         else:
             print "Unfiltered Traces."
-        if self.widgets.qToolButton_rotate.isChecked():
-            d = self.dicts[self.stPt]
+        # check if rotation should be performed
+        if self.widgets.qToolButton_rotateLQT.isChecked():
             try:
-                self._rotate(st, d['PAzim'], d['PInci'])
+                self._rotateLQT(st, d['PAzim'], d['PInci'])
             except:
-                self.widgets.qToolButton_rotate.setChecked(False)
+                self.widgets.qToolButton_rotateLQT.setChecked(False)
                 err = "Error during rotating to LQT. Showing unrotated data."
                 print >> sys.stderr, err
+        elif self.widgets.qToolButton_rotateZRT.isChecked():
+            try:
+                self._rotateZRT(st, d['PAzim'])
+            except:
+                self.widgets.qToolButton_rotateZRT.setChecked(False)
+                err = "Error during rotating to ZRT. Showing unrotated data."
+                print >> sys.stderr, err
+        # check if trigger should be performed
         if self.widgets.qToolButton_trigger.isChecked():
-            d = self.dicts[self.stPt]
             try:
                 self._trigger(st)
             except:
@@ -2653,10 +2690,11 @@ class ObsPyck(QtGui.QMainWindow):
             trans.append(matplotlib.transforms.blended_transform_factory(ax.transData, ax.transAxes))
             ax.xaxis.set_major_formatter(FuncFormatter(formatXTicklabels))
             # we have to rotate first, because we have to copy the whole stream..
-            if self.widgets.qToolButton_rotate.isChecked():
+            # ZRT rotation is not regarded because it doesn't change the Z component..
+            if self.widgets.qToolButton_rotateLQT.isChecked():
                 d = self.dicts[i]
                 tmp_st = self.streams[i].copy()
-                self._rotate(tmp_st, d['PAzim'], d['PInci'])
+                self._rotateLQT(tmp_st, d['PAzim'], d['PInci'])
                 tr = tmp_st.select(component="Z")[0]
             else:
                 tr = tr.copy()

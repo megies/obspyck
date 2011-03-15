@@ -743,7 +743,7 @@ p, l  i { white-space: pre-wrap; }
                     </widget>
                    </item>
                    <item>
-                    <widget class="QToolButton" name="qToolButton_rotate" >
+                    <widget class="QToolButton" name="qToolButton_rotateLQT" >
                      <property name="sizePolicy" >
                       <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
                        <horstretch>0</horstretch>
@@ -755,6 +755,25 @@ p, l  i { white-space: pre-wrap; }
                      </property>
                      <property name="text" >
                       <string>LQT</string>
+                     </property>
+                     <property name="checkable" >
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QToolButton" name="qToolButton_rotateZRT" >
+                     <property name="sizePolicy" >
+                      <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="focusPolicy" >
+                      <enum>Qt::NoFocus</enum>
+                     </property>
+                     <property name="text" >
+                      <string>ZRT</string>
                      </property>
                      <property name="checkable" >
                       <bool>true</bool>

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'qt_designer.ui'
 #
-# Created: Thu Mar  3 15:30:11 2011
+# Created: Tue Mar 15 15:36:48 2011
 #      by: PyQt4 UI code generator 4.4.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -392,16 +392,26 @@ class Ui_qMainWindow_obsPyck(object):
         self.qToolButton_filter.setCheckable(True)
         self.qToolButton_filter.setObjectName("qToolButton_filter")
         self.horizontalLayout_17.addWidget(self.qToolButton_filter)
-        self.qToolButton_rotate = QtGui.QToolButton(self.qWidget_mpl)
+        self.qToolButton_rotateLQT = QtGui.QToolButton(self.qWidget_mpl)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum,QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.qToolButton_rotate.sizePolicy().hasHeightForWidth())
-        self.qToolButton_rotate.setSizePolicy(sizePolicy)
-        self.qToolButton_rotate.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.qToolButton_rotate.setCheckable(True)
-        self.qToolButton_rotate.setObjectName("qToolButton_rotate")
-        self.horizontalLayout_17.addWidget(self.qToolButton_rotate)
+        sizePolicy.setHeightForWidth(self.qToolButton_rotateLQT.sizePolicy().hasHeightForWidth())
+        self.qToolButton_rotateLQT.setSizePolicy(sizePolicy)
+        self.qToolButton_rotateLQT.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.qToolButton_rotateLQT.setCheckable(True)
+        self.qToolButton_rotateLQT.setObjectName("qToolButton_rotateLQT")
+        self.horizontalLayout_17.addWidget(self.qToolButton_rotateLQT)
+        self.qToolButton_rotateZRT = QtGui.QToolButton(self.qWidget_mpl)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum,QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.qToolButton_rotateZRT.sizePolicy().hasHeightForWidth())
+        self.qToolButton_rotateZRT.setSizePolicy(sizePolicy)
+        self.qToolButton_rotateZRT.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.qToolButton_rotateZRT.setCheckable(True)
+        self.qToolButton_rotateZRT.setObjectName("qToolButton_rotateZRT")
+        self.horizontalLayout_17.addWidget(self.qToolButton_rotateZRT)
         self.verticalLayout_8.addLayout(self.horizontalLayout_17)
         self.horizontalLayout_15 = QtGui.QHBoxLayout()
         self.horizontalLayout_15.setObjectName("horizontalLayout_15")
@@ -636,7 +646,8 @@ class Ui_qMainWindow_obsPyck(object):
         self.qToolButton_nextStream.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", ">", None, QtGui.QApplication.UnicodeUTF8))
         self.qToolButton_overview.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "Overview", None, QtGui.QApplication.UnicodeUTF8))
         self.qToolButton_filter.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "Filter", None, QtGui.QApplication.UnicodeUTF8))
-        self.qToolButton_rotate.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "LQT", None, QtGui.QApplication.UnicodeUTF8))
+        self.qToolButton_rotateLQT.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "LQT", None, QtGui.QApplication.UnicodeUTF8))
+        self.qToolButton_rotateZRT.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "ZRT", None, QtGui.QApplication.UnicodeUTF8))
         self.qToolButton_trigger.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "recSTALTA", None, QtGui.QApplication.UnicodeUTF8))
         self.qToolButton_arpicker.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "arPicker", None, QtGui.QApplication.UnicodeUTF8))
         self.qComboBox_filterType.addItem(QtGui.QApplication.translate("qMainWindow_obsPyck", "Bandpass", None, QtGui.QApplication.UnicodeUTF8))

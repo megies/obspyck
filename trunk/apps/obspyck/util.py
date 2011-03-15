@@ -197,13 +197,14 @@ WIDGET_NAMES = ("qToolButton_clearAll", "qToolButton_clearOrigMag", "qToolButton
         "qLineEdit_sysopPassword", "qToolButton_previousStream",
         "qLabel_streamNumber", "qComboBox_streamName",
         "qToolButton_nextStream", "qToolButton_overview",
-        "qComboBox_phaseType", "qToolButton_rotate", "qToolButton_filter",
-        "qToolButton_trigger", "qToolButton_arpicker", "qComboBox_filterType",
-        "qCheckBox_zerophase", "qLabel_highpass", "qDoubleSpinBox_highpass",
-        "qLabel_lowpass", "qDoubleSpinBox_lowpass", "qLabel_sta",
-        "qDoubleSpinBox_sta", "qLabel_lta", "qDoubleSpinBox_lta",
-        "qToolButton_spectrogram", "qCheckBox_spectrogramLog",
-        "qPlainTextEdit_stdout", "qPlainTextEdit_stderr")
+        "qComboBox_phaseType", "qToolButton_rotateLQT",
+        "qToolButton_rotateZRT", "qToolButton_filter", "qToolButton_trigger",
+        "qToolButton_arpicker", "qComboBox_filterType", "qCheckBox_zerophase",
+        "qLabel_highpass", "qDoubleSpinBox_highpass", "qLabel_lowpass",
+        "qDoubleSpinBox_lowpass", "qLabel_sta", "qDoubleSpinBox_sta",
+        "qLabel_lta", "qDoubleSpinBox_lta", "qToolButton_spectrogram",
+        "qCheckBox_spectrogramLog", "qPlainTextEdit_stdout",
+        "qPlainTextEdit_stderr")
 #Estimating the maximum/minimum in a sample-window around click
 MAG_PICKWINDOW = 10
 MAG_MARKER = {'marker': "x", 'edgewidth': 1.8, 'size': 20}
@@ -229,7 +230,8 @@ POLARITY_CHARS = {'up': "U", 'down': "D", 'poorup': "+", 'poordown': "-"}
 ONSET_CHARS = {'impulsive': "I", 'emergent': "E",
                'implusive': "I"} # XXX some old events have a typo there... =)
 
-ROTATE_COMP_MAP = {"Z": "L", "N": "Q", "E": "T"}
+ROTATE_LQT_COMP_MAP = {"Z": "L", "N": "Q", "E": "T"}
+ROTATE_ZRT_COMP_MAP = {"Z": "Z", "N": "R", "E": "T"}
 
 class QMplCanvas(QFigureCanvas):
     """
