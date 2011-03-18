@@ -232,6 +232,14 @@ ONSET_CHARS = {'impulsive': "I", 'emergent': "E",
 
 ROTATE_LQT_COMP_MAP = {"Z": "L", "N": "Q", "E": "T"}
 ROTATE_ZRT_COMP_MAP = {"Z": "Z", "N": "R", "E": "T"}
+S_POL_MAP_ZRT = {'R': {'up': "forward", 'down': "backward",
+                       'poorup': "forward", 'poordown': "backward"},
+                 'T': {'up': "right", 'down': "left",
+                       'poorup': "right", 'poordown': "left"}}
+S_POL_PHASE_TYPE = {'R': "SV", 'T': "SH"}
+POLARITY_2_FOCMEC = {'up': "U", 'poorup': "+", 'down': "D", 'poordown': "-",
+                     'left': "L", 'right': "R", 'forward': "F", 'backward': "B"}
+
 
 class QMplCanvas(QFigureCanvas):
     """

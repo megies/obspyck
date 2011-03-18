@@ -1032,7 +1032,10 @@ class ObsPyck(QtGui.QMainWindow):
     def updateIds(self, textcolor):
         """
         updates the trace ids plotted as text into each axes.
-        if "rotate" button is on map the component key to LQT.
+        if "rotate" button is on map the component key to LQT or ZRT.
+        CAUTION: The last letter of the ID plotted here is used to identify
+                 the component when setting S polarities!!
+                 Change with caution!!
         """
         # make a Stream with the traces that are plotted
         # if in overview mode this is not one of the original streams but a
@@ -1311,6 +1314,17 @@ class ObsPyck(QtGui.QMainWindow):
                     return
                 key = phase_type + "Pol"
                 dict[key] = keys['setPol'][ev.key]
+                # map SH/SV polarities if rotated to ZRT
+                if phase_type == "S":
+                    try:
+                        comp = ev.inaxes.texts[0].get_text()[-1].upper()
+                        dict[key] = S_POL_MAP_ZRT[comp][dict[key]]
+                        print "setting polarity for %s" % S_POL_PHASE_TYPE[comp]
+                    except:
+                        err = "Warning: to map up/down polarity to SH/SV " + \
+                              "equivalents rotate to ZRT and place mouse " + \
+                              "over R or T axes."
+                        print >> sys.stderr, err
                 self.updateLabel(phase_type)
                 self.redraw()
                 print "%s set to %s" % (KEY_FULLNAMES[key], dict[key])
@@ -1758,23 +1772,29 @@ class ObsPyck(QtGui.QMainWindow):
         fmt = "%4s  %6.2f  %6.2f%1s\n"
         count = 0
         for dict in self.dicts:
-            if 'PAzim' not in dict or 'PInci' not in dict or 'PPol' not in dict:
-                continue
-            sta = dict['Station'][:4] #focmec has only 4 chars
-            azim = dict['PAzim']
-            inci = dict['PInci']
-            if dict['PPol'] == 'up':
-                pol = 'U'
-            elif dict['PPol'] == 'poorup':
-                pol = '+'
-            elif dict['PPol'] == 'down':
-                pol = 'D'
-            elif dict['PPol'] == 'poordown':
-                pol = '-'
-            else:
-                continue
-            count += 1
-            f.write(fmt % (sta, azim, inci, pol))
+            for phase_type in SEISMIC_PHASES:
+                pt = phase_type
+                if pt + 'Azim' not in dict or pt + 'Inci' not in dict or pt + 'Pol' not in dict:
+                    continue
+                sta = dict['Station'][:4] #focmec has only 4 chars
+                azim = dict[pt + 'Azim']
+                inci = dict[pt + 'Inci']
+                # XXX hack for nonlinloc: the have a different definition of incidence
+                # XXX they use takeoff dip instead of incidence
+                if self.dictOrigin['Program'] == "NLLoc":
+                    inci = 180 - inci
+                    err = "Warning: Location program is nonlinloc, using 180 - incidence"
+                    print >> sys.stderr, err
+                pol = dict[pt + 'Pol']
+                try:
+                    pol = POLARITY_2_FOCMEC[pol]
+                except:
+                    err = "Warning: Failed to map polarity information to " + \
+                          "FOCMEC identifier (%s, %s, %s)"
+                    err = err % (dict['Station'], pt, pol)
+                    print >> sys.stderr, err
+                count += 1
+                f.write(fmt % (sta, azim, inci, pol))
         f.close()
         print 'Phases for focmec: %i' % count
         self.catFile(files['phases'])
