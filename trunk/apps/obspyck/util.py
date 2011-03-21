@@ -10,6 +10,7 @@
 
 import os
 import sys
+import math
 import platform
 import shutil
 import subprocess
@@ -27,6 +28,7 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as QFigureCanva
 from matplotlib.widgets import MultiCursor as MplMultiCursor
 
 from obspy.core import UTCDateTime
+from obspy.signal import gps2DistAzimuth
 
 
 mpl.rc('figure.subplot', left=0.05, right=0.98, bottom=0.10, top=0.92,
@@ -225,10 +227,6 @@ KEYS = {'setPick': "a", 'setPickError': "s", 'delPick': "q",
 #        'setWeight': {'Key_0': 0, 'Key_1': 1, 'Key_2': 2, 'Key_3': 3},
 #        'setPol': {'Key_U': "up", 'Key_D': "down", 'Key_Plus': "poorup", 'Key_Minus': "poordown"},
 #        'setOnset': {'Key_I': "impulsive", 'Key_E': "emergent"}}
-# the following dicts' keys should be all lower case, we use "".lower() later
-POLARITY_CHARS = {'up': "U", 'down': "D", 'poorup': "+", 'poordown': "-"}
-ONSET_CHARS = {'impulsive': "I", 'emergent': "E",
-               'implusive': "I"} # XXX some old events have a typo there... =)
 
 ROTATE_LQT_COMP_MAP = {"Z": "L", "N": "Q", "E": "T"}
 ROTATE_ZRT_COMP_MAP = {"Z": "Z", "N": "R", "E": "T"}
@@ -240,6 +238,10 @@ S_POL_PHASE_TYPE = {'R': "SV", 'T': "SH"}
 POLARITY_2_FOCMEC = {'up': "U", 'poorup': "+", 'down': "D", 'poordown': "-",
                      'left': "L", 'right': "R", 'forward': "F", 'backward': "B"}
 
+# the following dicts' keys should be all lower case, we use "".lower() later
+POLARITY_CHARS = POLARITY_2_FOCMEC
+ONSET_CHARS = {'impulsive': "I", 'emergent': "E",
+               'implusive': "I"} # XXX some old events have a typo there... =)
 
 class QMplCanvas(QFigureCanvas):
     """
@@ -896,6 +898,19 @@ def map_qKeys(key_dict):
                 new[getattr(Qt, key_name)] = value
             key_dict[functionality] = new
     return key_dict
+
+def coords2azbazinc(stream, origin):
+    """
+    Returns azimuth, backazimuth and incidence angle from station coordinates
+    given in first trace of stream and from event location specified in origin
+    dictionary.
+    """
+    sta_coords = stream[0].stats.coordinates
+    dist, bazim, azim = gps2DistAzimuth(sta_coords.latitude,
+            sta_coords.longitude, origin['Latitude'], origin['Longitude'])
+    elev_diff = sta_coords.elevation - origin['Depth'] * 1000
+    inci = math.atan2(dist, elev_diff) * 180.0 / math.pi
+    return azim, bazim, inci
 
 class SplitWriter():
     """

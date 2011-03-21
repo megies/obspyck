@@ -803,34 +803,40 @@ class ObsPyck(QtGui.QMainWindow):
             err = "Error during filtering. Showing unfiltered data."
             print >> sys.stderr, err
 
-    def _rotateLQT(self, stream, azim, inci):
+    def _rotateLQT(self, stream, origin):
         """
-        Rotates stream to LQT with respect to origin and ray information.
+        Rotates stream to LQT with respect to station location in first trace
+        of stream and origin information.
         Exception handling should be done outside this function.
         Also displays a message.
-        Caution: Input is expected to be azimuth, not backazimuth!
         """
+        # calculate backazimuth and incidence from station/event geometry
+        azim, bazim, inci = coords2azbazinc(stream, origin)
+        # replace ZNE data with rotated data
         z = stream.select(component="Z")[0].data
         n = stream.select(component="N")[0].data
         e = stream.select(component="E")[0].data
-        print "using baz, inci:", az2baz2az(azim), inci
-        l, q, t = rotate_ZNE_LQT(z, n, e, az2baz2az(azim), inci)
+        print "using baz, inci:", bazim, inci
+        l, q, t = rotate_ZNE_LQT(z, n, e, bazim, inci)
         stream.select(component="Z")[0].data = l
         stream.select(component="N")[0].data = q
         stream.select(component="E")[0].data = t
         print "Showing traces rotated to LQT."
 
-    def _rotateZRT(self, stream, azim):
+    def _rotateZRT(self, stream, origin):
         """
-        Rotates stream to ZRT with respect to origin and ray information.
+        Rotates stream to ZRT with respect to station location in first trace
+        of stream and origin information.
         Exception handling should be done outside this function.
         Also displays a message.
-        Caution: Input is expected to be azimuth, not backazimuth!
         """
+        # calculate backazimuth from station/event geometry
+        azim, bazim, inci = coords2azbazinc(stream, origin)
+        # replace NE data with rotated data
         n = stream.select(component="N")[0].data
         e = stream.select(component="E")[0].data
-        print "using baz:", az2baz2az(azim)
-        r, t = rotate_NE_RT(n, e, az2baz2az(azim))
+        print "using baz:", bazim
+        r, t = rotate_NE_RT(n, e, bazim)
         stream.select(component="N")[0].data = r
         stream.select(component="E")[0].data = t
         print "Showing traces rotated to ZRT."
@@ -1205,17 +1211,19 @@ class ObsPyck(QtGui.QMainWindow):
         # check if rotation should be performed
         if self.widgets.qToolButton_rotateLQT.isChecked():
             try:
-                self._rotateLQT(st, d['PAzim'], d['PInci'])
-            except:
+                self._rotateLQT(st, self.dictOrigin)
+            except Exception, e:
                 self.widgets.qToolButton_rotateLQT.setChecked(False)
-                err = "Error during rotating to LQT. Showing unrotated data."
+                err = str(e)
+                err += "\nError during rotating to LQT. Showing unrotated data."
                 print >> sys.stderr, err
         elif self.widgets.qToolButton_rotateZRT.isChecked():
             try:
-                self._rotateZRT(st, d['PAzim'])
-            except:
+                self._rotateZRT(st, self.dictOrigin)
+            except Exception, e:
                 self.widgets.qToolButton_rotateZRT.setChecked(False)
-                err = "Error during rotating to ZRT. Showing unrotated data."
+                err = str(e)
+                err += "\nError during rotating to ZRT. Showing unrotated data."
                 print >> sys.stderr, err
         # check if trigger should be performed
         if self.widgets.qToolButton_trigger.isChecked():
@@ -1817,11 +1825,11 @@ class ObsPyck(QtGui.QMainWindow):
             tempdict['Dip'] = float(line[0])
             tempdict['Strike'] = float(line[1])
             tempdict['Rake'] = float(line[2])
-            tempdict['Errors'] = int(float(line[3])) # not used in xml
+            tempdict['Errors'] = sum([int(float(line[no])) for no in (3, 4, 5)]) # not used in xml
             tempdict['Station Polarity Count'] = count
             tempdict['Possible Solution Count'] = len(lines)
-            print "Dip: %6.2f  Strike: %6.2f  Rake: %6.2f  Errors: %i/%i" % \
-                    (tempdict['Dip'], tempdict['Strike'], tempdict['Rake'],
+            print "Strike: %6.2f  Dip: %6.2f  Rake: %6.2f  Errors: %i/%i" % \
+                    (tempdict['Strike'], tempdict['Dip'], tempdict['Rake'],
                      tempdict['Errors'], tempdict['Station Polarity Count'])
             self.focMechList.append(tempdict)
         self.focMechCount = len(self.focMechList)
@@ -1829,8 +1837,8 @@ class ObsPyck(QtGui.QMainWindow):
         print "selecting Focal Mechanism No.  1 of %2i:" % self.focMechCount
         self.dictFocalMechanism = self.focMechList[0]
         dF = self.dictFocalMechanism
-        print "Dip: %6.2f  Strike: %6.2f  Rake: %6.2f  Errors: %i/%i" % \
-                (dF['Dip'], dF['Strike'], dF['Rake'], dF['Errors'],
+        print "Strike: %6.2f  Dip: %6.2f  Rake: %6.2f  Errors: %i/%i" % \
+                (dF['Strike'], dF['Dip'], dF['Rake'], dF['Errors'],
                  dF['Station Polarity Count'])
 
     def nextFocMec(self):
@@ -1841,8 +1849,8 @@ class ObsPyck(QtGui.QMainWindow):
         dF = self.dictFocalMechanism
         print "selecting Focal Mechanism No. %2i of %2i:" % \
                 (self.focMechCurrent + 1, self.focMechCount)
-        print "Dip: %6.2f  Strike: %6.2f  Rake: %6.2f  Errors: %i/%i" % \
-                (dF['Dip'], dF['Strike'], dF['Rake'], dF['Errors'],
+        print "Strike: %6.2f  Dip: %6.2f  Rake: %6.2f  Errors: %i/%i" % \
+                (dF['Strike'], dF['Dip'], dF['Rake'], dF['Errors'],
                  dF['Station Polarity Count'])
     
     def drawFocMec(self):
@@ -1868,8 +1876,8 @@ class ObsPyck(QtGui.QMainWindow):
                           linewidth=1., alpha=0.3))
         text = "Focal Mechanism (%i of %i)" % \
                (self.focMechCurrent + 1, self.focMechCount)
-        text += "\nDip: %6.2f  Strike: %6.2f  Rake: %6.2f" % \
-                (dF['Dip'], dF['Strike'], dF['Rake'])
+        text += "\nStrike: %6.2f  Dip: %6.2f  Rake: %6.2f" % \
+                (dF['Strike'], dF['Dip'], dF['Rake'])
         if 'Errors' in dF:
             text += "\nErrors: %i/%i" % (dF['Errors'],
                                          dF['Station Polarity Count'])
@@ -1884,7 +1892,7 @@ class ObsPyck(QtGui.QMainWindow):
         ax = self.axFocMecStations
         ax.set_title(text)
         ax.set_axis_off()
-        for dict in self.dicts:
+        for dict, st in zip(self.dicts, self.streams):
             if 'PAzim' in dict and 'PInci' in dict and 'PPol' in dict:
                 if dict['PPol'] == "up":
                     color = "black"
@@ -1896,13 +1904,11 @@ class ObsPyck(QtGui.QMainWindow):
                     color = "white"
                 else:
                     continue
+                azim, bazim, inci = coords2azbazinc(st, self.dictOrigin)
                 # southern hemisphere projection
-                if dict['PInci'] > 90:
-                    inci = 180. - dict['PInci']
-                    azim = -180. + dict['PAzim']
-                else:
-                    inci = dict['PInci']
-                    azim = dict['PAzim']
+                if inci > 90:
+                    inci = 180. - inci
+                    azim = -180. + azim
                 #we have to hack the azimuth because of the polar plot
                 #axes orientation
                 plotazim = (np.pi / 2.) - ((azim / 180.) * np.pi)
@@ -2714,7 +2720,7 @@ class ObsPyck(QtGui.QMainWindow):
             if self.widgets.qToolButton_rotateLQT.isChecked():
                 d = self.dicts[i]
                 tmp_st = self.streams[i].copy()
-                self._rotateLQT(tmp_st, d['PAzim'], d['PInci'])
+                self._rotateLQT(tmp_st, self.dictOrigin)
                 tr = tmp_st.select(component="Z")[0]
             else:
                 tr = tr.copy()
