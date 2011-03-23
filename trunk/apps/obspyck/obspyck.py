@@ -1779,28 +1779,39 @@ class ObsPyck(QtGui.QMainWindow):
         #fmt = "ONTN  349.00   96.00C"
         fmt = "%4s  %6.2f  %6.2f%1s\n"
         count = 0
-        for dict in self.dicts:
+        for dict, st in zip(self.dicts, self.streams):
             for phase_type in SEISMIC_PHASES:
                 pt = phase_type
-                if pt + 'Azim' not in dict or pt + 'Inci' not in dict or pt + 'Pol' not in dict:
+                if pt + 'Pol' not in dict:
                     continue
                 sta = dict['Station'][:4] #focmec has only 4 chars
-                azim = dict[pt + 'Azim']
-                inci = dict[pt + 'Inci']
-                # XXX hack for nonlinloc: the have a different definition of incidence
-                # XXX they use takeoff dip instead of incidence
-                if self.dictOrigin['Program'] == "NLLoc":
-                    inci = 180 - inci
-                    err = "Warning: Location program is nonlinloc, using 180 - incidence"
+                if pt + 'Azim' not in dict or pt + 'Inci' not in dict:
+                    azim, bazim, inci = coords2azbazinc(st, self.dictOrigin)
+                    err = "Warning: No azimuth/incidence information for " + \
+                          "phase pick found, using azimuth/incidence from " + \
+                          "source/receiver geometry."
                     print >> sys.stderr, err
+                # XXX hack for nonlinloc: they return different angles:
+                # XXX they use takeoff dip instead of incidence
+                elif self.dictOrigin['Program'] == "NLLoc":
+                    azim, bazim, inci = coords2azbazinc(st, self.dictOrigin)
+                    err = "Warning: Location program is nonlinloc, " + \
+                          "returning takeoff angles instead of incidence " + \
+                          "angles. Using azimuth/incidence from " + \
+                          "source/receiver geometry."
+                    print >> sys.stderr, err
+                else:
+                    azim = dict[pt + 'Azim']
+                    inci = dict[pt + 'Inci']
                 pol = dict[pt + 'Pol']
                 try:
                     pol = POLARITY_2_FOCMEC[pol]
                 except:
-                    err = "Warning: Failed to map polarity information to " + \
-                          "FOCMEC identifier (%s, %s, %s)"
+                    err = "Error: Failed to map polarity information to " + \
+                          "FOCMEC identifier (%s, %s, %s), skipping."
                     err = err % (dict['Station'], pt, pol)
                     print >> sys.stderr, err
+                    continue
                 count += 1
                 f.write(fmt % (sta, azim, inci, pol))
         f.close()
