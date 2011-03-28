@@ -1782,27 +1782,29 @@ class ObsPyck(QtGui.QMainWindow):
         for dict, st in zip(self.dicts, self.streams):
             for phase_type in SEISMIC_PHASES:
                 pt = phase_type
-                if pt + 'Pol' not in dict:
+                if pt + 'Pol' not in dict or pt + 'Azim' not in dict or pt + 'Inci' not in dict:
                     continue
                 sta = dict['Station'][:4] #focmec has only 4 chars
-                if pt + 'Azim' not in dict or pt + 'Inci' not in dict:
-                    azim, bazim, inci = coords2azbazinc(st, self.dictOrigin)
-                    err = "Warning: No azimuth/incidence information for " + \
-                          "phase pick found, using azimuth/incidence from " + \
-                          "source/receiver geometry."
-                    print >> sys.stderr, err
+                # XXX commenting the following out again
+                # XXX only polarities with Azim/Inci info from location used
+                #if pt + 'Azim' not in dict or pt + 'Inci' not in dict:
+                #    azim, bazim, inci = coords2azbazinc(st, self.dictOrigin)
+                #    err = "Warning: No azimuth/incidence information for " + \
+                #          "phase pick found, using azimuth/incidence from " + \
+                #          "source/receiver geometry."
+                #    print >> sys.stderr, err
                 # XXX hack for nonlinloc: they return different angles:
                 # XXX they use takeoff dip instead of incidence
-                elif self.dictOrigin['Program'] == "NLLoc":
-                    azim, bazim, inci = coords2azbazinc(st, self.dictOrigin)
-                    err = "Warning: Location program is nonlinloc, " + \
-                          "returning takeoff angles instead of incidence " + \
-                          "angles. Using azimuth/incidence from " + \
-                          "source/receiver geometry."
-                    print >> sys.stderr, err
-                else:
-                    azim = dict[pt + 'Azim']
-                    inci = dict[pt + 'Inci']
+                #elif self.dictOrigin['Program'] == "NLLoc":
+                #    azim, bazim, inci = coords2azbazinc(st, self.dictOrigin)
+                #    err = "Warning: Location program is nonlinloc, " + \
+                #          "returning takeoff angles instead of incidence " + \
+                #          "angles. Using azimuth/incidence from " + \
+                #          "source/receiver geometry."
+                #    print >> sys.stderr, err
+                #else:
+                azim = dict[pt + 'Azim']
+                inci = dict[pt + 'Inci']
                 pol = dict[pt + 'Pol']
                 try:
                     pol = POLARITY_2_FOCMEC[pol]
@@ -1915,8 +1917,9 @@ class ObsPyck(QtGui.QMainWindow):
                     color = "white"
                 else:
                     continue
-                azim, bazim, inci = coords2azbazinc(st, self.dictOrigin)
-                # southern hemisphere projection
+                inci = dict['PInci']
+                azim = dict['PAzim']
+                # lower hemisphere projection
                 if inci > 90:
                     inci = 180. - inci
                     azim = -180. + azim
