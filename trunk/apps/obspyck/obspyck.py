@@ -2575,43 +2575,30 @@ class ObsPyck(QtGui.QMainWindow):
 
     def calculateStationMagnitudes(self):
         for st, dict in zip(self.streams, self.dicts):
-            if 'MagMin1' in dict and 'MagMin2' in dict and \
-               'MagMax1' in dict and 'MagMax2' in dict:
-                
-                amp = dict['MagMax1'] - dict['MagMin1']
-                timedelta = abs(dict['MagMax1T'] - dict['MagMin1T'])
-                mag = estimateMagnitude(dict['pazN'], amp, timedelta,
-                                        dict['distHypo'])
-                amp = dict['MagMax2'] - dict['MagMin2']
-                timedelta = abs(dict['MagMax2T'] - dict['MagMin2T'])
-                mag += estimateMagnitude(dict['pazE'], amp, timedelta,
-                                         dict['distHypo'])
-                mag /= 2.
-                dict['Mag'] = mag
-                dict['MagChannel'] = '%s,%s' % (st[1].stats.channel,
-                                                st[2].stats.channel)
-                print 'calculated new magnitude for %s: %0.2f (channels: %s)' \
-                      % (dict['Station'], dict['Mag'], dict['MagChannel'])
+            amplitudes = []
+            timedeltas = []
+            pazs = []
+            channels = []
+            if 'MagMin1' in dict and 'MagMax1' in dict:
+                pazs.append(dict['pazN'])
+                amplitudes.append(dict['MagMax1'] - dict['MagMin1'])
+                timedeltas.append(abs(dict['MagMax1T'] - dict['MagMin1T']))
+                channels.append(st[1].stats.channel)
+            if 'MagMin2' in dict and 'MagMax2' in dict:
+                pazs.append(dict['pazE'])
+                amplitudes.append(dict['MagMax1'] - dict['MagMin1'])
+                timedeltas.append(abs(dict['MagMax1T'] - dict['MagMin1T']))
+                channels.append(st[2].stats.channel)
             
-            elif 'MagMin1' in dict and 'MagMax1' in dict:
-                amp = dict['MagMax1'] - dict['MagMin1']
-                timedelta = abs(dict['MagMax1T'] - dict['MagMin1T'])
-                mag = estimateMagnitude(dict['pazN'], amp, timedelta,
-                                        dict['distHypo'])
-                dict['Mag'] = mag
-                dict['MagChannel'] = '%s' % st[1].stats.channel
-                print 'calculated new magnitude for %s: %0.2f (channels: %s)' \
-                      % (dict['Station'], dict['Mag'], dict['MagChannel'])
-            
-            elif 'MagMin2' in dict and 'MagMax2' in dict:
-                amp = dict['MagMax2'] - dict['MagMin2']
-                timedelta = abs(dict['MagMax2T'] - dict['MagMin2T'])
-                mag = estimateMagnitude(dict['pazE'], amp, timedelta,
-                                        dict['distHypo'])
-                dict['Mag'] = mag
-                dict['MagChannel'] = '%s' % st[2].stats.channel
-                print 'calculated new magnitude for %s: %0.2f (channels: %s)' \
-                      % (dict['Station'], dict['Mag'], dict['MagChannel'])
+            if not amplitudes:
+                continue
+
+            mag = estimateMagnitude(pazs, amplitudes, timedeltas,
+                                    dict['distHypo'])
+            dict['Mag'] = mag
+            dict['MagChannel'] = ','.join(channels)
+            print 'calculated new magnitude for %s: %0.2f (channels: %s)' \
+                  % (dict['Station'], dict['Mag'], dict['MagChannel'])
     
     #see http://www.scipy.org/Cookbook/LinearRegression for alternative routine
     #XXX replace with drawWadati()
