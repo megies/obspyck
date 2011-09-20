@@ -1251,6 +1251,7 @@ class ObsPyck(QtGui.QMainWindow):
         phase_type = str(self.widgets.qComboBox_phaseType.currentText())
         dict = self.dicts[self.stPt]
         st = self.streams[self.stPt]
+        tr = st[self.axs.index(ev.inaxes)]
         
         #######################################################################
         # Start of key events related to picking                              #
@@ -1277,6 +1278,7 @@ class ObsPyck(QtGui.QMainWindow):
             # Determine the time of the nearest sample
             pickSample = t[pickSample]
             print pickSample
+            print ev.inaxes.lines[0].get_ydata()[xpos]
 
         if ev.key == keys['setPick']:
             # some keyPress events only make sense inside our matplotlib axes
@@ -1407,7 +1409,6 @@ class ObsPyck(QtGui.QMainWindow):
                 cutoffSamples = xpos - MAG_PICKWINDOW #remember, how much samples there are before our small window! We have to add this number for our MagMinT estimation!
                 dict[key] = np.min(ydata[xpos-MAG_PICKWINDOW:xpos+MAG_PICKWINDOW])
                 # special handling for GSE2 data: apply calibration
-                tr = st[self.axs.index(ev.inaxes)]
                 if tr.stats._format == "GSE2":
                     dict[key] = dict[key] / (tr.stats.calib * 2 * np.pi / tr.stats.gse2.calper)
                 # save time of magnitude minimum in seconds
@@ -1451,7 +1452,6 @@ class ObsPyck(QtGui.QMainWindow):
                 cutoffSamples = xpos - MAG_PICKWINDOW #remember, how much samples there are before our small window! We have to add this number for our MagMaxT estimation!
                 dict[key] = np.max(ydata[xpos-MAG_PICKWINDOW:xpos+MAG_PICKWINDOW])
                 # special handling for GSE2 data: apply calibration
-                tr = st[self.axs.index(ev.inaxes)]
                 if tr.stats._format == "GSE2":
                     dict[key] = dict[key] / (tr.stats.calib * 2 * np.pi / tr.stats.gse2.calper)
                 # save time of magnitude maximum in seconds
@@ -1991,8 +1991,10 @@ class ObsPyck(QtGui.QMainWindow):
         precall(prog_dict)
 
         f = open(files['phases'], 'wt')
-        phases_hypo71 = self.dicts2hypo71Phases()
-        f.write(phases_hypo71)
+        #phases_hypo71 = self.dicts2hypo71Phases()
+        #f.write(phases_hypo71)
+        phases_nlloc = self.dicts2NLLocPhases()
+        f.write(phases_nlloc)
         f.close()
 
         print 'Phases for NLLoc:'
@@ -3101,6 +3103,120 @@ class ObsPyck(QtGui.QMainWindow):
                 hypo71_string += "\n"
 
         return hypo71_string
+    
+    def dicts2NLLocPhases(self):
+        """
+        Returns the pick information in self.dicts in NonLinLoc's own phase
+        file format as a string. This string can then be written to a file.
+        Currently only those fields really needed in location are actually used
+        in assembling the phase information string.
+
+        Information on the file formats can be found at:
+        http://alomax.free.fr/nlloc/soft6.00/formats.html#_phase_
+
+        Quote:
+        NonLinLoc Phase file format (ASCII, NLLoc obsFileType = NLLOC_OBS)
+        
+        The NonLinLoc Phase file format is intended to give a comprehensive
+        phase time-pick description that is easy to write and read.
+        
+        For each event to be located, this file contains one set of records. In
+        each set there is one "arrival-time" record for each phase at each seismic
+        station. The final record of each set is a blank. As many events as desired can
+        be included in one file.
+        
+        Each record has a fixed format, with a blank space between fields. A
+        field should never be left blank - use a "?" for unused characther fields and a
+        zero or invalid numeric value for numeric fields.
+        
+        The NonLinLoc Phase file record is identical to the first part of each
+        phase record in the NLLoc Hypocenter-Phase file output by the program NLLoc.
+        Thus the phase list output by NLLoc can be used without modification as time
+        pick observations for other runs of NLLoc.
+        
+        NonLinLoc phase record:
+        Fields:
+        Station name (char*6)
+            station name or code 
+        Instrument (char*4)
+            instument identification for the trace for which the time pick
+            corresponds (i.e. SP, BRB, VBB) 
+        Component (char*4)
+            component identification for the trace for which the time pick
+            corresponds (i.e. Z, N, E, H) 
+        P phase onset (char*1)
+            description of P phase arrival onset; i, e 
+        Phase descriptor (char*6)
+            Phase identification (i.e. P, S, PmP) 
+        First Motion (char*1)
+            first motion direction of P arrival; c, C, u, U = compression;
+            d, D = dilatation; +, -, Z, N; . or ? = not readable. 
+        Date (yyyymmdd) (int*6)
+            year (with century), month, day 
+        Hour/minute (hhmm) (int*4)
+            Hour, min 
+        Seconds (float*7.4)
+            seconds of phase arrival 
+        Err (char*3)
+            Error/uncertainty type; GAU 
+        ErrMag (expFloat*9.2)
+            Error/uncertainty magnitude in seconds 
+        Coda duration (expFloat*9.2)
+            coda duration reading 
+        Amplitude (expFloat*9.2)
+            Maxumim peak-to-peak amplitude 
+        Period (expFloat*9.2)
+            Period of amplitude reading 
+        PriorWt (expFloat*9.2)
+        
+        A-priori phase weight Currently can be 0 (do not use reading) or
+        1 (use reading). (NLL_FORMAT_VER_2 - WARNING: under development)
+        
+        Example:
+        
+        GRX    ?    ?    ? P      U 19940217 2216   44.9200 GAU  2.00e-02 -1.00e+00 -1.00e+00 -1.00e+00
+        GRX    ?    ?    ? S      ? 19940217 2216   48.6900 GAU  4.00e-02 -1.00e+00 -1.00e+00 -1.00e+00
+        CAD    ?    ?    ? P      D 19940217 2216   46.3500 GAU  2.00e-02 -1.00e+00 -1.00e+00 -1.00e+00
+        CAD    ?    ?    ? S      ? 19940217 2216   50.4000 GAU  4.00e-02 -1.00e+00 -1.00e+00 -1.00e+00
+        BMT    ?    ?    ? P      U 19940217 2216   47.3500 GAU  2.00e-02 -1.00e+00 -1.00e+00 -1.00e+00
+        """
+        nlloc_str = ""
+
+        for st, d in zip(self.streams, self.dicts):
+            sta = d['Station']
+            if 'P' not in d and 'S' not in d:
+                continue
+            for phase in ['P', 'S']:
+                if phase in d:
+                    sta = d['Station'].ljust(6)
+                    inst = "?".ljust(4)
+                    comp = "?".ljust(4)
+                    onset = "?"
+                    pha = phase.ljust(6)
+                    pol = "?"
+                    t = self.time_rel2abs(d[phase])
+                    date = t.strftime("%Y%m%d")
+                    hour_min = t.strftime("%H%M")
+                    sec = "%7.4f" % (t.second + t.microsecond / 1e6)
+                    error_type = "GAU"
+                    if phase + 'Err1' not in d or phase + 'Err2' not in d:
+                        err = "Warning: Missing error pick. " + \
+                              "Discarding %s phase of station %s."
+                        err = err % (phase, sta)
+                        print >> sys.stderr, err
+                        continue
+                    error_1 = d[phase + 'Err1']
+                    error_2 = d[phase + 'Err2']
+                    error = error_2 - error_1
+                    error = "%9.2e" % error
+                    coda_dur = "-1.00e+00"
+                    ampl = "-1.00e+00"
+                    period = "-1.00e+00"
+                    fields = [sta, inst, comp, onset, pha, pol, date, hour_min,
+                              sec, error_type, error, coda_dur, ampl, period]
+                    phase_str = " ".join(fields)
+                    nlloc_str += phase_str + "\n"
+        return nlloc_str
 
     def dicts2XML(self):
         """
