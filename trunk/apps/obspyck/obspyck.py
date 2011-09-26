@@ -521,7 +521,7 @@ class ObsPyck(QtGui.QMainWindow):
             return
         self.updateEventListFromSeisHub(self.T0, self.T1)
 
-    def on_qToolButton_sendEvent_clicked(self, *args):
+    def on_qToolButton_sendNewEvent_clicked(self, *args):
         if args:
             return
         # if sysop event and information missing show error and abort upload
@@ -529,12 +529,49 @@ class ObsPyck(QtGui.QMainWindow):
             if not self.checkForCompleteEvent():
                 self.popupBadEventError()
                 return
+        self.setXMLEventID()
         self.uploadSeisHub()
         self.checkForSysopEventDuplicates(self.T0, self.T1)
 
     def on_qCheckBox_publishEvent_toggled(self):
         newstate = self.widgets.qCheckBox_publishEvent.isChecked()
         print "Setting \"public\" flag of event to: %s" % newstate
+
+    def on_qToolButton_replaceEvent_clicked(self, *args):
+        if args:
+            return
+        # if sysop event and information missing show error and abort upload
+        if self.widgets.qCheckBox_sysop.isChecked():
+            if not self.checkForCompleteEvent():
+                self.popupBadEventError()
+                return
+        event = self.seishubEventList[self.seishubEventCurrent]
+        resource_name = event.get('resource_name')
+        if not resource_name.startswith("obspyck_"):
+            err = "Error: Only replacing of events created with ObsPyck allowed."
+            print >> sys.stderr, err
+            return
+        event_id = resource_name.split("_")[1]
+        account = event.get('account')
+        user = event.get('user')
+        qMessageBox = QtGui.QMessageBox()
+        qMessageBox.setWindowIcon(QtGui.QIcon(QtGui.QPixmap("obspyck.gif")))
+        qMessageBox.setIcon(QtGui.QMessageBox.Warning)
+        qMessageBox.setWindowTitle("Replace?")
+        qMessageBox.setText("Overwrite event in database?")
+        msg = "%s  (account: %s, user: %s)" % (resource_name, account, user)
+        msg += "\n\nWarning: Loading and then sending events might result " + \
+               "in loss of information in the xml file (e.g. all custom " + \
+               "defined fields!)"
+        qMessageBox.setInformativeText(msg)
+        qMessageBox.setStandardButtons(QtGui.QMessageBox.Cancel | QtGui.QMessageBox.Ok)
+        qMessageBox.setDefaultButton(QtGui.QMessageBox.Cancel)
+        if qMessageBox.exec_() == QtGui.QMessageBox.Ok:
+            self.deleteEventInSeisHub(resource_name)
+            self.setXMLEventID(event_id)
+            self.uploadSeisHub()
+            self.on_qToolButton_updateEventList_clicked(event)
+            self.checkForSysopEventDuplicates(self.T0, self.T1)
 
     def on_qToolButton_deleteEvent_clicked(self, *args):
         if args:
@@ -1695,7 +1732,7 @@ class ObsPyck(QtGui.QMainWindow):
     def do3dLoc(self):
         prog_dict = PROGRAMS['3dloc']
         files = prog_dict['files']
-        self.setXMLEventID()
+        #self.setXMLEventID()
         precall = prog_dict['PreCall']
         precall(prog_dict)
 
@@ -1949,7 +1986,7 @@ class ObsPyck(QtGui.QMainWindow):
         """
         prog_dict = PROGRAMS['hyp_2000']
         files = prog_dict['files']
-        self.setXMLEventID()
+        #self.setXMLEventID()
         precall = prog_dict['PreCall']
         precall(prog_dict)
 
@@ -1986,7 +2023,7 @@ class ObsPyck(QtGui.QMainWindow):
         controlfilename = "locate_%s.nlloc" % \
                           str(self.widgets.qComboBox_nllocModel.currentText())
 
-        self.setXMLEventID()
+        #self.setXMLEventID()
         precall = prog_dict['PreCall']
         precall(prog_dict)
 
@@ -3311,7 +3348,12 @@ class ObsPyck(QtGui.QMainWindow):
         
             # write S Pick info
             if 'S' in dict:
-                axind = dict['Saxind']
+                try:
+                    axind = dict['Saxind']
+                except:
+                    axind = 1
+                    err = "Warning: Could not determine axis for S pick. Using middle axis."
+                    print >> sys.stderr, err
                 pick = Sub(xml, "pick")
                 wave = Sub(pick, "waveform")
                 wave.set("networkCode", st[axind].stats.network) 
@@ -3433,7 +3475,7 @@ class ObsPyck(QtGui.QMainWindow):
         #we always have one key 'Program', if len > 1 we have real information
         #its possible that we have set the 'Program' key but afterwards
         #the actual program run does not fill our dictionary...
-        if len(dM) > 1:
+        if 'Magnitude' in dM:
             magnitude = Sub(xml, "magnitude")
             Sub(magnitude, "program").text = dM['Program']
             mag = Sub(magnitude, "mag")
@@ -3463,7 +3505,7 @@ class ObsPyck(QtGui.QMainWindow):
         #we always have one key 'Program', if len > 1 we have real information
         #its possible that we have set the 'Program' key but afterwards
         #the actual program run does not fill our dictionary...
-        if len(dF) > 1:
+        if 'Strike' in dF:
             focmec = Sub(xml, "focalMechanism")
             Sub(focmec, "program").text = dF['Program']
             nodplanes = Sub(focmec, "nodalPlanes")
@@ -3486,10 +3528,13 @@ class ObsPyck(QtGui.QMainWindow):
 
         return lxml.etree.tostring(xml, pretty_print=True, xml_declaration=True)
     
-    def setXMLEventID(self):
+    def setXMLEventID(self, event_id=None):
         #XXX is problematic if two people make a location at the same second!
         # then one event is overwritten with the other during submission.
-        self.dictEvent['xmlEventID'] = UTCDateTime().strftime('%Y%m%d%H%M%S')
+        if event_id is None:
+            self.dictEvent['xmlEventID'] = UTCDateTime().strftime('%Y%m%d%H%M%S')
+        else:
+            self.dictEvent['xmlEventID'] = event_id
 
     def uploadSeisHub(self):
         """
@@ -3510,7 +3555,10 @@ class ObsPyck(QtGui.QMainWindow):
         # if we did no location at all, and only picks would be saved the
         # EventID ist still not set, so we have to do this now.
         if 'xmlEventID' not in self.dictEvent:
-            self.setXMLEventID()
+            err = "Error: Event xml id not set."
+            print >> sys.stderr, err
+            return
+            #self.setXMLEventID()
         name = "obspyck_%s" % (self.dictEvent['xmlEventID']) #XXX id of the file
         # create XML and also save in temporary directory for inspection purposes
         print "creating xml..."
@@ -3599,8 +3647,8 @@ class ObsPyck(QtGui.QMainWindow):
         self.dictOrigin = {}
         self.dictMagnitude = {}
         self.dictEvent = {}
-        if 'xmlEventID' in self.dictEvent:
-            del self.dictEvent['xmlEventID']
+        #if 'xmlEventID' in self.dictEvent:
+        #    del self.dictEvent['xmlEventID']
 
     def clearFocmecDictionary(self):
         print "Clearing previous focal mechanism data."

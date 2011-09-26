@@ -404,7 +404,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QToolButton" name="qToolButton_sendEvent" >
+            <widget class="QToolButton" name="qToolButton_sendNewEvent" >
              <property name="sizePolicy" >
               <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
                <horstretch>0</horstretch>
@@ -415,7 +415,7 @@
               <enum>Qt::NoFocus</enum>
              </property>
              <property name="text" >
-              <string>send Event</string>
+              <string>send New Event</string>
              </property>
             </widget>
            </item>
@@ -432,6 +432,22 @@
              </property>
              <property name="text" >
               <string>publish Event</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="qToolButton_replaceEvent" >
+             <property name="sizePolicy" >
+              <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="focusPolicy" >
+              <enum>Qt::NoFocus</enum>
+             </property>
+             <property name="text" >
+              <string>replace Event</string>
              </property>
             </widget>
            </item>

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'qt_designer.ui'
 #
-# Created: Tue Mar 15 15:36:48 2011
+# Created: Mon Sep 26 11:38:24 2011
 #      by: PyQt4 UI code generator 4.4.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -211,15 +211,15 @@ class Ui_qMainWindow_obsPyck(object):
         self.qToolButton_updateEventList.setFocusPolicy(QtCore.Qt.NoFocus)
         self.qToolButton_updateEventList.setObjectName("qToolButton_updateEventList")
         self.leftVerticalLayout.addWidget(self.qToolButton_updateEventList)
-        self.qToolButton_sendEvent = QtGui.QToolButton(self.layoutWidgetxx)
+        self.qToolButton_sendNewEvent = QtGui.QToolButton(self.layoutWidgetxx)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum,QtGui.QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.qToolButton_sendEvent.sizePolicy().hasHeightForWidth())
-        self.qToolButton_sendEvent.setSizePolicy(sizePolicy)
-        self.qToolButton_sendEvent.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.qToolButton_sendEvent.setObjectName("qToolButton_sendEvent")
-        self.leftVerticalLayout.addWidget(self.qToolButton_sendEvent)
+        sizePolicy.setHeightForWidth(self.qToolButton_sendNewEvent.sizePolicy().hasHeightForWidth())
+        self.qToolButton_sendNewEvent.setSizePolicy(sizePolicy)
+        self.qToolButton_sendNewEvent.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.qToolButton_sendNewEvent.setObjectName("qToolButton_sendNewEvent")
+        self.leftVerticalLayout.addWidget(self.qToolButton_sendNewEvent)
         self.qCheckBox_publishEvent = QtGui.QCheckBox(self.layoutWidgetxx)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum,QtGui.QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
@@ -229,6 +229,15 @@ class Ui_qMainWindow_obsPyck(object):
         self.qCheckBox_publishEvent.setFocusPolicy(QtCore.Qt.NoFocus)
         self.qCheckBox_publishEvent.setObjectName("qCheckBox_publishEvent")
         self.leftVerticalLayout.addWidget(self.qCheckBox_publishEvent)
+        self.qToolButton_replaceEvent = QtGui.QToolButton(self.layoutWidgetxx)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum,QtGui.QSizePolicy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.qToolButton_replaceEvent.sizePolicy().hasHeightForWidth())
+        self.qToolButton_replaceEvent.setSizePolicy(sizePolicy)
+        self.qToolButton_replaceEvent.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.qToolButton_replaceEvent.setObjectName("qToolButton_replaceEvent")
+        self.leftVerticalLayout.addWidget(self.qToolButton_replaceEvent)
         self.qToolButton_deleteEvent = QtGui.QToolButton(self.layoutWidgetxx)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum,QtGui.QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
@@ -632,8 +641,9 @@ class Ui_qMainWindow_obsPyck(object):
         self.qToolButton_showWadati.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "show Wadati", None, QtGui.QApplication.UnicodeUTF8))
         self.qToolButton_getNextEvent.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "get Next Event", None, QtGui.QApplication.UnicodeUTF8))
         self.qToolButton_updateEventList.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "update Event List", None, QtGui.QApplication.UnicodeUTF8))
-        self.qToolButton_sendEvent.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "send Event", None, QtGui.QApplication.UnicodeUTF8))
+        self.qToolButton_sendNewEvent.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "send New Event", None, QtGui.QApplication.UnicodeUTF8))
         self.qCheckBox_publishEvent.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "publish Event", None, QtGui.QApplication.UnicodeUTF8))
+        self.qToolButton_replaceEvent.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "replace Event", None, QtGui.QApplication.UnicodeUTF8))
         self.qToolButton_deleteEvent.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "delete Event", None, QtGui.QApplication.UnicodeUTF8))
         self.qCheckBox_sysop.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "sysop", None, QtGui.QApplication.UnicodeUTF8))
         self.qToolButton_debug.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "debug", None, QtGui.QApplication.UnicodeUTF8))
