@@ -197,7 +197,7 @@ WIDGET_NAMES = ("qToolButton_clearAll", "qToolButton_clearOrigMag", "qToolButton
         "qToolButton_updateEventList", "qToolButton_sendNewEvent",
         "qToolButton_replaceEvent",
         "qCheckBox_publishEvent", "qToolButton_deleteEvent", "qCheckBox_sysop",
-        "qLineEdit_sysopPassword", "qToolButton_previousStream",
+        "qLineEdit_sysopPassword", "qComboBox_eventType", "qToolButton_previousStream",
         "qLabel_streamNumber", "qComboBox_streamName",
         "qToolButton_nextStream", "qToolButton_overview",
         "qComboBox_phaseType", "qToolButton_rotateLQT",

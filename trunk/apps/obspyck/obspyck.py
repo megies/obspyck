@@ -3275,6 +3275,11 @@ class ObsPyck(QtGui.QMainWindow):
 
         Sub(event_type, "public").text = "%s" % \
                 self.widgets.qCheckBox_publishEvent.isChecked()
+
+        # check if an quakeML event type should be set
+        event_quakeml_type = str(self.widgets.qComboBox_eventType.currentText())
+        if event_quakeml_type != '<event type>':
+            Sub(xml, "type").text = event_quakeml_type
         
         # XXX standard values for unset keys!!!???!!!???
         epidists = []
@@ -3297,6 +3302,16 @@ class ObsPyck(QtGui.QMainWindow):
                     Sub(date, "uncertainty").text = str(temp)
                 else:
                     Sub(date, "uncertainty")
+                if 'PErr1' in dict:
+                    temp = dict['P'] - dict['PErr1']
+                    Sub(date, "lowerUncertainty").text = str(temp)
+                else:
+                    Sub(date, "lowerUncertainty")
+                if 'PErr2' in dict:
+                    temp = dict['PErr2'] - dict['P']
+                    Sub(date, "upperUncertainty").text = str(temp)
+                else:
+                    Sub(date, "upperUncertainty")
                 Sub(pick, "phaseHint").text = "P"
                 phase_compu = ""
                 if 'POnset' in dict:
@@ -3369,6 +3384,16 @@ class ObsPyck(QtGui.QMainWindow):
                     Sub(date, "uncertainty").text = str(temp)
                 else:
                     Sub(date, "uncertainty")
+                if 'SErr1' in dict:
+                    temp = dict['S'] - dict['SErr1']
+                    Sub(date, "lowerUncertainty").text = str(temp)
+                else:
+                    Sub(date, "lowerUncertainty")
+                if 'SErr2' in dict:
+                    temp = dict['SErr2'] - dict['S']
+                    Sub(date, "upperUncertainty").text = str(temp)
+                else:
+                    Sub(date, "upperUncertainty")
                 Sub(pick, "phaseHint").text = "S"
                 phase_compu = ""
                 if 'SOnset' in dict:
@@ -3704,6 +3729,15 @@ class ObsPyck(QtGui.QMainWindow):
         else:
             user = None
 
+        # parse quakeML event type and select right one or add a custom one
+        if resource_xml.xpath(u".//type"):
+            event_quakeml_type = resource_xml.xpath(u".//type")[0].text
+            index = self.widgets.qComboBox_eventType.findText(event_quakeml_type.lower(), Qt.MatchExactly)
+            if index == -1:
+                self.widgets.qComboBox_eventType.addItem(event_quakeml_type)
+                index = self.widgets.qComboBox_eventType.findText(event_quakeml_type.lower(), Qt.MatchExactly)
+            self.widgets.qComboBox_eventType.setCurrentIndex(index)
+
         #analyze picks:
         for pick in resource_xml.xpath(u".//pick"):
             # attributes
@@ -3728,6 +3762,14 @@ class ObsPyck(QtGui.QMainWindow):
             # values
             time = pick.xpath(".//time/value")[0].text
             uncertainty = pick.xpath(".//time/uncertainty")[0].text
+            try:
+                lower_uncertainty = pick.xpath(".//time/lowerUncertainty")[0].text
+            except:
+                lower_uncertainty = None
+            try:
+                upper_uncertainty = pick.xpath(".//time/upperUncertainty")[0].text
+            except:
+                upper_uncertainty = None
             try:
                 onset = pick.xpath(".//onset")[0].text
             except:
@@ -3766,15 +3808,21 @@ class ObsPyck(QtGui.QMainWindow):
                 hyp_dist = None
             # convert UTC time to seconds after global reference time
             time = self.time_abs2rel(UTCDateTime(time))
-            # map uncertainty in seconds to error picks in seconds
-            if uncertainty:
-                uncertainty = float(uncertainty)
-                uncertainty /= 2.
             # assign to dictionary
             dict = self.dicts[streamnum]
+            # map uncertainty in seconds to error picks in seconds
+            if uncertainty:
+                uncertainty = float(uncertainty) / 2.0
+            if lower_uncertainty:
+                lower_uncertainty = float(lower_uncertainty)
+            if upper_uncertainty:
+                upper_uncertainty = float(upper_uncertainty)
             if pick.xpath(".//phaseHint")[0].text == "P":
                 dict['P'] = time
-                if uncertainty:
+                if lower_uncertainty and upper_uncertainty:
+                    dict['PErr1'] = time - lower_uncertainty
+                    dict['PErr2'] = time + upper_uncertainty
+                elif uncertainty:
                     dict['PErr1'] = time - uncertainty
                     dict['PErr2'] = time + uncertainty
                 if onset:
@@ -3803,7 +3851,10 @@ class ObsPyck(QtGui.QMainWindow):
                     dict['Saxind'] = 1
                 if channel.endswith('E'):
                     dict['Saxind'] = 2
-                if uncertainty:
+                if lower_uncertainty and upper_uncertainty:
+                    dict['SErr1'] = time - lower_uncertainty
+                    dict['SErr2'] = time + upper_uncertainty
+                elif uncertainty:
                     dict['SErr1'] = time - uncertainty
                     dict['SErr2'] = time + uncertainty
                 if onset:
@@ -4018,6 +4069,7 @@ class ObsPyck(QtGui.QMainWindow):
 
         events = self.clients['SeisHub'].event.getList(min_last_pick=starttime,
                                                        max_first_pick=endtime)
+        events.sort(key=lambda x: x['resource_name'])
         self.seishubEventList = events
         self.seishubEventCount = len(events)
         # we set the current event-pointer to the last list element, because we

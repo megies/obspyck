@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'qt_designer.ui'
 #
-# Created: Mon Sep 26 11:38:24 2011
+# Created: Wed Jan 11 16:20:35 2012
 #      by: PyQt4 UI code generator 4.4.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -271,6 +271,15 @@ class Ui_qMainWindow_obsPyck(object):
         self.qLineEdit_sysopPassword.setObjectName("qLineEdit_sysopPassword")
         self.horizontalLayout_4.addWidget(self.qLineEdit_sysopPassword)
         self.leftVerticalLayout.addLayout(self.horizontalLayout_4)
+        self.qComboBox_eventType = QtGui.QComboBox(self.layoutWidgetxx)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum,QtGui.QSizePolicy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.qComboBox_eventType.sizePolicy().hasHeightForWidth())
+        self.qComboBox_eventType.setSizePolicy(sizePolicy)
+        self.qComboBox_eventType.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.qComboBox_eventType.setObjectName("qComboBox_eventType")
+        self.leftVerticalLayout.addWidget(self.qComboBox_eventType)
         spacerItem3 = QtGui.QSpacerItem(20,40,QtGui.QSizePolicy.Minimum,QtGui.QSizePolicy.Expanding)
         self.leftVerticalLayout.addItem(spacerItem3)
         self.horizontalLayout_5 = QtGui.QHBoxLayout()
@@ -620,6 +629,7 @@ class Ui_qMainWindow_obsPyck(object):
         qMainWindow_obsPyck.setStatusBar(self.statusbar)
 
         self.retranslateUi(qMainWindow_obsPyck)
+        self.qComboBox_eventType.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(qMainWindow_obsPyck)
 
     def retranslateUi(self, qMainWindow_obsPyck):
@@ -646,6 +656,26 @@ class Ui_qMainWindow_obsPyck(object):
         self.qToolButton_replaceEvent.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "replace Event", None, QtGui.QApplication.UnicodeUTF8))
         self.qToolButton_deleteEvent.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "delete Event", None, QtGui.QApplication.UnicodeUTF8))
         self.qCheckBox_sysop.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "sysop", None, QtGui.QApplication.UnicodeUTF8))
+        self.qComboBox_eventType.addItem(QtGui.QApplication.translate("qMainWindow_obsPyck", "<event type>", None, QtGui.QApplication.UnicodeUTF8))
+        self.qComboBox_eventType.addItem(QtGui.QApplication.translate("qMainWindow_obsPyck", "earthquake", None, QtGui.QApplication.UnicodeUTF8))
+        self.qComboBox_eventType.addItem(QtGui.QApplication.translate("qMainWindow_obsPyck", "induced earthquake", None, QtGui.QApplication.UnicodeUTF8))
+        self.qComboBox_eventType.addItem(QtGui.QApplication.translate("qMainWindow_obsPyck", "quarry blast", None, QtGui.QApplication.UnicodeUTF8))
+        self.qComboBox_eventType.addItem(QtGui.QApplication.translate("qMainWindow_obsPyck", "explosion", None, QtGui.QApplication.UnicodeUTF8))
+        self.qComboBox_eventType.addItem(QtGui.QApplication.translate("qMainWindow_obsPyck", "chemical explosion", None, QtGui.QApplication.UnicodeUTF8))
+        self.qComboBox_eventType.addItem(QtGui.QApplication.translate("qMainWindow_obsPyck", "nuclear explosion", None, QtGui.QApplication.UnicodeUTF8))
+        self.qComboBox_eventType.addItem(QtGui.QApplication.translate("qMainWindow_obsPyck", "landslide", None, QtGui.QApplication.UnicodeUTF8))
+        self.qComboBox_eventType.addItem(QtGui.QApplication.translate("qMainWindow_obsPyck", "rockslide", None, QtGui.QApplication.UnicodeUTF8))
+        self.qComboBox_eventType.addItem(QtGui.QApplication.translate("qMainWindow_obsPyck", "snow avalanche", None, QtGui.QApplication.UnicodeUTF8))
+        self.qComboBox_eventType.addItem(QtGui.QApplication.translate("qMainWindow_obsPyck", "debris avalanche", None, QtGui.QApplication.UnicodeUTF8))
+        self.qComboBox_eventType.addItem(QtGui.QApplication.translate("qMainWindow_obsPyck", "mine collapse", None, QtGui.QApplication.UnicodeUTF8))
+        self.qComboBox_eventType.addItem(QtGui.QApplication.translate("qMainWindow_obsPyck", "building collapse", None, QtGui.QApplication.UnicodeUTF8))
+        self.qComboBox_eventType.addItem(QtGui.QApplication.translate("qMainWindow_obsPyck", "volcanic eruption", None, QtGui.QApplication.UnicodeUTF8))
+        self.qComboBox_eventType.addItem(QtGui.QApplication.translate("qMainWindow_obsPyck", "meteor impact", None, QtGui.QApplication.UnicodeUTF8))
+        self.qComboBox_eventType.addItem(QtGui.QApplication.translate("qMainWindow_obsPyck", "plane crash", None, QtGui.QApplication.UnicodeUTF8))
+        self.qComboBox_eventType.addItem(QtGui.QApplication.translate("qMainWindow_obsPyck", "sonic boom", None, QtGui.QApplication.UnicodeUTF8))
+        self.qComboBox_eventType.addItem(QtGui.QApplication.translate("qMainWindow_obsPyck", "not existing", None, QtGui.QApplication.UnicodeUTF8))
+        self.qComboBox_eventType.addItem(QtGui.QApplication.translate("qMainWindow_obsPyck", "null", None, QtGui.QApplication.UnicodeUTF8))
+        self.qComboBox_eventType.addItem(QtGui.QApplication.translate("qMainWindow_obsPyck", "other", None, QtGui.QApplication.UnicodeUTF8))
         self.qToolButton_debug.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "debug", None, QtGui.QApplication.UnicodeUTF8))
         self.qToolButton_previousStream.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "<", None, QtGui.QApplication.UnicodeUTF8))
         self.qLabel_streamNumber.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"

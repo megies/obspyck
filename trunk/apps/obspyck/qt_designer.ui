@@ -510,6 +510,122 @@
             </layout>
            </item>
            <item>
+            <widget class="QComboBox" name="qComboBox_eventType" >
+             <property name="sizePolicy" >
+              <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="focusPolicy" >
+              <enum>Qt::NoFocus</enum>
+             </property>
+             <property name="currentIndex" >
+              <number>0</number>
+             </property>
+             <item>
+              <property name="text" >
+               <string>&lt;event type></string>
+              </property>
+             </item>
+             <item>
+              <property name="text" >
+               <string>earthquake</string>
+              </property>
+             </item>
+             <item>
+              <property name="text" >
+               <string>induced earthquake</string>
+              </property>
+             </item>
+             <item>
+              <property name="text" >
+               <string>quarry blast</string>
+              </property>
+             </item>
+             <item>
+              <property name="text" >
+               <string>explosion</string>
+              </property>
+             </item>
+             <item>
+              <property name="text" >
+               <string>chemical explosion</string>
+              </property>
+             </item>
+             <item>
+              <property name="text" >
+               <string>nuclear explosion</string>
+              </property>
+             </item>
+             <item>
+              <property name="text" >
+               <string>landslide</string>
+              </property>
+             </item>
+             <item>
+              <property name="text" >
+               <string>rockslide</string>
+              </property>
+             </item>
+             <item>
+              <property name="text" >
+               <string>snow avalanche</string>
+              </property>
+             </item>
+             <item>
+              <property name="text" >
+               <string>debris avalanche</string>
+              </property>
+             </item>
+             <item>
+              <property name="text" >
+               <string>mine collapse</string>
+              </property>
+             </item>
+             <item>
+              <property name="text" >
+               <string>building collapse</string>
+              </property>
+             </item>
+             <item>
+              <property name="text" >
+               <string>volcanic eruption</string>
+              </property>
+             </item>
+             <item>
+              <property name="text" >
+               <string>meteor impact</string>
+              </property>
+             </item>
+             <item>
+              <property name="text" >
+               <string>plane crash</string>
+              </property>
+             </item>
+             <item>
+              <property name="text" >
+               <string>sonic boom</string>
+              </property>
+             </item>
+             <item>
+              <property name="text" >
+               <string>not existing</string>
+              </property>
+             </item>
+             <item>
+              <property name="text" >
+               <string>null</string>
+              </property>
+             </item>
+             <item>
+              <property name="text" >
+               <string>other</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item>
             <spacer name="verticalSpacer_5" >
              <property name="orientation" >
               <enum>Qt::Vertical</enum>
