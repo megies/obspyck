@@ -38,7 +38,7 @@ except ImportError:
 from obspy.core import UTCDateTime, Stream
 try:
     from obspy.signal.util import utlLonLat, utlGeoKm
-    from obspy.signal.invsim import estimateMagnitude
+    from obspy.signal.invsim import estimateMagnitude, paz2AmpValueOfFreqResp
     from obspy.signal import rotate_ZNE_LQT, rotate_NE_RT
     from obspy.signal import arPick
     from obspy.signal.util import az2baz2az
@@ -2622,15 +2622,25 @@ class ObsPyck(QtGui.QMainWindow):
             pazs = []
             channels = []
             if 'MagMin1' in dict and 'MagMax1' in dict:
-                pazs.append(dict['pazN'])
+                paz = dict['pazN']
+                pazs.append(paz)
                 amplitudes.append(dict['MagMax1'] - dict['MagMin1'])
-                timedeltas.append(abs(dict['MagMax1T'] - dict['MagMin1T']))
+                td = abs(dict['MagMax1T'] - dict['MagMin1T'])
+                timedeltas.append(td)
                 channels.append(st[1].stats.channel)
+                corr = paz2AmpValueOfFreqResp(paz, (1.0 / (2 * td))) * paz['sensitivity']
+                pgv = np.abs([dict['MagMax1'], dict['MagMin1']]).max() / corr 
+                dict['PGV1'] = pgv
             if 'MagMin2' in dict and 'MagMax2' in dict:
-                pazs.append(dict['pazE'])
-                amplitudes.append(dict['MagMax1'] - dict['MagMin1'])
-                timedeltas.append(abs(dict['MagMax1T'] - dict['MagMin1T']))
+                paz = dict['pazE']
+                pazs.append(paz)
+                amplitudes.append(dict['MagMax2'] - dict['MagMin2'])
+                td = abs(dict['MagMax2T'] - dict['MagMin2T'])
+                timedeltas.append(td)
                 channels.append(st[2].stats.channel)
+                corr = paz2AmpValueOfFreqResp(paz, (1.0 / (2 * td))) * paz['sensitivity']
+                pgv = np.abs([dict['MagMax2'], dict['MagMin2']]).max() / corr 
+                dict['PGV2'] = pgv
             
             if not amplitudes:
                 continue
@@ -3512,7 +3522,7 @@ class ObsPyck(QtGui.QMainWindow):
                 Sub(mag, "uncertainty").text = str(dM['Uncertainty'])
             Sub(magnitude, "type").text = "Ml"
             Sub(magnitude, "stationCount").text = '%i' % dM['Station Count']
-            for dict in self.dicts:
+            for st, dict in zip(self.streams, self.dicts):
                 if 'Mag' in dict:
                     stationMagnitude = Sub(xml, "stationMagnitude")
                     mag = Sub(stationMagnitude, 'mag')
@@ -3524,6 +3534,46 @@ class ObsPyck(QtGui.QMainWindow):
                     else:
                         Sub(stationMagnitude, 'weight').text = "0"
                     Sub(stationMagnitude, 'channels').text = str(dict['MagChannel'])
+                    if 'PGV1' in dict:
+                        ampl = Sub(stationMagnitude, "amplitude")
+                        axind = 1
+                        wave = Sub(ampl, "waveform")
+                        wave.set("networkCode", st[axind].stats.network) 
+                        wave.set("stationCode", st[axind].stats.station) 
+                        wave.set("channelCode", st[axind].stats.channel) 
+                        wave.set("locationCode", st[axind].stats.location) 
+                        Sub(Sub(ampl, 'genericAmplitude'), 'value').text = "%.2e" % dict['PGV1']
+                        Sub(ampl, 'unit').text = "m/s"
+                        t1 = dict['MagMin1T']
+                        t2 = dict['MagMax1T']
+                        td = abs(dict['MagMax1T'] - dict['MagMin1T'])
+                        Sub(ampl, 'period').text = "%.3f" % (1.0 / (2 * td))
+                        tw = Sub(ampl, 'timeWindow')
+                        Sub(tw, 'reference').text = self.time_rel2abs(t1).isoformat()
+                        Sub(tw, 'begin').text = "0.0"
+                        Sub(tw, 'end').text = "%0.6f" % (t2 - t1)
+                        comment = "PGV, reference time is time of minimum amplitude, end is relative time of maximum amplitude"
+                        Sub(ampl, 'comment').text = comment
+                    if 'PGV2' in dict:
+                        ampl = Sub(stationMagnitude, "amplitude")
+                        axind = 2
+                        wave = Sub(ampl, "waveform")
+                        wave.set("networkCode", st[axind].stats.network) 
+                        wave.set("stationCode", st[axind].stats.station) 
+                        wave.set("channelCode", st[axind].stats.channel) 
+                        wave.set("locationCode", st[axind].stats.location) 
+                        Sub(Sub(ampl, 'genericAmplitude'), 'value').text = "%.2e" % dict['PGV2']
+                        Sub(ampl, 'unit').text = "m/s"
+                        t1 = dict['MagMin2T']
+                        t2 = dict['MagMax2T']
+                        td = abs(dict['MagMax2T'] - dict['MagMin2T'])
+                        Sub(ampl, 'period').text = "%.3f" % (1.0 / (2 * td))
+                        tw = Sub(ampl, 'timeWindow')
+                        Sub(tw, 'reference').text = self.time_rel2abs(t1).isoformat()
+                        Sub(tw, 'begin').text = "0.0"
+                        Sub(tw, 'end').text = "%0.6f" % (t2 - t1)
+                        comment = "PGV, reference time is time of minimum amplitude, end is relative time of maximum amplitude"
+                        Sub(ampl, 'comment').text = comment
         
         #focal mechanism output
         dF = self.dictFocalMechanism
@@ -3730,13 +3780,14 @@ class ObsPyck(QtGui.QMainWindow):
             user = None
 
         # parse quakeML event type and select right one or add a custom one
-        if resource_xml.xpath(u".//type"):
-            event_quakeml_type = resource_xml.xpath(u".//type")[0].text
+        index = 0
+        if resource_xml.xpath(u"/event/type"):
+            event_quakeml_type = resource_xml.xpath(u"/event/type")[0].text
             index = self.widgets.qComboBox_eventType.findText(event_quakeml_type.lower(), Qt.MatchExactly)
             if index == -1:
                 self.widgets.qComboBox_eventType.addItem(event_quakeml_type)
                 index = self.widgets.qComboBox_eventType.findText(event_quakeml_type.lower(), Qt.MatchExactly)
-            self.widgets.qComboBox_eventType.setCurrentIndex(index)
+        self.widgets.qComboBox_eventType.setCurrentIndex(index)
 
         #analyze picks:
         for pick in resource_xml.xpath(u".//pick"):
@@ -4001,6 +4052,7 @@ class ObsPyck(QtGui.QMainWindow):
                       "magnitude data with id: \"%s\"" % station.strip()
                 print >> sys.stderr, err
                 continue
+            st = self.streams[streamnum]
             # values
             mag = float(stamag.xpath(".//mag/value")[0].text)
             mag_channel = stamag.xpath(".//channels")[0].text
@@ -4014,6 +4066,47 @@ class ObsPyck(QtGui.QMainWindow):
             dict['Mag'] = mag
             dict['MagUse'] = mag_use
             dict['MagChannel'] = mag_channel
+        
+        # analyze amplitudes (magnitude picks):
+        for ampl in resource_xml.xpath(u".//stationMagnitude/amplitude"):
+            # attributes
+            id = ampl.find("waveform").attrib
+            network = id["networkCode"]
+            station = id["stationCode"]
+            location = id["locationCode"]
+            channel = id['channelCode']
+            streamnum = None
+            # search for streamnumber corresponding to pick
+            for i, dict in enumerate(self.dicts):
+                if station.strip() != dict['Station']:
+                    continue
+                else:
+                    streamnum = i
+                    break
+            if streamnum is None:
+                err = "Warning: Did not find matching stream for pick " + \
+                      "data with station id: \"%s\"" % station.strip()
+                print >> sys.stderr, err
+                continue
+            dict = self.dicts[streamnum]
+            st = self.streams[streamnum].copy()
+            if self.widgets.qToolButton_filter.isChecked():
+                st = st.copy()
+                self._filter(st)
+            # values
+            tr = st.select(channel=channel)[0]
+            ind = st.traces.index(tr)
+            time = ampl.xpath(".//timeWindow/reference")[0].text
+            time = self.time_abs2rel(UTCDateTime(time))
+            dict['MagMin%dT' % ind] = time
+            data_index = int(time * tr.stats.sampling_rate)
+            data = tr.data[data_index]
+            dict['MagMin%d' % ind] = data
+            time += float(ampl.xpath(".//timeWindow/end")[0].text)
+            dict['MagMax%dT' % ind] = time
+            data_index = int(time * tr.stats.sampling_rate)
+            data = tr.data[data_index]
+            dict['MagMax%d' % ind] = data
         
         #analyze focal mechanism:
         dF = self.dictFocalMechanism
