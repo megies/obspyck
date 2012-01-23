@@ -156,7 +156,10 @@ COMMANDLINE_OPTIONS = (
                 'help': "Tuple containing Fissures dns and DataCenter name."}),
         (("--fissures-name_service",), {'dest': "fissures_name_service",
                 'default': "dmc.iris.washington.edu:6371/NameService",
-                'help': "String containing the Fissures name service."}))
+                'help': "String containing the Fissures name service."}),
+        (("--ignore-chksum",), {'action': "store_false", 'dest': "verify_chksum",
+                'default': True,
+                'help': "Deactivate chksum check for local GSE2 files"}))
 PROGRAMS = {
         'nlloc': {'filenames': {'exe': "NLLoc", 'phases': "nlloc.obs",
                                 'summary': "nlloc.hyp",
@@ -318,7 +321,7 @@ def fetch_waveforms_with_metadata(options):
             parsers.append(Parser(file))
         for file in options.files.split(","):
             print file
-            st = read(file, starttime=t1, endtime=t2)
+            st = read(file, starttime=t1, endtime=t2, verify_chksum=options.verify_chksum)
             for tr in st:
                 for parser in parsers:
                     try:
@@ -328,6 +331,14 @@ def fetch_waveforms_with_metadata(options):
                     except:
                         continue
                     print "found no metadata for %s!!!" % file
+                if tr.stats.format == 'GSE2':
+                    try:
+                        calibration = 2.0 * np.pi * tr.stats.calib / tr.stats.gse2.calper
+                        tr.stats.sensitivity = tr.stats.sensitivity / calibration
+                        print "Warning: Dividing overall sensitivity by GSE2 calibration but not using the 1e9 factor!!"
+                    except:
+                        print "Warning: Failed to apply GSE2 calibration factor to overall sensitivity. Continuing anyway."
+                        pass
             streams.append(st)
     # SeisHub
     if options.seishub_ids:
