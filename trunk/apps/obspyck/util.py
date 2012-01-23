@@ -28,7 +28,10 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as QFigureCanva
 from matplotlib.widgets import MultiCursor as MplMultiCursor
 
 from obspy.core import UTCDateTime
-from obspy.signal import gps2DistAzimuth
+try:
+    from obspy.core.util import gps2DistAzimuth
+except:
+    from obspy.signal import gps2DistAzimuth
 
 
 mpl.rc('figure.subplot', left=0.05, right=0.98, bottom=0.10, top=0.92,
