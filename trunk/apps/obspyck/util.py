@@ -109,6 +109,9 @@ COMMANDLINE_OPTIONS = (
                 'dest': "nonormalization", 'default': False,
                 'help': "Deactivate normalization to nm/s for plotting " + \
                 "using overall sensitivity (tr.stats.paz.sensitivity)"}),
+        (("--nometadata",), {'action': "store_true",
+                'dest': "nometadata", 'default': False,
+                'help': "Deactivate fetching/parsing metadata for waveforms"}),
         (("--pluginpath",), {'dest': "pluginpath",
                 'default': "/baysoft/obspyck/",
                 'help': "Path to local directory containing the folders with "
@@ -306,6 +309,8 @@ def fetch_waveforms_with_metadata(options):
     :returns: (dictionary with clients,
                list(:class:`obspy.core.stream.Stream`s))
     """
+    getPAZ = not options.nometadata
+    getCoordinates = not options.nometadata
     t1 = UTCDateTime(options.time) + options.starttime_offset
     t2 = t1 + options.duration
     streams = []
@@ -372,8 +377,8 @@ def fetch_waveforms_with_metadata(options):
                     sys.stdout.write("\r%s ..." % net_sta.ljust(8))
                     sys.stdout.flush()
                     st = client.waveform.getWaveform(net, sta, loc, cha, t1,
-                            t2, apply_filter=True, getPAZ=True,
-                            getCoordinates=True)
+                            t2, apply_filter=True, getPAZ=getPAZ,
+                            getCoordinates=getCoordinates)
                     sta_fetched.add(net_sta)
                     sys.stdout.write("\r%s fetched.\n" % net_sta.ljust(8))
                     sys.stdout.flush()
@@ -409,7 +414,7 @@ def fetch_waveforms_with_metadata(options):
                 st = client.getWaveform(network=net, station=sta,
                                         location=loc, channel=cha,
                                         starttime=t1, endtime=t2,
-                                        getPAZ=True, getCoordinates=True)
+                                        getPAZ=getPAZ, getCoordinates=getCoordinates)
                 sta_fetched.add(net_sta)
                 sys.stdout.write("\r%s fetched.\n" % net_sta.ljust(8))
                 sys.stdout.flush()
@@ -442,7 +447,7 @@ def fetch_waveforms_with_metadata(options):
                 st = client.getWaveform(network=net, station=sta,
                                         location=loc, channel=cha,
                                         starttime=t1, endtime=t2,
-                                        getPAZ=True, getCoordinates=True)
+                                        getPAZ=getPAZ, getCoordinates=getCoordinates)
                 sta_fetched.add(net_sta)
                 sys.stdout.write("\r%s fetched.\n" % net_sta.ljust(8))
                 sys.stdout.flush()
@@ -590,7 +595,7 @@ def merge_check_and_cleanup_streams(streams, options):
                 tr.data = tr.data - tr.data.mean()
     return (warn_msg, merge_msg, streams)
 
-def setup_dicts(streams):
+def setup_dicts(streams, options):
     """
     Function to set up the list of dictionaries that is used alongside the
     streams list.
@@ -622,21 +627,22 @@ def setup_dicts(streams):
         #    net = 'BW'
         #    print "Warning: Got no network information, setting to " + \
         #          "default: BW"
-        try:
-            dict['StaLon'] = trZ.stats.coordinates.longitude
-            dict['StaLat'] = trZ.stats.coordinates.latitude
-            dict['StaEle'] = trZ.stats.coordinates.elevation / 1000. # all depths in km!
-            dict['pazZ'] = trZ.stats.paz
-            if len(st) == 3:
-                dict['pazN'] = trN.stats.paz
-                dict['pazE'] = trE.stats.paz
-        except:
-            net = trZ.stats.network.strip()
-            print 'Error: Missing metadata for %s. Discarding stream.' \
-                    % (":".join([net, sta]))
-            streams.pop(i)
-            dicts.pop(i)
-            continue
+        if not options.nometadata:
+            try:
+                dict['StaLon'] = trZ.stats.coordinates.longitude
+                dict['StaLat'] = trZ.stats.coordinates.latitude
+                dict['StaEle'] = trZ.stats.coordinates.elevation / 1000. # all depths in km!
+                dict['pazZ'] = trZ.stats.paz
+                if len(st) == 3:
+                    dict['pazN'] = trN.stats.paz
+                    dict['pazE'] = trE.stats.paz
+            except:
+                net = trZ.stats.network.strip()
+                print 'Error: Missing metadata for %s. Discarding stream.' \
+                        % (":".join([net, sta]))
+                streams.pop(i)
+                dicts.pop(i)
+                continue
     return streams, dicts
 
 def setup_external_programs(options):
