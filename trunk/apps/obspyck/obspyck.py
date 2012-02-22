@@ -192,7 +192,7 @@ class ObsPyck(QtGui.QMainWindow):
 
         # sort streams by station name
         streams.sort(key=lambda st: st[0].stats['station'])
-        (streams, dicts) = setup_dicts(streams)
+        (streams, dicts) = setup_dicts(streams, options)
         self.dicts = dicts
         self.eventMapColors = []
         for i in xrange(len(dicts)):
