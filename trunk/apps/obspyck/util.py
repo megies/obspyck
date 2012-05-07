@@ -165,7 +165,10 @@ COMMANDLINE_OPTIONS = (
                 'help': "String containing the Fissures name service."}),
         (("--ignore-chksum",), {'action': "store_false", 'dest': "verify_chksum",
                 'default': True,
-                'help': "Deactivate chksum check for local GSE2 files"}))
+                'help': "Deactivate chksum check for local GSE2 files"}),
+        (("--filter",), {'action': "store_true", 'dest': "filter",
+                'default': False,
+                'help': "Switch filter button on at startup."}))
 PROGRAMS = {
         'nlloc': {'filenames': {'exe': "NLLoc", 'phases': "nlloc.obs",
                                 'summary': "nlloc.hyp",
@@ -591,8 +594,8 @@ def merge_check_and_cleanup_streams(streams, options):
     # demean traces if not explicitly deactivated on command line
     if not options.nozeromean:
         for st in streams:
-            for tr in st:
-                tr.data = tr.data - tr.data.mean()
+            st.detrend('simple')
+            st.detrend('constant')
     return (warn_msg, merge_msg, streams)
 
 def setup_dicts(streams, options):

@@ -218,6 +218,7 @@ class ObsPyck(QtGui.QMainWindow):
         self.widgets.qDoubleSpinBox_lowpass.setValue(self.options.lowpass)
         self.widgets.qDoubleSpinBox_sta.setValue(self.options.sta)
         self.widgets.qDoubleSpinBox_lta.setValue(self.options.lta)
+        self.widgets.qToolButton_filter.setChecked(self.options.filter)
         self.updateStreamLabels()
 
         print >> sys.stderr, warn_msg
@@ -243,6 +244,8 @@ class ObsPyck(QtGui.QMainWindow):
         # XXX XXX the good old focus issue again!?! no events get to the mpl canvas
         # XXX self.canv.setFocusPolicy(Qt.WheelFocus)
         #print self.canv.hasFocus()
+        if 'SeisHub' in self.clients:
+            self.updateEventListFromSeisHub(self.T0, self.T1)
 
     def time_abs2rel(self, abstime):
         """
