@@ -808,6 +808,14 @@ class ObsPyck(QtGui.QMainWindow):
         if self.widgets.qToolButton_spectrogram.isChecked():
             self.on_qToolButton_spectrogram_toggled()
 
+    def on_qDoubleSpinBox_wlen_valueChanged(self):
+        if self.widgets.qToolButton_spectrogram.isChecked():
+            self.on_qToolButton_spectrogram_toggled()
+
+    def on_qDoubleSpinBox_perlap_valueChanged(self):
+        if self.widgets.qToolButton_spectrogram.isChecked():
+            self.on_qToolButton_spectrogram_toggled()
+
     ###########################################################################
     ### signal handlers END ###### ############################################
     ###########################################################################
@@ -1199,8 +1207,10 @@ class ObsPyck(QtGui.QMainWindow):
             ax.xaxis.set_major_formatter(FuncFormatter(formatXTicklabels))
             if self.widgets.qToolButton_spectrogram.isChecked():
                 log = self.widgets.qCheckBox_spectrogramLog.isChecked()
-                spectrogram(tr.data, tr.stats.sampling_rate, log=log,
-                            cmap=self.spectrogramColormap, axis=ax, zorder=-10)
+                wlen = self.widgets.qDoubleSpinBox_wlen.value()
+                perlap = self.widgets.qDoubleSpinBox_perlap.value()
+                spectrogram(tr.data, tr.stats.sampling_rate, log=log, wlen=wlen, per_lap=perlap,
+                            cmap=self.spectrogramColormap, axes=ax, zorder=-10)
                 textcolor = "red"
             else:
                 # normalize with overall sensitivity and convert to nm/s
@@ -1587,14 +1597,24 @@ class ObsPyck(QtGui.QMainWindow):
         # Still able to use the dictionary.
         elif ev.modifiers() == getattr(QtCore.Qt,
                 '%sModifier' % self.keys['switchWheelZoomAxis'].capitalize()):
+            if self.widgets.qToolButton_spectrogram.isChecked():
             # Zoom in on wheel-up
-            if ev.delta() < 0:
-                top *= 2
-                bottom *= 2
-            # Zoom out on wheel-down
-            elif ev.delta() > 0:
-                top /= 2
-                bottom /= 2
+                if ev.delta() < 0:
+                    top -= (mpl_ev.ydata - top) / 2
+                    bottom += (bottom - mpl_ev.ydata) / 2
+                # Zoom out on wheel-down
+                elif ev.delta() > 0:
+                    top += (mpl_ev.ydata - top) / 2
+                    bottom -= (bottom - mpl_ev.ydata) / 2
+            else:
+            # Zoom in on wheel-up
+                if ev.delta() < 0:
+                    top *= 2
+                    bottom *= 2
+                # Zoom out on wheel-down
+                elif ev.delta() > 0:
+                    top /= 2
+                    bottom /= 2
         ax.set_xbound(lower=left, upper=right)
         ax.set_ybound(lower=bottom, upper=top)
         self.redraw()
