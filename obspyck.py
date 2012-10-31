@@ -59,6 +59,9 @@ from qt_designer import Ui_qMainWindow_obsPyck
 from util import *
 
 
+ID_ROOT = "smi:erdbeben-in-bayern.de"
+
+
 class ObsPyck(QtGui.QMainWindow):
     """
     Main Window with the design loaded from the Qt Designer.
@@ -146,15 +149,15 @@ class ObsPyck(QtGui.QMainWindow):
             msg = "Cannot find external programs dir, localization " + \
                   "methods/functions are deactivated"
             warnings.warn(msg)
-        self.dictOrigin = {}
-        self.dictMagnitude = {}
-        self.dictFocalMechanism = {} # currently selected focal mechanism
+        self.origin = Origin()
+        self.magnitude = Magnitude()
+        self.focalMechanism = FocalMechanism() # currently selected focal mechanism
         self.focMechList = [] # list for all focal mechanisms from focmec
         # indicates which of the available focal mechanisms is selected
         self.focMechCurrent = None 
         # indicates how many focal mechanisms are available from focmec
         self.focMechCount = None
-        self.dictEvent = {}
+        self.event = Event()
         self.spectrogramColormap = matplotlib.cm.jet
         # indicates which of the available events from seishub was loaded
         self.seishubEventCurrent = None 
@@ -342,11 +345,11 @@ class ObsPyck(QtGui.QMainWindow):
             return
         self.delAllItems()
         self.clearOriginMagnitudeDictionaries()
-        self.dictOrigin['Program'] = "hyp2000"
+        self.origin.method_id = "/".join([ID_ROOT, "location_method", "hyp2000"])
         self.doHyp2000()
         self.loadHyp2000Data()
         self.calculateEpiHypoDists()
-        self.dictMagnitude['Program'] = "obspy"
+        self.magnitude.method_id = "/".join([ID_ROOT, "magnitude_method", "obspy"])
         self.calculateStationMagnitudes()
         self.updateNetworkMag()
         self.drawAllItems()
@@ -358,12 +361,12 @@ class ObsPyck(QtGui.QMainWindow):
             return
         self.delAllItems()
         self.clearOriginMagnitudeDictionaries()
-        self.dictOrigin['Program'] = "3dloc"
+        self.origin.method_id = "/".join([ID_ROOT, "location_method", "3dloc"])
         self.do3dLoc()
         self.load3dlocSyntheticPhases()
         self.load3dlocData()
         self.calculateEpiHypoDists()
-        self.dictMagnitude['Program'] = "obspy"
+        self.magnitude.method_id = "/".join([ID_ROOT, "magnitude_method", "obspy"])
         self.calculateStationMagnitudes()
         self.updateNetworkMag()
         self.drawAllItems()
@@ -375,11 +378,11 @@ class ObsPyck(QtGui.QMainWindow):
             return
         self.delAllItems()
         self.clearOriginMagnitudeDictionaries()
-        self.dictOrigin['Program'] = "NLLoc"
+        self.origin.method_id = "/".join([ID_ROOT, "location_method", "NLLoc"])
         self.doNLLoc()
         self.loadNLLocOutput()
         self.calculateEpiHypoDists()
-        self.dictMagnitude['Program'] = "obspy"
+        self.magnitude.method_id = "/".join([ID_ROOT, "magnitude_method", "obspy"])
         self.calculateStationMagnitudes()
         self.updateNetworkMag()
         self.drawAllItems()
@@ -390,7 +393,7 @@ class ObsPyck(QtGui.QMainWindow):
         if args:
             return
         self.calculateEpiHypoDists()
-        self.dictMagnitude['Program'] = "obspy"
+        self.magnitude.method_id = "/".join([ID_ROOT, "magnitude_method", "obspy"])
         self.calculateStationMagnitudes()
         self.updateNetworkMag()
 
@@ -398,7 +401,7 @@ class ObsPyck(QtGui.QMainWindow):
         if args:
             return
         self.clearFocmecDictionary()
-        self.dictFocalMechanism['Program'] = "focmec"
+        self.FocalMechanism.method_id = "/".join([ID_ROOT, "focal_mechanism_method", "focmec"])
         self.doFocmec()
 
     def on_qToolButton_showMap_toggled(self):
@@ -427,7 +430,7 @@ class ObsPyck(QtGui.QMainWindow):
             #print "http://maps.google.de/maps?f=q&q=%.6f,%.6f" % \
             #       (self.dictOrigin['Latitude'], self.dictOrigin['Longitude'])
             link = "http://maps.google.de/maps?f=q&q=%.6f,%.6f" % \
-                    (self.dictOrigin['Latitude'], self.dictOrigin['Longitude'])
+                    (self.origin.latitude, self.origin.longitude)
             self.widgets.qPlainTextEdit_stdout.appendHtml("<a href='%s'>%s</a> &nbsp;" % (link, link))
         else:
             self.delEventMap()
@@ -555,14 +558,13 @@ class ObsPyck(QtGui.QMainWindow):
             print >> sys.stderr, err
             return
         event_id = resource_name.split("_")[1]
-        account = event.get('account')
         user = event.get('user')
         qMessageBox = QtGui.QMessageBox()
         qMessageBox.setWindowIcon(QtGui.QIcon(QtGui.QPixmap("obspyck.gif")))
         qMessageBox.setIcon(QtGui.QMessageBox.Warning)
         qMessageBox.setWindowTitle("Replace?")
         qMessageBox.setText("Overwrite event in database?")
-        msg = "%s  (account: %s, user: %s)" % (resource_name, account, user)
+        msg = "%s  (user: %s)" % (resource_name, account, user)
         msg += "\n\nWarning: Loading and then sending events might result " + \
                "in loss of information in the xml file (e.g. all custom " + \
                "defined fields!)"
@@ -581,14 +583,13 @@ class ObsPyck(QtGui.QMainWindow):
             return
         event = self.seishubEventList[self.seishubEventCurrent]
         resource_name = event.get('resource_name')
-        account = event.get('account')
         user = event.get('user')
         qMessageBox = QtGui.QMessageBox()
         qMessageBox.setWindowIcon(QtGui.QIcon(QtGui.QPixmap("obspyck.gif")))
         qMessageBox.setIcon(QtGui.QMessageBox.Warning)
         qMessageBox.setWindowTitle("Delete?")
         qMessageBox.setText("Delete event from database?")
-        msg = "%s  (account: %s, user: %s)" % (resource_name, account, user)
+        msg = "%s  (user: %s)" % (resource_name, account, user)
         qMessageBox.setInformativeText(msg)
         qMessageBox.setStandardButtons(QtGui.QMessageBox.Cancel | QtGui.QMessageBox.Ok)
         qMessageBox.setDefaultButton(QtGui.QMessageBox.Cancel)
@@ -1893,41 +1894,43 @@ class ObsPyck(QtGui.QMainWindow):
         self.focMechList = []
         for line in lines:
             line = line.split()
-            tempdict = {}
-            tempdict['Program'] = "focmec"
-            tempdict['Dip'] = float(line[0])
-            tempdict['Strike'] = float(line[1])
-            tempdict['Rake'] = float(line[2])
-            tempdict['Errors'] = sum([int(float(line[no])) for no in (3, 4, 5)]) # not used in xml
-            tempdict['Station Polarity Count'] = count
-            tempdict['Possible Solution Count'] = len(lines)
-            print "Strike: %6.2f  Dip: %6.2f  Rake: %6.2f  Errors: %i/%i" % \
-                    (tempdict['Strike'], tempdict['Dip'], tempdict['Rake'],
-                     tempdict['Errors'], tempdict['Station Polarity Count'])
-            self.focMechList.append(tempdict)
+            np1 = NodalPlane()
+            np = NodalPlanes(nodal_plane_1=np1)
+            fm = FocalMechanism(nodal_planes=np)
+            fm.method_id = "/".join([ID_ROOT, "focal_mechanism_method", "focmec"])
+            np1.dip = float(line[0])
+            np1.strike = float(line[1])
+            np1.rake = float(line[2])
+            fm.station_polarity_count = count
+            errors = sum([int(float(line[no])) for no in (3, 4, 5)]) # not used in xml
+            fm.misfit = errors / float(fm.station_polarity_count)
+            fm.comments.append(Comment("Possible Solution Count: %i" % len(lines)))
+            print "Strike: %6.2f  Dip: %6.2f  Rake: %6.2f  Misfit: %.2f" % \
+                    (np1.strike, np1.dip, np1.rake, fm.misfit)
+            self.focMechList.append(fm)
         self.focMechCount = len(self.focMechList)
         self.focMechCurrent = 0
         print "selecting Focal Mechanism No.  1 of %2i:" % self.focMechCount
-        self.dictFocalMechanism = self.focMechList[0]
-        dF = self.dictFocalMechanism
-        print "Strike: %6.2f  Dip: %6.2f  Rake: %6.2f  Errors: %i/%i" % \
-                (dF['Strike'], dF['Dip'], dF['Rake'], dF['Errors'],
-                 dF['Station Polarity Count'])
+        self.focalMechanism = self.focMechList[0]
+        fm = self.focalMechanism
+        np1 = fm.nodal_planes.nodal_plane_1
+        print "Strike: %6.2f  Dip: %6.2f  Rake: %6.2f  Misfit: %.2f" % \
+                (np1.strike, np1.dip, np1.rake, fm.misfit)
 
     def nextFocMec(self):
         if self.focMechCount is None:
             return
         self.focMechCurrent = (self.focMechCurrent + 1) % self.focMechCount
-        self.dictFocalMechanism = self.focMechList[self.focMechCurrent]
-        dF = self.dictFocalMechanism
+        self.focalMechanism = self.focMechList[self.focMechCurrent]
+        fm = self.focalMechanism
+        np1 = fm.nodal_planes.nodal_plane_1
         print "selecting Focal Mechanism No. %2i of %2i:" % \
                 (self.focMechCurrent + 1, self.focMechCount)
-        print "Strike: %6.2f  Dip: %6.2f  Rake: %6.2f  Errors: %i/%i" % \
-                (dF['Strike'], dF['Dip'], dF['Rake'], dF['Errors'],
-                 dF['Station Polarity Count'])
+        print "Strike: %6.2f  Dip: %6.2f  Rake: %6.2f  Misfit: %.2f" % \
+                (np1.strike, np1.dip, np1.rake, fm.misfit)
     
     def drawFocMec(self):
-        if self.dictFocalMechanism == {}:
+        if not self.focalMechanism:
             err = "Error: No focal mechanism data!"
             print >> sys.stderr, err
             return
@@ -1938,24 +1941,24 @@ class ObsPyck(QtGui.QMainWindow):
         fig.subplots_adjust(left=0, bottom=0, right=1, top=1)
         
         # plot the selected solution
-        dF = self.dictFocalMechanism
-        axs.append(Beachball([dF['Strike'], dF['Dip'], dF['Rake']], fig=fig))
+        fm = self.focalMechanism
+        np1 = fm.nodal_planes.nodal_plane_1
+        axs.append(Beachball([np1.strike, np1.dip, np1.rake], fig=fig))
         # plot the alternative solutions
         if self.focMechList != []:
-            for dict in self.focMechList:
-                axs.append(Beachball([dict['Strike'], dict['Dip'],
-                          dict['Rake']],
+            for _fm in self.focMechList:
+                _np1 = _fm.nodal_planes.nodal_plane_1
+                axs.append(Beachball([_np1.strike, _np1.dip, _np1.rake],
                           nofill=True, fig=fig, edgecolor='k',
                           linewidth=1., alpha=0.3))
         text = "Focal Mechanism (%i of %i)" % \
                (self.focMechCurrent + 1, self.focMechCount)
         text += "\nStrike: %6.2f  Dip: %6.2f  Rake: %6.2f" % \
-                (dF['Strike'], dF['Dip'], dF['Rake'])
-        if 'Errors' in dF:
-            text += "\nErrors: %i/%i" % (dF['Errors'],
-                                         dF['Station Polarity Count'])
-        else:
-            text += "\nUsed Polarities: %i" % dF['Station Polarity Count']
+                (np1.strike, np1.dip, np1.rake)
+        if fm.misfit:
+            text += "\nMisfit: %.2f" % fm.misfit
+        if fm.station_polarity_count:
+            text += "\nStation Polarity Count: %i" % fm.station_polarity_count
         #fig.canvas.set_window_title("Focal Mechanism (%i of %i)" % \
         #        (self.focMechCurrent + 1, self.focMechCount))
         fig.subplots_adjust(top=0.88) # make room for suptitle
@@ -2184,18 +2187,28 @@ class ObsPyck(QtGui.QMainWindow):
         model = model.split("/")[-1]
 
         # assign origin info
-        dO = self.dictOrigin
-        dO['Longitude'] = lon
-        dO['Latitude'] = lat
-        dO['Depth'] = depth
-        dO['Longitude Error'] = errX
-        dO['Latitude Error'] = errY
-        dO['Depth Error'] = errZ
-        dO['Standarderror'] = rms #XXX stimmt diese Zuordnung!!!?!
-        dO['Azimuthal Gap'] = gap
-        dO['Depth Type'] = "from location program"
-        dO['Earth Model'] = model
-        dO['Time'] = time
+        o = self.origin
+        o.origin_uncertainty = OriginUncertainty()
+        o.quality = OriginQuality()
+        ou = o.origin_uncertainty
+        oq = o.quality
+        o.longitude = lon
+        o.latitude = lat
+        o.depth = depth * (-1e3)  # meters positive down!
+        if errY > errX:
+            ou.azimuth_max_horizontal_uncertainty = 0
+        else:
+            ou.azimuth_max_horizontal_uncertainty = 90
+            ou.min_horizontal_uncertainty, \
+                    ou.max_horizontal_uncertainty = \
+                    sorted([errX * 1e3, errY * 1e3])
+            ou.preferred_description = "uncertainty ellipse"
+        o.depth_errors.uncertainty = errZ * 1e3
+        oq.quality.standard_error = rms #XXX stimmt diese Zuordnung!!!?!
+        oq.quality.azimuthal_gap = gap
+        o.depth_type = "from location program"
+        o.earth_model_id = "%s/earth_model/%s" % (ID_ROOT, model)
+        o.time = time
         
         # goto synthetic phases info lines
         try:
@@ -2219,8 +2232,7 @@ class ObsPyck(QtGui.QMainWindow):
             print >> sys.stderr, err
             return
         
-        dO['used P Count'] = 0
-        dO['used S Count'] = 0
+        o.quality.used_phase_count = 0
 
         # go through all phase info lines
         """
@@ -2338,7 +2350,6 @@ class ObsPyck(QtGui.QMainWindow):
             # assign synthetic phase info
             dict = self.dicts[streamnum]
             if type == "P":
-                dO['used P Count'] += 1
                 #dict['Psynth'] = res + dict['P']
                 # residual is defined as P-Psynth by NLLOC and 3dloc!
                 dict['Psynth'] = dict['P'] - res
@@ -2352,7 +2363,6 @@ class ObsPyck(QtGui.QMainWindow):
                 # we use weights 0,1,2,3 but NLLoc outputs floats...
                 dict['PsynthWeight'] = weight
             elif type == "S":
-                dO['used S Count'] += 1
                 # residual is defined as S-Ssynth by NLLOC and 3dloc!
                 dict['Ssynth'] = dict['S'] - res
                 dict['Sres'] = res
@@ -2364,10 +2374,11 @@ class ObsPyck(QtGui.QMainWindow):
                     dict['SPol'] = polarity
                 # we use weights 0,1,2,3 but NLLoc outputs floats...
                 dict['SsynthWeight'] = weight
-        dO['used Station Count'] = len(self.dicts)
+            o.quality.used_phase_count += 1
+        o.used_station_count = len(self.dicts)
         for dict in self.dicts:
             if not ('Psynth' in dict or 'Ssynth' in dict):
-                dO['used Station Count'] -= 1
+                o.used_station_count -= 1
 
     def loadHyp2000Data(self):
         files = PROGRAMS['hyp_2000']['files']
@@ -2433,18 +2444,22 @@ class ObsPyck(QtGui.QMainWindow):
         model = line[49:].strip()
 
         # assign origin info
-        dO = self.dictOrigin
-        dO['Longitude'] = lon
-        dO['Latitude'] = lat
-        dO['Depth'] = depth
-        dO['Longitude Error'] = errXY
-        dO['Latitude Error'] = errXY
-        dO['Depth Error'] = errZ
-        dO['Standarderror'] = rms #XXX stimmt diese Zuordnung!!!?!
-        dO['Azimuthal Gap'] = gap
-        dO['Depth Type'] = "from location program"
-        dO['Earth Model'] = model
-        dO['Time'] = time
+        o = self.origin
+        o.origin_uncertainty = OriginUncertainty()
+        o.quality = OriginQuality()
+        ou = o.origin_uncertainty
+        oq = o.quality
+        o.longitude = lon
+        o.latitude = lat
+        o.depth = depth * (-1e3)  # meters positive down!
+        ou.horizontal_uncertainty = errXY
+        ou.preferred_description = "horizontal uncertainty"
+        o.depth_errors.uncertainty = errZ * 1e3
+        oq.quality.standard_error = rms #XXX stimmt diese Zuordnung!!!?!
+        oq.quality.azimuthal_gap = gap
+        o.depth_type = "from location program"
+        o.earth_model_id = "%s/earth_model/%s" % (ID_ROOT, model)
+        o.time = time
         
         # goto station and phases info lines
         while True:
@@ -2455,8 +2470,7 @@ class ObsPyck(QtGui.QMainWindow):
             if line.startswith(" STA NET COM L CR DIST AZM"):
                 break
         
-        dO['used P Count'] = 0
-        dO['used S Count'] = 0
+        o.quality.used_phase_count = 0
         #XXX caution: we sometimes access the prior element!
         for i in range(len(lines)):
             # check which type of phase
@@ -2509,7 +2523,6 @@ class ObsPyck(QtGui.QMainWindow):
             # assign synthetic phase info
             dict = self.dicts[streamnum]
             if type == "P":
-                dO['used P Count'] += 1
                 # residual is defined as P-Psynth by NLLOC and 3dloc!
                 # XXX does this also hold for hyp2000???
                 dict['Psynth'] = dict['P'] - res
@@ -2523,7 +2536,6 @@ class ObsPyck(QtGui.QMainWindow):
                 # we use weights 0,1,2,3 but hypo2000 outputs floats...
                 dict['PsynthWeight'] = weight
             elif type == "S":
-                dO['used S Count'] += 1
                 # residual is defined as S-Ssynth by NLLOC and 3dloc!
                 # XXX does this also hold for hyp2000???
                 dict['Ssynth'] = dict['S'] - res
@@ -2536,39 +2548,59 @@ class ObsPyck(QtGui.QMainWindow):
                     dict['SPol'] = polarity
                 # we use weights 0,1,2,3 but hypo2000 outputs floats...
                 dict['SsynthWeight'] = weight
-        dO['used Station Count'] = len(self.dicts)
+            o.quality.used_phase_count += 1
+        o.used_station_count = len(self.dicts)
         for dict in self.dicts:
             if not ('Psynth' in dict or 'Ssynth' in dict):
-                dO['used Station Count'] -= 1
+                o.used_station_count -= 1
 
     def load3dlocData(self):
         files = PROGRAMS['3dloc']['files']
         #self.load3dlocSyntheticPhases()
         event = open(files['out'], "rt").readline().split()
-        dO = self.dictOrigin
-        dO['Longitude'] = float(event[8])
-        dO['Latitude'] = float(event[9])
-        dO['Depth'] = float(event[10])
-        dO['Longitude Error'] = float(event[11])
-        dO['Latitude Error'] = float(event[12])
-        dO['Depth Error'] = float(event[13])
-        dO['Standarderror'] = float(event[14])
-        dO['Azimuthal Gap'] = float(event[15])
-        dO['Depth Type'] = "from location program"
-        dO['Earth Model'] = "STAUFEN"
-        dO['Time'] = UTCDateTime(int(event[2]), int(event[3]), int(event[4]),
+        lon = float(event[8])
+        lat = float(event[9])
+        depth = float(event[10])
+        errX = float(event[11])
+        errY = float(event[12])
+        errZ = float(event[13])
+        rms = float(event[14])
+        gap = float(event[15])
+        model = "STAUFEN"
+        time = UTCDateTime(int(event[2]), int(event[3]), int(event[4]),
                                  int(event[5]), int(event[6]), float(event[7]))
-        dO['used P Count'] = 0
-        dO['used S Count'] = 0
+        o = self.origin
+        o.origin_uncertainty = OriginUncertainty()
+        o.quality = OriginQuality()
+        ou = o.origin_uncertainty
+        oq = o.quality
+        o.longitude = lon
+        o.latitude = lat
+        o.depth = depth * (-1e3)  # meters positive down!
+        if errY > errX:
+            ou.azimuth_max_horizontal_uncertainty = 0
+        else:
+            ou.azimuth_max_horizontal_uncertainty = 90
+            ou.min_horizontal_uncertainty, \
+                    ou.max_horizontal_uncertainty = \
+                    sorted([errX * 1e3, errY * 1e3])
+            ou.preferred_description = "uncertainty ellipse"
+        o.depth_errors.uncertainty = errZ * 1e3
+        oq.quality.standard_error = rms #XXX stimmt diese Zuordnung!!!?!
+        oq.quality.azimuthal_gap = gap
+        o.depth_type = "from location program"
+        o.earth_model_id = "%s/earth_model/%s" % (ID_ROOT, model)
+        o.time = time
+        o.quality.used_phase_count = 0
         lines = open(files['in'], "rt").readlines()
         for line in lines:
             pick = line.split()
             for st in self.streams:
                 if pick[0].strip() == st[0].stats.station.strip():
                     if pick[1] == 'P':
-                        dO['used P Count'] += 1
+                        o.quality.used_phase_count += 1
                     elif pick[1] == 'S':
-                        dO['used S Count'] += 1
+                        o.quality.used_phase_count += 1
                     break
         lines = open(files['out'], "rt").readlines()
         for line in lines[1:]:
@@ -2582,10 +2614,10 @@ class ObsPyck(QtGui.QMainWindow):
                         dict['SAzim'] = float(pick[9])
                         dict['SInci'] = float(pick[10])
                     break
-        dO['used Station Count'] = len(self.dicts)
+        o.used_station_count = len(self.dicts)
         for dict in self.dicts:
             if not ('Psynth' in dict or 'Ssynth' in dict):
-                dO['used Station Count'] -= 1
+                o.used_station_count -= 1
     
     def updateNetworkMag(self):
         print "updating network magnitude..."

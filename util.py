@@ -255,8 +255,7 @@ POLARITY_2_FOCMEC = {'up': "U", 'poorup': "+", 'down': "D", 'poordown': "-",
 
 # the following dicts' keys should be all lower case, we use "".lower() later
 POLARITY_CHARS = POLARITY_2_FOCMEC
-ONSET_CHARS = {'impulsive': "I", 'emergent': "E",
-               'implusive': "I"} # XXX some old events have a typo there... =)
+ONSET_CHARS = {'impulsive': "I", 'emergent': "E"}
 
 class QMplCanvas(QFigureCanvas):
     """
