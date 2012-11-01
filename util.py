@@ -624,7 +624,11 @@ def setup_dicts(streams, options):
             trE = st.select(component="E")[0]
         dict['MagUse'] = True
         sta = trZ.stats.station.strip()
+        net = trZ.stats.network.strip()
+        loc = trZ.stats.location.strip()
         dict['Station'] = sta
+        dict['Network'] = net
+        dict['Location'] = loc
         #XXX not used: dictsMap[sta] = dict
         # XXX should not be necessary
         #if net == '':

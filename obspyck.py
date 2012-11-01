@@ -59,7 +59,8 @@ from qt_designer import Ui_qMainWindow_obsPyck
 from util import *
 
 
-ID_ROOT = "smi:erdbeben-in-bayern.de"
+ID_ROOT = "smi:de.erdbeben-in-bayern"
+NAMESPACE = ("edb", "http://erdbeben-in-bayern.de/xmlns/0.1")
 
 
 class ObsPyck(QtGui.QMainWindow):
@@ -2621,26 +2622,75 @@ class ObsPyck(QtGui.QMainWindow):
     
     def updateNetworkMag(self):
         print "updating network magnitude..."
-        dM = self.dictMagnitude
-        dM['Station Count'] = 0
-        dM['Magnitude'] = 0
-        staMags = []
+        m = self.magnitude
+        m.clear()
+        m.method_id = "/".join([ID_ROOT, "magnitude_method", "obspy"])
+        m.type = "Ml"
+        sms = self.event.station_magnitudes
+        sms = []
+        amps = self.event.amplitudes
+        amps = []
+        _i = 0
+        _j = 0
         for dict in self.dicts:
             if dict['MagUse'] and 'Mag' in dict:
+                _i += 1
                 print "%s: %.1f" % (dict['Station'], dict['Mag'])
-                dM['Station Count'] += 1
-                dM['Magnitude'] += dict['Mag']
-                staMags.append(dict['Mag'])
-        if dM['Station Count'] == 0:
-            dM['Magnitude'] = np.nan
-            dM['Uncertainty'] = np.nan
+                sm = StationMagnitude()
+                sms.append(sm)
+                sm.origin_id = self.origin.resource_id
+                sm.mag = dict['Mag']
+                sm.resource_id = "/".join((ID_ROOT, "station_magnitude", event_id, _i))
+                sm.waveform_id = WaveformStreamID()
+                sm.waveform_id.network_code = dict['Network']
+                sm.waveform_id.station_code = dict['Station']
+                sm.waveform_id.location_code = dict['Location']
+                sm.waveform_id.channel_code = dict['MagChannel']
+                for num in [1, 2]:
+                    pgvkey = "PGV%i" % num
+                    if pgvkey in dict:
+                        _j += 1
+                        amp = Amplitude()
+                        amps.append(amp)
+                        amp.resource_id = "/".join((ID_ROOT, "amplitude", event_id, _j))
+                        amp.generic_amplitude = dict[pgvkey]
+                        amp.unit = "m/s"
+                        amp.waveform_id = WaveformStreamID()
+                        amp.waveform_id.network_code = dict['Network']
+                        amp.waveform_id.station_code = dict['Station']
+                        amp.waveform_id.location_code = dict['Location']
+                        amp.waveform_id.channel_code = dict["PGV%iCHA" % num]
+                        t1 = dict['MagMin%sT' % num]
+                        t2 = dict['MagMax%sT' % num]
+                        t1, t2 = sorted([t1, t2])
+                        tw = TimeWindow()
+                        amp.time_window = tw
+                        tw.reference = self.time_rel2abs(t1)
+                        tw.begin = 0
+                        tw.end = t2 - t1
+                        comment = "PGV. Reference is time of first pick of peak-to-peak picking for magnitude estimation. End gives relative time of second pick. Value is absolute maximum of both picks corrected to Wood-Anderson."
+                        amp.comments.append(Comment(comment))
+
+        m.station_count = len(m.station_magnitude_contributions)
+        weight = None
+        if m.station_count:
+            weight = 1.0 / m.station_count
+        for _i, sm in enumerate(sms):
+            contrib = StationMagnitudeContribution()
+            if weight is not None:
+                contrib.weight = weight
+            contrib.station_magnitude_id = sm.resource_id
+            m.station_magnitude_contributions.append(contrib)
+
+        if m.station_count == 0:
+            m.clear()
+            sms = []
         else:
-            dM['Magnitude'] /= dM['Station Count']
-            dM['Uncertainty'] = np.var(staMags)
+            m.mag = np.mean([_m.mag for _m in sms])
+            m.mag_errors = np.var([_m.mag for _m in sms])
         print "new network magnitude: %.2f (Variance: %.2f)" % \
-                (dM['Magnitude'], dM['Uncertainty'])
-        self.netMagLabel = '\n\n\n\n\n %.2f (Var: %.2f)' % (dM['Magnitude'],
-                                                           dM['Uncertainty'])
+                (m.mag, m.mag_errors)
+        self.netMagLabel = '\n\n\n\n\n %.2f (Var: %.2f)' % (m.mag, m.mag_errors)
         if hasattr(self, 'netMagText'):
             self.netMagText.set_text(self.netMagLabel)
     
@@ -2649,10 +2699,10 @@ class ObsPyck(QtGui.QMainWindow):
            not 'Latitude' in self.dictOrigin:
             err = "Error: No coordinates for origin!"
             print >> sys.stderr, err
-        dO = self.dictOrigin
+        o = self.origin
         epidists = []
         for dict in self.dicts:
-            x, y = utlGeoKm(dO['Longitude'], dO['Latitude'],
+            x, y = utlGeoKm(o.longitude, o.latitude,
                             dict['StaLon'], dict['StaLat'])
             z = abs(dict['StaEle'] - dO['Depth'])
             dict['distX'] = x
@@ -2666,9 +2716,11 @@ class ObsPyck(QtGui.QMainWindow):
             if 'Psynth' in dict or 'Ssynth' in dict:
                 epidists.append(dict['distEpi'])
             dict['distHypo'] = np.sqrt(x**2 + y**2 + z**2)
-        dO['Maximum Distance'] = max(epidists)
-        dO['Minimum Distance'] = min(epidists)
-        dO['Median Distance'] = np.median(epidists)
+        if not o.quality:
+            o.quality = OriginQuality()
+        o.quality.maximum_distance = max(epidists)
+        o.quality.minimum_distance = min(epidists)
+        o.quality.median_distance = np.median(epidists)
 
     def calculateStationMagnitudes(self):
         for st, dict in zip(self.streams, self.dicts):
@@ -2686,6 +2738,7 @@ class ObsPyck(QtGui.QMainWindow):
                 corr = paz2AmpValueOfFreqResp(paz, (1.0 / (2 * td))) * paz['sensitivity']
                 pgv = np.abs([dict['MagMax1'], dict['MagMin1']]).max() / corr 
                 dict['PGV1'] = pgv
+                dict['PGV1CHA'] = st[1].stats.channel
             if 'MagMin2' in dict and 'MagMax2' in dict:
                 paz = dict['pazE']
                 pazs.append(paz)
@@ -2696,6 +2749,7 @@ class ObsPyck(QtGui.QMainWindow):
                 corr = paz2AmpValueOfFreqResp(paz, (1.0 / (2 * td))) * paz['sensitivity']
                 pgv = np.abs([dict['MagMax2'], dict['MagMin2']]).max() / corr 
                 dict['PGV2'] = pgv
+                dict['PGV2CHA'] = st[2].stats.channel
             
             if not amplitudes:
                 continue
@@ -2854,9 +2908,9 @@ class ObsPyck(QtGui.QMainWindow):
         fig.subplots_adjust(bottom=0.001, hspace=0.000, right=0.999, top=0.999, left=0.001)
 
     def drawEventMap(self):
-        dM = self.dictMagnitude
-        dO = self.dictOrigin
-        if dO == {}:
+        m = self.magnitude
+        o = self.origin
+        if not o:
             err = "Error: No hypocenter data!"
             print >> sys.stderr, err
             return
@@ -2867,31 +2921,30 @@ class ObsPyck(QtGui.QMainWindow):
         axEM = self.axEventMap
         #axEM.set_aspect('equal', adjustable="datalim")
         #self.fig.subplots_adjust(bottom=0.07, top=0.95, left=0.07, right=0.98)
-        axEM.scatter([dO['Longitude']], [dO['Latitude']], 30,
-                                color='red', marker='o')
-        errLon, errLat = utlLonLat(dO['Longitude'], dO['Latitude'],
-                                   dO['Longitude Error'], dO['Latitude Error'])
-        errLon -= dO['Longitude']
-        errLat -= dO['Latitude']
+        axEM.scatter([o.longitude], [o.latitude], 30, color='red', marker='o')
+        errLon, errLat = utlLonLat(o.longitude, o.latitude, o.longitude_errors,
+                                   o.latitude_errors)
+        errLon -= o.longitude
+        errLat -= o.latitude
         ypos = 0.97
         xpos = 0.03
         axEM.text(xpos, ypos,
-                  '%7.3f +/- %0.2fkm\n' % (dO['Longitude'], dO['Longitude Error']) + \
-                  '%7.3f +/- %0.2fkm\n' % (dO['Latitude'], dO['Latitude Error']) + \
-                  '  %.1fkm +/- %.1fkm' % (dO['Depth'], dO['Depth Error']),
+                  '%7.3f +/- %0.2fkm\n' % (o.longitude, o.longitude_errors]) + \
+                  '%7.3f +/- %0.2fkm\n' % (o.latitude, o.latitude_errors) + \
+                  '  %.1fkm +/- %.1fkm' % (o.depth, o.depth_errors),
                   va='top', ha='left', family='monospace', transform=axEM.transAxes)
-        if 'Standarderror' in dO:
+        if o.quality and o.quality.standard_error:
             axEM.text(xpos, ypos, "\n\n\n\n Residual: %.3f s" % \
-                      dO['Standarderror'], va='top', ha='left',
+                      o.quality.standard_error, va='top', ha='left',
                       color=PHASE_COLORS['P'], transform=axEM.transAxes,
                       family='monospace')
-        if 'Magnitude' in dM and 'Uncertainty' in dM:
+        if m.mag and m.mag_errors:
             self.netMagLabel = '\n\n\n\n\n %.2f (Var: %.2f)' % \
-                               (dM['Magnitude'], dM['Uncertainty'])
+                               (m.mag, m.mag_errors)
             self.netMagText = axEM.text(xpos, ypos, self.netMagLabel, va='top',
                     ha='left', transform=axEM.transAxes,
                     color=PHASE_COLORS['Mag'], family='monospace')
-        errorell = Ellipse(xy=[dO['Longitude'], dO['Latitude']],
+        errorell = Ellipse(xy=[o.longitude, o.latitude],
                            width=errLon, height=errLat, angle=0, fill=False)
         axEM.add_artist(errorell)
         self.scatterMagIndices = []
@@ -2931,7 +2984,7 @@ class ObsPyck(QtGui.QMainWindow):
                 
         axEM.set_xlabel('Longitude')
         axEM.set_ylabel('Latitude')
-        time = dO['Time']
+        time = o.time
         timestr = time.strftime("%Y-%m-%d  %H:%M:%S")
         timestr += ".%02d" % (time.microsecond / 1e4 + 0.5)
         axEM.set_title(timestr)
@@ -2959,7 +3012,7 @@ class ObsPyck(QtGui.QMainWindow):
         # make hexbin scatter plot, if located with NLLoc
         # XXX no vital commands should come after this block, as we do not
         # handle exceptions!
-        if dO.get('Program') == "NLLoc" and os.path.isfile(PROGRAMS['nlloc']['files']['scatter']):
+        if o.method_id.endswith("NLLoc") and os.path.isfile(PROGRAMS['nlloc']['files']['scatter']):
             cmap = matplotlib.cm.gist_heat_r
             data = readNLLocScatter(PROGRAMS['nlloc']['files']['scatter'],
                                     self.widgets.qPlainTextEdit_stderr)
@@ -3324,107 +3377,76 @@ class ObsPyck(QtGui.QMainWindow):
         """
         Returns information of all dictionaries as xml file (type string)
         """
-        xml =  lxml.etree.Element("event")
-        Sub(Sub(xml, "event_id"), "value").text = self.dictEvent['xmlEventID']
-        event_type = Sub(xml, "event_type")
-        Sub(event_type, "value").text = "manual"
-
+        e = self.event
+        o = self.origin
+        event_id = e.split("/")[2]
         # if the sysop checkbox is checked, we set the account in the xml
         # to sysop (and also use sysop as the seishub user)
         if self.widgets.qCheckBox_sysop.isChecked():
-            Sub(event_type, "account").text = "sysop"
+            author = "sysop"
         else:
-            Sub(event_type, "account").text = self.server['User']
-        
-        Sub(event_type, "user").text = self.username
+            author = self.server['User']
+        e.creation_info = CreationInfo()
+        e.creation_info.author = author
+        e.creation_info.agency_id = "Erdbebendienst Bayern"
+        e.creation_info.agency_uri = "%s/agency" % ID_ROOT
 
-        Sub(event_type, "public").text = "%s" % \
-                self.widgets.qCheckBox_publishEvent.isChecked()
+        e.extra = AttribDict()
+        e.extra.evaluationMode = {'value': "manual", '_namespace': NAMESPACE}
+        e.extra.public = {'value': self.widgets.qCheckBox_publishEvent.isChecked(),
+                          '_namespace': NAMESPACE}
 
         # check if an quakeML event type should be set
         event_quakeml_type = str(self.widgets.qComboBox_eventType.currentText())
         if event_quakeml_type != '<event type>':
-            Sub(xml, "type").text = event_quakeml_type
+            e.event_type = event_quakeml_type
         
         # XXX standard values for unset keys!!!???!!!???
         epidists = []
         # go through all stream-dictionaries and look for picks
         for st, dict in zip(self.streams, self.dicts):
             # write P Pick info
+            _i = 0
             if 'P' in dict:
-                pick = Sub(xml, "pick")
-                wave = Sub(pick, "waveform")
-                wave.set("networkCode", st[0].stats.network) 
-                wave.set("stationCode", st[0].stats.station) 
-                wave.set("channelCode", st[0].stats.channel) 
-                wave.set("locationCode", st[0].stats.location) 
-                date = Sub(pick, "time")
+                _i += 1
+                p = Pick()
+                e.picks.append(p)
+                p.extra = AttribDict()
+                p.resource_id = "/".join((ID_ROOT, "pick", event_id, _i))
+                p.waveform_id = WaveformStreamID()
+                p.waveform_id.network_code = st[0].stats.network
+                p.waveform_id.station_code = st[0].stats.station 
+                p.waveform_id.location_code = st[0].stats.location
+                p.waveform_id.channel_code = st[0].stats.channel
+                p.time_errors = QuantityError()
                 # prepare time of pick (global reference + relative time)
                 picktime = self.time_rel2abs(dict['P'])
-                Sub(date, "value").text = picktime.isoformat() # + '.%06i' % picktime.microsecond)
+                p.time = picktime.isoformat() # + '.%06i' % picktime.microsecond)
                 if 'PErr1' in dict and 'PErr2' in dict:
-                    temp = dict['PErr2'] - dict['PErr1']
-                    Sub(date, "uncertainty").text = str(temp)
-                else:
-                    Sub(date, "uncertainty")
+                    p.time_errors.uncertainty = dict['PErr2'] - dict['PErr1']
                 if 'PErr1' in dict:
-                    temp = dict['P'] - dict['PErr1']
-                    Sub(date, "lowerUncertainty").text = str(temp)
-                else:
-                    Sub(date, "lowerUncertainty")
+                    p.time_errors.lower_uncertainty = dict['P'] - dict['PErr1']
                 if 'PErr2' in dict:
-                    temp = dict['PErr2'] - dict['P']
-                    Sub(date, "upperUncertainty").text = str(temp)
-                else:
-                    Sub(date, "upperUncertainty")
-                Sub(pick, "phaseHint").text = "P"
-                phase_compu = ""
+                    p.time_errors.upper_uncertainty = dict['PErr2'] - dict['P']
+                p.phase_hint = "P"
                 if 'POnset' in dict:
-                    Sub(pick, "onset").text = dict['POnset']
-                    if dict['POnset'] == "impulsive":
-                        phase_compu += "I"
-                    elif dict['POnset'] == "emergent":
-                        phase_compu += "E"
-                else:
-                    Sub(pick, "onset")
-                    phase_compu += "?"
-                phase_compu += "P"
+                    p.onset = dict['POnset']
                 if 'PPol' in dict:
-                    Sub(pick, "polarity").text = dict['PPol']
-                    if dict['PPol'] == 'up':
-                        phase_compu += "U"
-                    elif dict['PPol'] == 'poorup':
-                        phase_compu += "+"
-                    elif dict['PPol'] == 'down':
-                        phase_compu += "D"
-                    elif dict['PPol'] == 'poordown':
-                        phase_compu += "-"
-                else:
-                    Sub(pick, "polarity")
-                    phase_compu += "?"
+                    p.polarity = dict['PPol']
                 if 'PWeight' in dict:
-                    Sub(pick, "weight").text = '%i' % dict['PWeight']
-                    phase_compu += "%1i" % dict['PWeight']
-                else:
-                    Sub(pick, "weight")
-                    phase_compu += "?"
-                Sub(Sub(pick, "min_amp"), "value") #XXX what is min_amp???
+                    p.extra.weight = {'value': dict['PWeight'], '_namespace': NAMESPACE}
                 
                 if 'Psynth' in dict:
-                    Sub(pick, "phase_compu").text = phase_compu
-                    Sub(Sub(pick, "phase_res"), "value").text = str(dict['Pres'])
+                    a = Arrival()
+                    o.arrivals.append(a)
+                    a.resource_id = "/".join((ID_ROOT, "arrival", event_id, _i))
+                    a.pick_id = p.resource_id
+                    a.time_residual = dict['Pres']
                     if 'PsynthWeight' in dict:
-                        Sub(Sub(pick, "phase_weight"), "value").text = \
-                                str(dict['PsynthWeight'])
-                    else:
-                        Sub(Sub(pick, "phase_weight"), "value")
-                    Sub(Sub(pick, "phase_delay"), "value")
-                    Sub(Sub(pick, "azimuth"), "value").text = str(dict['PAzim'])
-                    Sub(Sub(pick, "incident"), "value").text = str(dict['PInci'])
-                    Sub(Sub(pick, "epi_dist"), "value").text = \
-                            str(dict['distEpi'])
-                    Sub(Sub(pick, "hyp_dist"), "value").text = \
-                            str(dict['distHypo'])
+                        a.time_weight = dict['PsynthWeight']
+                    a.azimuth = dict['PAzim']
+                    a.incident = dict['PInci']
+                    #a.distance = dict['distEpi']
         
             # write S Pick info
             if 'S' in dict:
@@ -3434,201 +3456,48 @@ class ObsPyck(QtGui.QMainWindow):
                     axind = 1
                     err = "Warning: Could not determine axis for S pick. Using middle axis."
                     print >> sys.stderr, err
-                pick = Sub(xml, "pick")
-                wave = Sub(pick, "waveform")
-                wave.set("networkCode", st[axind].stats.network) 
-                wave.set("stationCode", st[axind].stats.station) 
-                wave.set("channelCode", st[axind].stats.channel) 
-                wave.set("locationCode", st[axind].stats.location) 
-                date = Sub(pick, "time")
+                _i += 1
+                p = Pick()
+                e.picks.append(p)
+                p.extra = AttribDict()
+                p.resource_id = "/".join((ID_ROOT, "pick", event_id, _i))
+                p.waveform_id = WaveformStreamID()
+                p.waveform_id.network_code = st[axind].stats.network
+                p.waveform_id.station_code = st[axind].stats.station 
+                p.waveform_id.location_code = st[axind].stats.location
+                p.waveform_id.channel_code = st[axind].stats.channel
+                p.time_errors = QuantityError()
                 # prepare time of pick (global reference + relative time)
                 picktime = self.time_rel2abs(dict['S'])
-                Sub(date, "value").text = picktime.isoformat() # + '.%06i' % picktime.microsecond)
+                p.time = picktime.isoformat() # + '.%06i' % picktime.microsecond)
                 if 'SErr1' in dict and 'SErr2' in dict:
-                    temp = dict['SErr2'] - dict['SErr1']
-                    Sub(date, "uncertainty").text = str(temp)
-                else:
-                    Sub(date, "uncertainty")
+                    p.time_errors.uncertainty = dict['SErr2'] - dict['SErr1']
                 if 'SErr1' in dict:
-                    temp = dict['S'] - dict['SErr1']
-                    Sub(date, "lowerUncertainty").text = str(temp)
-                else:
-                    Sub(date, "lowerUncertainty")
+                    p.time_errors.lower_uncertainty = dict['S'] - dict['SErr1']
                 if 'SErr2' in dict:
-                    temp = dict['SErr2'] - dict['S']
-                    Sub(date, "upperUncertainty").text = str(temp)
-                else:
-                    Sub(date, "upperUncertainty")
-                Sub(pick, "phaseHint").text = "S"
-                phase_compu = ""
+                    p.time_errors.upper_uncertainty = dict['SErr2'] - dict['S']
+                p.phase_hint = "S"
                 if 'SOnset' in dict:
-                    Sub(pick, "onset").text = dict['SOnset']
-                    if dict['SOnset'] == "impulsive":
-                        phase_compu += "I"
-                    elif dict['SOnset'] == "emergent":
-                        phase_compu += "E"
-                else:
-                    Sub(pick, "onset")
-                    phase_compu += "?"
-                phase_compu += "S"
+                    p.onset = dict['SOnset']
                 if 'SPol' in dict:
-                    Sub(pick, "polarity").text = dict['SPol']
-                    if dict['SPol'] == 'up':
-                        phase_compu += "U"
-                    elif dict['SPol'] == 'poorup':
-                        phase_compu += "+"
-                    elif dict['SPol'] == 'down':
-                        phase_compu += "D"
-                    elif dict['SPol'] == 'poordown':
-                        phase_compu += "-"
-                else:
-                    Sub(pick, "polarity")
-                    phase_compu += "?"
+                    p.polarity = dict['SPol']
                 if 'SWeight' in dict:
-                    Sub(pick, "weight").text = '%i' % dict['SWeight']
-                    phase_compu += "%1i" % dict['SWeight']
-                else:
-                    Sub(pick, "weight")
-                    phase_compu += "?"
-                Sub(Sub(pick, "min_amp"), "value") #XXX what is min_amp???
+                    p.extra.weight = {'value': dict['SWeight'], '_namespace': NAMESPACE}
                 
                 if 'Ssynth' in dict:
-                    Sub(pick, "phase_compu").text = phase_compu
-                    Sub(Sub(pick, "phase_res"), "value").text = str(dict['Sres'])
+                    a = Arrival()
+                    o.arrivals.append(a)
+                    a.resource_id = "/".join((ID_ROOT, "arrival", event_id, _i))
+                    a.pick_id = p.resource_id
+                    a.time_residual = dict['Sres']
                     if 'SsynthWeight' in dict:
-                        Sub(Sub(pick, "phase_weight"), "value").text = \
-                                str(dict['SsynthWeight'])
-                    else:
-                        Sub(Sub(pick, "phase_weight"), "value")
-                    Sub(Sub(pick, "phase_delay"), "value")
-                    Sub(Sub(pick, "azimuth"), "value").text = str(dict['SAzim'])
-                    Sub(Sub(pick, "incident"), "value").text = str(dict['SInci'])
-                    Sub(Sub(pick, "epi_dist"), "value").text = \
-                            str(dict['distEpi'])
-                    Sub(Sub(pick, "hyp_dist"), "value").text = \
-                            str(dict['distHypo'])
+                        a.time_weight = dict['SsynthWeight']
+                    a.azimuth = dict['SAzim']
+                    a.incident = dict['SInci']
+                    #a.distance = dict['distEpi']
 
-        #origin output
-        dO = self.dictOrigin
-        #we always have one key 'Program', if len > 1 we have real information
-        #its possible that we have set the 'Program' key but afterwards
-        #the actual program run does not fill our dictionary...
-        if len(dO) > 1:
-            origin = Sub(xml, "origin")
-            Sub(origin, "program").text = dO['Program']
-            date = Sub(origin, "time")
-            Sub(date, "value").text = dO['Time'].isoformat() # + '.%03i' % self.dictOrigin['Time'].microsecond
-            Sub(date, "uncertainty")
-            lat = Sub(origin, "latitude")
-            Sub(lat, "value").text = str(dO['Latitude'])
-            Sub(lat, "uncertainty").text = str(dO['Latitude Error']) #XXX Lat Error in km!!
-            lon = Sub(origin, "longitude")
-            Sub(lon, "value").text = str(dO['Longitude'])
-            Sub(lon, "uncertainty").text = str(dO['Longitude Error']) #XXX Lon Error in km!!
-            depth = Sub(origin, "depth")
-            Sub(depth, "value").text = str(dO['Depth'])
-            Sub(depth, "uncertainty").text = str(dO['Depth Error'])
-            if 'Depth Type' in dO:
-                Sub(origin, "depth_type").text = str(dO['Depth Type'])
-            else:
-                Sub(origin, "depth_type")
-            if 'Earth Model' in dO:
-                Sub(origin, "earth_mod").text = dO['Earth Model']
-            else:
-                Sub(origin, "earth_mod")
-            if dO['Program'] == "hyp2000":
-                uncertainty = Sub(origin, "originUncertainty")
-                Sub(uncertainty, "preferredDescription").text = "uncertainty ellipse"
-                Sub(uncertainty, "horizontalUncertainty")
-                Sub(uncertainty, "minHorizontalUncertainty")
-                Sub(uncertainty, "maxHorizontalUncertainty")
-                Sub(uncertainty, "azimuthMaxHorizontalUncertainty")
-            else:
-                Sub(origin, "originUncertainty")
-            quality = Sub(origin, "originQuality")
-            Sub(quality, "P_usedPhaseCount").text = '%i' % dO['used P Count']
-            Sub(quality, "S_usedPhaseCount").text = '%i' % dO['used S Count']
-            Sub(quality, "usedPhaseCount").text = '%i' % (dO['used P Count'] + dO['used S Count'])
-            Sub(quality, "usedStationCount").text = '%i' % dO['used Station Count']
-            Sub(quality, "associatedPhaseCount").text = '%i' % (dO['used P Count'] + dO['used S Count'])
-            Sub(quality, "associatedStationCount").text = '%i' % len(self.dicts)
-            Sub(quality, "depthPhaseCount").text = "0"
-            Sub(quality, "standardError").text = str(dO['Standarderror'])
-            Sub(quality, "azimuthalGap").text = str(dO['Azimuthal Gap'])
-            Sub(quality, "groundTruthLevel")
-            Sub(quality, "minimumDistance").text = str(dO['Minimum Distance'])
-            Sub(quality, "maximumDistance").text = str(dO['Maximum Distance'])
-            Sub(quality, "medianDistance").text = str(dO['Median Distance'])
-        
         #magnitude output
-        dM = self.dictMagnitude
-        #we always have one key 'Program', if len > 1 we have real information
-        #its possible that we have set the 'Program' key but afterwards
-        #the actual program run does not fill our dictionary...
-        if 'Magnitude' in dM:
-            magnitude = Sub(xml, "magnitude")
-            Sub(magnitude, "program").text = dM['Program']
-            mag = Sub(magnitude, "mag")
-            if np.isnan(dM['Magnitude']):
-                Sub(mag, "value")
-                Sub(mag, "uncertainty")
-            else:
-                Sub(mag, "value").text = str(dM['Magnitude'])
-                Sub(mag, "uncertainty").text = str(dM['Uncertainty'])
-            Sub(magnitude, "type").text = "Ml"
-            Sub(magnitude, "stationCount").text = '%i' % dM['Station Count']
-            for st, dict in zip(self.streams, self.dicts):
-                if 'Mag' in dict:
-                    stationMagnitude = Sub(xml, "stationMagnitude")
-                    mag = Sub(stationMagnitude, 'mag')
-                    Sub(mag, 'value').text = str(dict['Mag'])
-                    Sub(mag, 'uncertainty').text
-                    Sub(stationMagnitude, 'station').text = str(dict['Station'])
-                    if dict['MagUse']:
-                        Sub(stationMagnitude, 'weight').text = str(1. / dM['Station Count'])
-                    else:
-                        Sub(stationMagnitude, 'weight').text = "0"
-                    Sub(stationMagnitude, 'channels').text = str(dict['MagChannel'])
-                    if 'PGV1' in dict:
-                        ampl = Sub(stationMagnitude, "amplitude")
-                        axind = 1
-                        wave = Sub(ampl, "waveform")
-                        wave.set("networkCode", st[axind].stats.network) 
-                        wave.set("stationCode", st[axind].stats.station) 
-                        wave.set("channelCode", st[axind].stats.channel) 
-                        wave.set("locationCode", st[axind].stats.location) 
-                        Sub(Sub(ampl, 'genericAmplitude'), 'value').text = "%.2e" % dict['PGV1']
-                        Sub(ampl, 'unit').text = "m/s"
-                        t1 = dict['MagMin1T']
-                        t2 = dict['MagMax1T']
-                        td = abs(dict['MagMax1T'] - dict['MagMin1T'])
-                        Sub(ampl, 'period').text = "%.3f" % (1.0 / (2 * td))
-                        tw = Sub(ampl, 'timeWindow')
-                        Sub(tw, 'reference').text = self.time_rel2abs(t1).isoformat()
-                        Sub(tw, 'begin').text = "0.0"
-                        Sub(tw, 'end').text = "%0.6f" % (t2 - t1)
-                        comment = "PGV, reference time is time of minimum amplitude, end is relative time of maximum amplitude"
-                        Sub(ampl, 'comment').text = comment
-                    if 'PGV2' in dict:
-                        ampl = Sub(stationMagnitude, "amplitude")
-                        axind = 2
-                        wave = Sub(ampl, "waveform")
-                        wave.set("networkCode", st[axind].stats.network) 
-                        wave.set("stationCode", st[axind].stats.station) 
-                        wave.set("channelCode", st[axind].stats.channel) 
-                        wave.set("locationCode", st[axind].stats.location) 
-                        Sub(Sub(ampl, 'genericAmplitude'), 'value').text = "%.2e" % dict['PGV2']
-                        Sub(ampl, 'unit').text = "m/s"
-                        t1 = dict['MagMin2T']
-                        t2 = dict['MagMax2T']
-                        td = abs(dict['MagMax2T'] - dict['MagMin2T'])
-                        Sub(ampl, 'period').text = "%.3f" % (1.0 / (2 * td))
-                        tw = Sub(ampl, 'timeWindow')
-                        Sub(tw, 'reference').text = self.time_rel2abs(t1).isoformat()
-                        Sub(tw, 'begin').text = "0.0"
-                        Sub(tw, 'end').text = "%0.6f" % (t2 - t1)
-                        comment = "PGV, reference time is time of minimum amplitude, end is relative time of maximum amplitude"
-                        Sub(ampl, 'comment').text = comment
+        m = self.magnitude
         
         #focal mechanism output
         dF = self.dictFocalMechanism
@@ -3662,9 +3531,9 @@ class ObsPyck(QtGui.QMainWindow):
         #XXX is problematic if two people make a location at the same second!
         # then one event is overwritten with the other during submission.
         if event_id is None:
-            self.dictEvent['xmlEventID'] = UTCDateTime().strftime('%Y%m%d%H%M%S')
+            self.event.resource_id = "/".join([ID_ROOT, "event", UTCDateTime().strftime('%Y%m%d%H%M%S'), "1"])
         else:
-            self.dictEvent['xmlEventID'] = event_id
+            self.event.resource_id = "/".join([ID_ROOT, "event", event_id, "1"])
 
     def uploadSeisHub(self):
         """
@@ -3684,12 +3553,12 @@ class ObsPyck(QtGui.QMainWindow):
 
         # if we did no location at all, and only picks would be saved the
         # EventID ist still not set, so we have to do this now.
-        if 'xmlEventID' not in self.dictEvent:
-            err = "Error: Event xml id not set."
+        if not self.event.public_id:
+            err = "Error: Event public_id not set."
             print >> sys.stderr, err
             return
             #self.setXMLEventID()
-        name = "obspyck_%s" % (self.dictEvent['xmlEventID']) #XXX id of the file
+        name = self.event.public_id.split("/")[1] #XXX id of the file
         # create XML and also save in temporary directory for inspection purposes
         print "creating xml..."
         data = self.dicts2XML()
