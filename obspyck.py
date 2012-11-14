@@ -15,6 +15,9 @@ import sys
 import shutil
 import optparse
 import warnings
+import tempfile
+import socket
+from StringIO import StringIO
 
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import QEvent, Qt
@@ -36,6 +39,7 @@ except ImportError:
 #sys.path.append('/baysoft/obspy/misc/symlink')
 #os.chdir("/baysoft/obspyck/")
 from obspy.core import UTCDateTime, Stream
+from obspy.core.event import readEvents
 try:
     from obspy.signal.util import utlLonLat, utlGeoKm
     from obspy.signal.invsim import estimateMagnitude, paz2AmpValueOfFreqResp
@@ -559,13 +563,16 @@ class ObsPyck(QtGui.QMainWindow):
             print >> sys.stderr, err
             return
         event_id = resource_name.split("_")[1]
-        user = event.get('user')
+        try:
+            user = ev.creation_info.author
+        except:
+            user = None
         qMessageBox = QtGui.QMessageBox()
         qMessageBox.setWindowIcon(QtGui.QIcon(QtGui.QPixmap("obspyck.gif")))
         qMessageBox.setIcon(QtGui.QMessageBox.Warning)
         qMessageBox.setWindowTitle("Replace?")
         qMessageBox.setText("Overwrite event in database?")
-        msg = "%s  (user: %s)" % (resource_name, account, user)
+        msg = "%s  (user: %s)" % (resource_name, user)
         msg += "\n\nWarning: Loading and then sending events might result " + \
                "in loss of information in the xml file (e.g. all custom " + \
                "defined fields!)"
@@ -584,13 +591,16 @@ class ObsPyck(QtGui.QMainWindow):
             return
         event = self.seishubEventList[self.seishubEventCurrent]
         resource_name = event.get('resource_name')
-        user = event.get('user')
+        try:
+            user = ev.creation_info.author
+        except:
+            user = None
         qMessageBox = QtGui.QMessageBox()
         qMessageBox.setWindowIcon(QtGui.QIcon(QtGui.QPixmap("obspyck.gif")))
         qMessageBox.setIcon(QtGui.QMessageBox.Warning)
         qMessageBox.setWindowTitle("Delete?")
         qMessageBox.setText("Delete event from database?")
-        msg = "%s  (user: %s)" % (resource_name, account, user)
+        msg = "%s  (user: %s)" % (resource_name, user)
         qMessageBox.setInformativeText(msg)
         qMessageBox.setStandardButtons(QtGui.QMessageBox.Cancel | QtGui.QMessageBox.Ok)
         qMessageBox.setDefaultButton(QtGui.QMessageBox.Cancel)
@@ -1772,55 +1782,37 @@ class ObsPyck(QtGui.QMainWindow):
             self.coords.append([lon, lat])
             # if the error picks are not set, we use a default of three samples
             default_error = 3 / st[0].stats.sampling_rate
-            if 'P' in dict:
-                t = self.time_rel2abs(dict['P'])
+            for phase in SEISMIC_PHASES:
+                pick, arrival = dict.get(phase, (None, None))
+                if pick is None:
+                    continue
+                t = pick.time
                 millisec = int(round(t.microsecond / 1e3))
                 if millisec == 1000:
                     t += 1
                     millisec = 0
                 date = t.strftime("%Y %m %d %H %M %S")
                 date += ".%03d" % millisec
-                if 'PErr1' in dict:
-                    error_1 = dict['PErr1']
-                else:
-                    err = "Warning: Left error pick for P missing. " + \
-                          "Using a default of 3 samples left of P."
+                error_1 = pick.time_errors.uncertainty
+                if error_1 is None:
+                    pick.time_errors.uncertainty
+                error_2 = pick.time_errors.uncertainty
+                if error_2 is None:
+                    pick.time_errors.uncertainty
+                if error_1 is None:
+                    err = "Warning: Left error pick for %s missing. " + \
+                          "Using a default of 3 samples left of %s."
+                    err = err % (phase, phase)
                     print >> sys.stderr, err
-                    error_1 = dict['P'] - default_error
-                if 'PErr2' in dict:
-                    error_2 = dict['PErr2']
-                else:
-                    err = "Warning: Right error pick for P missing. " + \
-                          "Using a default of 3 samples right of P."
+                    error_1 = t - default_error
+                if error_2 is None:
+                    err = "Warning: Right error pick for %s missing. " + \
+                          "Using a default of 3 samples right of %s."
+                    err = err % (phase, phase)
                     print >> sys.stderr, err
-                    error_2 = dict['P'] + default_error
+                    error_2 = t + default_error
                 delta = error_2 - error_1
-                f.write(fmt % (dict['Station'], 'P', date, delta, lon, lat,
-                               ele))
-            if 'S' in dict:
-                t = self.time_rel2abs(dict['S'])
-                millisec = int(round(t.microsecond / 1e3))
-                if millisec == 1000:
-                    t += 1
-                    millisec = 0
-                date = t.strftime("%Y %m %d %H %M %S")
-                date += ".%03d" % millisec
-                if 'SErr1' in dict:
-                    error_1 = dict['SErr1']
-                else:
-                    err = "Warning: Left error pick for S missing. " + \
-                          "Using a default of 3 samples left of S."
-                    print >> sys.stderr, err
-                    error_1 = dict['S'] - default_error
-                if 'SErr2' in dict:
-                    error_2 = dict['SErr2']
-                else:
-                    err = "Warning: Right error pick for S missing. " + \
-                          "Using a default of 3 samples right of S."
-                    print >> sys.stderr, err
-                    error_2 = dict['S'] + default_error
-                delta = error_2 - error_1
-                f.write(fmt % (dict['Station'], 'S', date, delta, lon, lat,
+                f.write(fmt % (dict['Station'], phase, date, delta, lon, lat,
                                ele))
         f.close()
         print 'Phases for 3Dloc:'
@@ -1843,10 +1835,13 @@ class ObsPyck(QtGui.QMainWindow):
         count = 0
         for dict, st in zip(self.dicts, self.streams):
             for phase_type in SEISMIC_PHASES:
-                pt = phase_type
-                if pt + 'Pol' not in dict or pt + 'Azim' not in dict or pt + 'Inci' not in dict:
+                pick, arrival = dict.get(phase, (None, None))
+                if arrival is None:
                     continue
-                sta = dict['Station'][:4] #focmec has only 4 chars
+                pt = phase_type
+                if pick.polarity is None or arrival.azimuth is None or arrival.takeoff_angle is None:
+                    continue
+                sta = pick.waveform_id.station_code[:4] #focmec has only 4 chars
                 # XXX commenting the following out again
                 # XXX only polarities with Azim/Inci info from location used
                 #if pt + 'Azim' not in dict or pt + 'Inci' not in dict:
@@ -1865,9 +1860,9 @@ class ObsPyck(QtGui.QMainWindow):
                 #          "source/receiver geometry."
                 #    print >> sys.stderr, err
                 #else:
-                azim = dict[pt + 'Azim']
-                inci = dict[pt + 'Inci']
-                pol = dict[pt + 'Pol']
+                azim = arrival.azimuth
+                inci = arrival.takeoff_angle
+                pol = pick.polarity
                 try:
                     pol = POLARITY_2_FOCMEC[pol]
                 except:
@@ -1970,28 +1965,26 @@ class ObsPyck(QtGui.QMainWindow):
         ax.set_title(text)
         ax.set_axis_off()
         for dict, st in zip(self.dicts, self.streams):
-            if 'PAzim' in dict and 'PInci' in dict and 'PPol' in dict:
-                if dict['PPol'] == "up":
-                    color = "black"
-                elif dict['PPol'] == "poorup":
-                    color = "darkgrey"
-                elif dict['PPol'] == "poordown":
-                    color = "lightgrey"
-                elif dict['PPol'] == "down":
-                    color = "white"
-                else:
-                    continue
-                inci = dict['PInci']
-                azim = dict['PAzim']
-                # lower hemisphere projection
-                if inci > 90:
-                    inci = 180. - inci
-                    azim = -180. + azim
-                #we have to hack the azimuth because of the polar plot
-                #axes orientation
-                plotazim = (np.pi / 2.) - ((azim / 180.) * np.pi)
-                ax.scatter([plotazim], [inci], facecolor=color)
-                ax.text(plotazim, inci, " " + dict['Station'], va="top")
+            pick, arrival = dict.get('P', (None, None))
+            if pick.polarity is None or arrival.azimuth is None or arrival.takeoff_angle is None:
+                continue
+            if pick.polarity == "positive":
+                color = "black"
+            elif pick.polarity == "negative":
+                color = "white"
+            else:
+                color = "red"
+            azim = arrival.azimuth
+            inci = arrival.takeoff_angle
+            # lower hemisphere projection
+            if inci > 90:
+                inci = 180. - inci
+                azim = -180. + azim
+            #we have to hack the azimuth because of the polar plot
+            #axes orientation
+            plotazim = (np.pi / 2.) - ((azim / 180.) * np.pi)
+            ax.scatter([plotazim], [inci], facecolor=color)
+            ax.text(plotazim, inci, " " + dict['Station'], va="top")
         #this fits the 90 degree incident value to the beachball edge best
         ax.set_ylim([0., 91])
         self.canv.draw()
@@ -2326,9 +2319,9 @@ class ObsPyck(QtGui.QMainWindow):
             else:
                 onset = None
             if line[5] == "U":
-                polarity = "up"
+                polarity = "positive"
             elif line[5] == "D":
-                polarity = "down"
+                polarity = "negative"
             else:
                 polarity = None
             res = float(line[16])
@@ -2350,35 +2343,24 @@ class ObsPyck(QtGui.QMainWindow):
             
             # assign synthetic phase info
             dict = self.dicts[streamnum]
-            if type == "P":
-                #dict['Psynth'] = res + dict['P']
-                # residual is defined as P-Psynth by NLLOC and 3dloc!
-                dict['Psynth'] = dict['P'] - res
-                dict['Pres'] = res
-                dict['PAzim'] = azimuth
-                dict['PInci'] = incident
-                if onset:
-                    dict['POnset'] = onset
-                if polarity:
-                    dict['PPol'] = polarity
-                # we use weights 0,1,2,3 but NLLoc outputs floats...
-                dict['PsynthWeight'] = weight
-            elif type == "S":
-                # residual is defined as S-Ssynth by NLLOC and 3dloc!
-                dict['Ssynth'] = dict['S'] - res
-                dict['Sres'] = res
-                dict['SAzim'] = azimuth
-                dict['SInci'] = incident
-                if onset:
-                    dict['SOnset'] = onset
-                if polarity:
-                    dict['SPol'] = polarity
-                # we use weights 0,1,2,3 but NLLoc outputs floats...
-                dict['SsynthWeight'] = weight
+            pick, _ = dict.get(type, (None, None))
+            arrival = Arrival()
+            dict[type] = (pick, arrival)
+            #dict['Psynth'] = res + dict['P']
+            # residual is defined as P-Psynth by NLLOC and 3dloc!
+            arrival.time_residual = res
+            arrival.azimuth = azimuth
+            arrival.takeoff_angle = incident
+            if onset and not pick.onset:
+                pick.onset = onset
+            if polarity and not pick.polarity:
+                pick.polarity = polarity
+            # we use weights 0,1,2,3 but NLLoc outputs floats...
+            arrival.time_weight = weight
             o.quality.used_phase_count += 1
         o.used_station_count = len(self.dicts)
         for dict in self.dicts:
-            if not ('Psynth' in dict or 'Ssynth' in dict):
+            if dict['P'][1] is None and dict['S'][1] is None:
                 o.used_station_count -= 1
 
     def loadHyp2000Data(self):
@@ -2499,9 +2481,9 @@ class ObsPyck(QtGui.QMainWindow):
             else:
                 onset = None
             if lines[i][33] == "U":
-                polarity = "up"
+                polarity = "positive"
             elif lines[i][33] == "D":
-                polarity = "down"
+                polarity = "negative"
             else:
                 polarity = None
             res = float(lines[i][61:66])
@@ -2523,36 +2505,24 @@ class ObsPyck(QtGui.QMainWindow):
             
             # assign synthetic phase info
             dict = self.dicts[streamnum]
-            if type == "P":
-                # residual is defined as P-Psynth by NLLOC and 3dloc!
-                # XXX does this also hold for hyp2000???
-                dict['Psynth'] = dict['P'] - res
-                dict['Pres'] = res
-                dict['PAzim'] = azimuth
-                dict['PInci'] = incident
-                if onset:
-                    dict['POnset'] = onset
-                if polarity:
-                    dict['PPol'] = polarity
-                # we use weights 0,1,2,3 but hypo2000 outputs floats...
-                dict['PsynthWeight'] = weight
-            elif type == "S":
-                # residual is defined as S-Ssynth by NLLOC and 3dloc!
-                # XXX does this also hold for hyp2000???
-                dict['Ssynth'] = dict['S'] - res
-                dict['Sres'] = res
-                dict['SAzim'] = azimuth
-                dict['SInci'] = incident
-                if onset:
-                    dict['SOnset'] = onset
-                if polarity:
-                    dict['SPol'] = polarity
-                # we use weights 0,1,2,3 but hypo2000 outputs floats...
-                dict['SsynthWeight'] = weight
+            pick, _ = dict.get(type, (None, None))
+            arrival = Arrival()
+            dict[type] = (pick, arrival)
+            # residual is defined as P-Psynth by NLLOC and 3dloc!
+            # XXX does this also hold for hyp2000???
+            arrival.time_residual = res
+            arrival.azimuth = azimuth
+            arrival.takeoff_angle = incident
+            if onset and not pick.onset:
+                pick.onset = onset
+            if polarity and not pick.polarity:
+                pick.polarity = polarity
+            # we use weights 0,1,2,3 but hypo2000 outputs floats...
+            arrival.time_weight = weight
             o.quality.used_phase_count += 1
         o.used_station_count = len(self.dicts)
         for dict in self.dicts:
-            if not ('Psynth' in dict or 'Ssynth' in dict):
+            if dict['P'][1] is None and dict['S'][1] is None:
                 o.used_station_count -= 1
 
     def load3dlocData(self):
@@ -2595,29 +2565,34 @@ class ObsPyck(QtGui.QMainWindow):
         o.quality.used_phase_count = 0
         lines = open(files['in'], "rt").readlines()
         for line in lines:
-            pick = line.split()
+            pickline = line.split()
             for st in self.streams:
-                if pick[0].strip() == st[0].stats.station.strip():
-                    if pick[1] == 'P':
+                if pickline[0].strip() == st[0].stats.station.strip():
+                    if pickline[1] == 'P':
                         o.quality.used_phase_count += 1
-                    elif pick[1] == 'S':
+                    elif pickline[1] == 'S':
                         o.quality.used_phase_count += 1
                     break
         lines = open(files['out'], "rt").readlines()
         for line in lines[1:]:
-            pick = line.split()
+            pickline = line.split()
             for st, dict in zip(self.streams, self.dicts):
-                if pick[0].strip() == st[0].stats.station.strip():
-                    if pick[1] == 'P':
-                        dict['PAzim'] = float(pick[9])
-                        dict['PInci'] = float(pick[10])
-                    elif pick[1] == 'S':
-                        dict['SAzim'] = float(pick[9])
-                        dict['SInci'] = float(pick[10])
+                if pickline[0].strip() == st[0].stats.station.strip():
+                    if pickline[1] == 'P':
+                        type = 'P'
+                    elif pickline[1] == 'S':
+                        type = 'S'
+                    else:
+                        continue
+                    pick, _ = dict.get(type, (None, None))
+                    arrival = Arrival()
+                    dict[type] = (pick, arrival)
+                    arrival.azimuth = float(pickline[9])
+                    arrival.takeoff_angle = float(pickline[10])
                     break
         o.used_station_count = len(self.dicts)
         for dict in self.dicts:
-            if not ('Psynth' in dict or 'Ssynth' in dict):
+            if dict['P'][1] is None and dict['S'][1] is None:
                 o.used_station_count -= 1
     
     def updateNetworkMag(self):
@@ -2780,12 +2755,14 @@ class ObsPyck(QtGui.QMainWindow):
         spTimes = []
         stations = []
         for st, dict in zip(self.streams, self.dicts):
-            if 'P' in dict and 'S' in dict:
-                p = self.time_rel2abs(dict['P'])
+            pick_p, arrival_p = dict.get('P', (None, None))
+            pick_s, arrival_s = dict.get('S', (None, None))
+            if pick_p and pick_s:
+                p = pick_p.time
                 p = "%.3f" % p.getTimeStamp()
                 p = float(p[-7:])
                 pTimes.append(p)
-                sp = dict['S'] - dict['P']
+                sp = pick_s.time - pick_p.time
                 spTimes.append(sp)
                 stations.append(dict['Station'])
             else:
@@ -2821,8 +2798,8 @@ class ObsPyck(QtGui.QMainWindow):
         ax.axvline(x0, color="blue", ls=":",
                    label="origin time from wadati diagram")
         # origin time from event location
-        if 'Time' in self.dictOrigin:
-            otime = "%.3f" % self.dictOrigin['Time'].getTimeStamp()
+        if self.origin:
+            otime = "%.3f" % self.origin.time.getTimeStamp()
             otime = float(otime[-7:])
             ax.axvline(otime, color="red", ls=":",
                        label="origin time from event location")
@@ -2879,7 +2856,7 @@ class ObsPyck(QtGui.QMainWindow):
             if self.widgets.qToolButton_rotateLQT.isChecked():
                 d = self.dicts[i]
                 tmp_st = self.streams[i].copy()
-                self._rotateLQT(tmp_st, self.dictOrigin)
+                self._rotateLQT(tmp_st, self.origin)
                 tr = tmp_st.select(component="Z")[0]
             else:
                 tr = tr.copy()
@@ -2952,7 +2929,9 @@ class ObsPyck(QtGui.QMainWindow):
         self.scatterMagLat = []
         for i, dict in enumerate(self.dicts):
             # determine which stations are used in location, set color
-            if any([ph + "res" in dict for ph in SEISMIC_PHASES]):
+            pick_p, arrival_p = dict.get('P', (None, None))
+            pick_s, arrival_s = dict.get('S', (None, None))
+            if (arrival_p and arrival_p.time_residual) or (arrival_s and arrival_s.time_residual):
                 stationColor = 'black'
             else:
                 stationColor = 'gray'
@@ -2961,22 +2940,25 @@ class ObsPyck(QtGui.QMainWindow):
                          marker='v', color='', edgecolor=stationColor)
             axEM.text(dict['StaLon'], dict['StaLat'], '  ' + dict['Station'],
                       color=stationColor, va='top', family='monospace')
-            for _i, ph in enumerate(SEISMIC_PHASES):
-                if ph + 'res' in dict:
-                    res_info = '\n' * (_i + 2) + '%+0.3fs' % dict[ph + 'res']
-                    if ph + 'Pol' in dict:
-                        res_info += '  %s' % dict[ph + 'Pol']
+            for _i, (pick, arrival) in enumerate([[pick_p, arrival_p], [pick_s, arrival_s]]):
+                if arrival.time_residual:
+                    res_info = '\n' * (_i + 2) + '%+0.3fs' % arrival.time_residual
+                    if pick.polarity:
+                        res_info += '  %s' % pick.polarity
                     axEM.text(dict['StaLon'], dict['StaLat'], res_info,
                               va='top', family='monospace',
-                              color=PHASE_COLORS[ph])
-            if 'Mag' in dict:
+                              color=PHASE_COLORS[pick.phase_hint])
+            for sm in self.event.station_magnitudes:
+                if sm.waveform_id.station_code != dict['Station']:
+                    continue
                 self.scatterMagIndices.append(i)
                 self.scatterMagLon.append(dict['StaLon'])
                 self.scatterMagLat.append(dict['StaLat'])
                 label = '\n' * (_i + 3) + \
-                        '  %0.2f (%s)' % (dict['Mag'], dict['MagChannel'])
+                        '  %0.2f (%s)' % (sm.mag, sm.waveform_id.channel_code)
                 axEM.text(dict['StaLon'], dict['StaLat'], label, va='top',
                           family='monospace', color=PHASE_COLORS['Mag'])
+                break
         if len(self.scatterMagLon) > 0:
             self.scatterMag = axEM.scatter(self.scatterMagLon,
                     self.scatterMagLat, s=150, marker='v', color='',
@@ -3107,6 +3089,8 @@ class ObsPyck(QtGui.QMainWindow):
                                     ele)
 
         return hypo71_string
+
+    # XXX continue here!!!
     
     def dicts2hypo71Phases(self):
         """
@@ -3562,12 +3546,23 @@ class ObsPyck(QtGui.QMainWindow):
         # create XML and also save in temporary directory for inspection purposes
         print "creating xml..."
         data = self.dicts2XML()
-        tmpfile = os.path.join(self.tmp_dir, name + ".xml")
-        print "writing xml as %s (for debugging purposes only!)" % tmpfile
-        open(tmpfile, "wt").write(data)
+        filename = name
+        if not filename.endswith(".xml"):
+            filename += ".xml"
+        tmpfile = os.path.join(self.tmp_dir, filename)
+        tmpfile2 = os.path.join(tempfile.gettempdir(), filename)
+        msg = "writing xml as %s and %s (for debugging purposes and in " + \
+              "case of upload errors)"
+        print msg % (tmpfile, tmpfile2)
+        for fname in [tmpfile, tmpfile2]:
+            open(fname, "wt").write(data)
 
         headers = {}
-        headers["Host"] = "localhost"
+        try:
+            host = socket.gethostname()
+        except:
+            host = "localhost"
+        headers["Host"] = host
         headers["User-Agent"] = "obspyck"
         headers["Content-type"] = "text/xml; charset=\"UTF-8\""
         headers["Content-length"] = "%d" % len(data)
@@ -3600,7 +3595,11 @@ class ObsPyck(QtGui.QMainWindow):
             client = self.clients['SeisHub']
         
         headers = {}
-        headers["Host"] = "localhost"
+        try:
+            host = socket.gethostname()
+        except:
+            host = "localhost"
+        headers["Host"] = host
         headers["User-Agent"] = "obspyck"
         code, message = client.event.deleteResource(str(resource_name),
                                                     headers=headers)
@@ -3623,10 +3622,10 @@ class ObsPyck(QtGui.QMainWindow):
             dict['MagUse'] = True
         # XXX delegate all resetting to methods like self.clearOriginMagnitudeDictionaries() !!!
         # XXX but caution this can easily change behavior of obspyck!!
-        self.dictOrigin = {}
-        self.dictMagnitude = {}
+        self.origin.clear()
+        self.magnitude.clear()
         self.clearFocmecDictionary()
-        self.dictEvent = {}
+        self.event.clear()
 
     def clearOriginMagnitudeDictionaries(self):
         print "Clearing previous origin and magnitude data."
@@ -3643,15 +3642,15 @@ class ObsPyck(QtGui.QMainWindow):
                 if key not in dont_delete:
                     del dict[key]
             dict['MagUse'] = True
-        self.dictOrigin = {}
-        self.dictMagnitude = {}
-        self.dictEvent = {}
+        self.origin.clear()
+        self.magnitude.clear()
+        self.event.clear()
         #if 'xmlEventID' in self.dictEvent:
         #    del self.dictEvent['xmlEventID']
 
     def clearFocmecDictionary(self):
         print "Clearing previous focal mechanism data."
-        self.dictFocalMechanism = {}
+        self.focalMechanism.clear()
         self.focMechList = []
         self.focMechCurrent = None
         self.focMechCount = None
@@ -3693,20 +3692,20 @@ class ObsPyck(QtGui.QMainWindow):
         Fetch a Resource XML from SeisHub
         """
         client = self.clients['SeisHub']
-        resource_xml = client.event.getXMLResource(resource_name)
-        if resource_xml.xpath(u".//event_type/account"):
-            account = resource_xml.xpath(u".//event_type/account")[0].text
-        else:
-            account = None
-        if resource_xml.xpath(u".//event_type/user"):
-            user = resource_xml.xpath(u".//event_type/user")[0].text
-        else:
+        resource_xml = client.event.getResource(resource_name)
+
+        # parse quakeml
+        ev = readEvents(StringIO(resource_xml), format="quakeml")[0]
+
+        try:
+            user = ev.creation_info.author
+        except:
             user = None
 
         # parse quakeML event type and select right one or add a custom one
         index = 0
-        if resource_xml.xpath(u"/event/type"):
-            event_quakeml_type = resource_xml.xpath(u"/event/type")[0].text
+        event_quakeml_type = ev.event_type
+        if event_quakeml_type is not None:
             index = self.widgets.qComboBox_eventType.findText(event_quakeml_type.lower(), Qt.MatchExactly)
             if index == -1:
                 self.widgets.qComboBox_eventType.addItem(event_quakeml_type)
@@ -3714,13 +3713,12 @@ class ObsPyck(QtGui.QMainWindow):
         self.widgets.qComboBox_eventType.setCurrentIndex(index)
 
         #analyze picks:
-        for pick in resource_xml.xpath(u".//pick"):
+        for pick in ev.picks:
             # attributes
-            id = pick.find("waveform").attrib
-            network = id["networkCode"]
-            station = id["stationCode"]
-            location = id["locationCode"]
-            channel = id['channelCode']
+            network = p.waveform_id.network_code
+            station = p.waveform_id.station_code
+            location = p.waveform_id.location_code
+            channel = p.waveform_id.channel_code
             streamnum = None
             # search for streamnumber corresponding to pick
             for i, dict in enumerate(self.dicts):
@@ -4096,7 +4094,10 @@ class ObsPyck(QtGui.QMainWindow):
         for event in events:
             resource_name = event.get('resource_name')
             account = event.get('account')
-            user = event.get('user')
+            try:
+                user = ev.creation_info.author
+            except:
+                user = None
             msg += "\n  - %s (account: %s, user: %s)" % (resource_name,
                                                          account, user)
         print msg
@@ -4112,8 +4113,14 @@ class ObsPyck(QtGui.QMainWindow):
         """
         events = self.clients['SeisHub'].event.getList(min_last_pick=starttime,
                                                        max_first_pick=endtime)
-        sysop_events = [str(event.get('resource_name')) for event in events \
-                        if event.get('account', None) == "sysop"]
+        sysop_events = []
+        for ev in events:
+            try:
+                author = ev.creation_info.author
+            except:
+                continue
+            if author == "sysop":
+                sysop_events.append(str(event.get('resource_name')))
 
         # if there is a possible duplicate, pop up a warning window and print a
         # warning in the GUI error textview:
