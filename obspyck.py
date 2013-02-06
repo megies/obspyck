@@ -2696,7 +2696,7 @@ class ObsPyck(QtGui.QMainWindow):
         for st, dict in zip(self.streams, self.dicts):
             if 'P' in dict and 'S' in dict:
                 p = self.time_rel2abs(dict['P'])
-                p = "%.3f" % p.getTimeStamp()
+                p = "%.3f" % p.timestamp
                 p = float(p[-7:])
                 pTimes.append(p)
                 sp = dict['S'] - dict['P']
@@ -2736,7 +2736,7 @@ class ObsPyck(QtGui.QMainWindow):
                    label="origin time from wadati diagram")
         # origin time from event location
         if 'Time' in self.dictOrigin:
-            otime = "%.3f" % self.dictOrigin['Time'].getTimeStamp()
+            otime = "%.3f" % self.dictOrigin['Time'].timestamp
             otime = float(otime[-7:])
             ax.axvline(otime, color="red", ls=":",
                        label="origin time from event location")
