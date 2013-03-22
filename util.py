@@ -596,8 +596,16 @@ def merge_check_and_cleanup_streams(streams, options):
     # demean traces if not explicitly deactivated on command line
     if not options.nozeromean:
         for st in streams:
-            st.detrend('simple')
-            st.detrend('constant')
+            try:
+                st.detrend('simple')
+                st.detrend('constant')
+            except NotImplementedError as e:
+                if "Trace with masked values found." in e.message:
+                    msg = 'Detrending/demeaning not possible for station ' + \
+                          '(masked Traces): %s' % net_sta
+                    warn_msg += msg + "\n"
+                else:
+                    raise
     return (warn_msg, merge_msg, streams)
 
 def setup_dicts(streams, options):
