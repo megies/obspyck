@@ -2634,9 +2634,10 @@ class ObsPyck(QtGui.QMainWindow):
             if 'Psynth' in dict or 'Ssynth' in dict:
                 epidists.append(dict['distEpi'])
             dict['distHypo'] = np.sqrt(x**2 + y**2 + z**2)
-        dO['Maximum Distance'] = max(epidists)
-        dO['Minimum Distance'] = min(epidists)
-        dO['Median Distance'] = np.median(epidists)
+        if epidists:
+            dO['Maximum Distance'] = max(epidists)
+            dO['Minimum Distance'] = min(epidists)
+            dO['Median Distance'] = np.median(epidists)
 
     def calculateStationMagnitudes(self):
         for st, dict in zip(self.streams, self.dicts):
