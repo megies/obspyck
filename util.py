@@ -492,7 +492,7 @@ def merge_check_and_cleanup_streams(streams, options):
                 st.merge(method=0)
         elif options.merge.lower() == "overwrite":
             for st in streams:
-                if max([gap[-1] for gap in st.getGaps()]) < 5:
+                if st.getGaps() and max([gap[-1] for gap in st.getGaps()]) < 5:
                     msg = 'Interpolated over gap(s) with less than 5 ' + \
                           'samples for station: %s.%s'
                     msg = msg % (st[0].stats.network, st[0].stats.station)
