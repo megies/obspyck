@@ -429,6 +429,7 @@ class ObsPyck(QtGui.QMainWindow):
             link = "http://maps.google.de/maps?f=q&q=%.6f,%.6f" % \
                     (self.dictOrigin['Latitude'], self.dictOrigin['Longitude'])
             self.widgets.qPlainTextEdit_stdout.appendHtml("<a href='%s'>%s</a> &nbsp;" % (link, link))
+            print "%s %.6f %.6f %.4f %.6f %.6f %.4f %.6f" % (self.dictOrigin['Time'], self.dictOrigin['Longitude'], self.dictOrigin['Latitude'], self.dictOrigin['Depth'], self.dictOrigin['Longitude Error'], self.dictOrigin['Latitude Error'], self.dictOrigin['Depth Error'], self.dictOrigin['Standarderror'])
         else:
             self.delEventMap()
             self.fig.clear()
@@ -534,6 +535,7 @@ class ObsPyck(QtGui.QMainWindow):
                 return
         self.setXMLEventID()
         self.uploadSeisHub()
+        self.on_qToolButton_updateEventList_clicked(event)
         self.checkForSysopEventDuplicates(self.T0, self.T1)
 
     def on_qCheckBox_publishEvent_toggled(self):
@@ -3835,8 +3837,14 @@ class ObsPyck(QtGui.QMainWindow):
                 print >> sys.stderr, err
                 continue
             # values
-            time = pick.xpath(".//time/value")[0].text
-            uncertainty = pick.xpath(".//time/uncertainty")[0].text
+            try:
+                time = pick.xpath(".//time/value")[0].text
+            except:
+                continue
+            try:
+                uncertainty = pick.xpath(".//time/uncertainty")[0].text
+            except:
+                uncertainty = None
             try:
                 lower_uncertainty = pick.xpath(".//time/lowerUncertainty")[0].text
             except:
