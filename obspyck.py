@@ -38,8 +38,8 @@ except ImportError:
 
 #sys.path.append('/baysoft/obspy/misc/symlink')
 #os.chdir("/baysoft/obspyck/")
-from obspy.core import UTCDateTime, Stream
-from obspy.core.event import readEvents
+from obspy.core import UTCDateTime, Stream, AttribDict
+from obspy.core.event import readEvents, Catalog, Event, Origin, Pick, Arrival, Magnitude, StationMagnitude, StationMagnitudeContribution, FocalMechanism, CreationInfo, WaveformStreamID
 try:
     from obspy.signal.util import utlLonLat, utlGeoKm
     from obspy.signal.invsim import estimateMagnitude, paz2AmpValueOfFreqResp
@@ -348,7 +348,7 @@ class ObsPyck(QtGui.QMainWindow):
     def on_qToolButton_doHyp2000_clicked(self, *args):
         if args:
             return
-        self.delAllItems()
+        #self.delAllItems()
         self.clearOriginMagnitudeDictionaries()
         self.origin.method_id = "/".join([ID_ROOT, "location_method", "hyp2000"])
         self.doHyp2000()
@@ -364,7 +364,7 @@ class ObsPyck(QtGui.QMainWindow):
     def on_qToolButton_do3dloc_clicked(self, *args):
         if args:
             return
-        self.delAllItems()
+        #self.delAllItems()
         self.clearOriginMagnitudeDictionaries()
         self.origin.method_id = "/".join([ID_ROOT, "location_method", "3dloc"])
         self.do3dLoc()
@@ -381,7 +381,7 @@ class ObsPyck(QtGui.QMainWindow):
     def on_qToolButton_doNlloc_clicked(self, *args):
         if args:
             return
-        self.delAllItems()
+        #self.delAllItems()
         self.clearOriginMagnitudeDictionaries()
         self.origin.method_id = "/".join([ID_ROOT, "location_method", "NLLoc"])
         self.doNLLoc()
@@ -654,7 +654,7 @@ class ObsPyck(QtGui.QMainWindow):
     def on_qComboBox_streamName_currentIndexChanged(self, newvalue):
         self.stPt = self.widgets.qComboBox_streamName.currentIndex()
         xmin, xmax = self.axs[0].get_xlim()
-        self.delAllItems()
+        #self.delAllItems()
         self.delAxes()
         self.fig.clear()
         self.drawAxes()
@@ -807,7 +807,7 @@ class ObsPyck(QtGui.QMainWindow):
             msg = "Showing seismograms."
         print msg
         xmin, xmax = self.axs[0].get_xlim()
-        self.delAllItems()
+        #self.delAllItems()
         self.delAxes()
         self.fig.clear()
         self.drawAxes()
@@ -968,47 +968,68 @@ class ObsPyck(QtGui.QMainWindow):
     def setFocusToMatplotlib(self):
         self.canv.setFocus() # XXX needed??
 
-    def drawLine(self, key):
-        """
-        Draw a line for pick of given key in all axes of the current stream.
-        Stores the line in a dict to be able to remove the line later on.
+    #def drawLine(self, key):
+    #    """
+    #    Draw a line for pick of given key in all axes of the current stream.
+    #    Stores the line in a dict to be able to remove the line later on.
 
-        self.Lines contains dict for each phase type (e.g. "P").
-        self.Lines[phase_type] is a dict mapping axes objects to line objects.
-        e.g.: self.Lines["P"][<matplotlib.axes.AxesSubplot object at 0x...>]
-              would return the line object for the P phase in the given axes.
-        """
-        if key in self.lines:
-            self.delLine(key)
-        d = self.dicts[self.stPt]
-        if key not in d:
-            return
-        self.lines[key] = {}
-        ymin = 1.0 - PHASE_LINEHEIGHT_PERC[key]
-        ymax = PHASE_LINEHEIGHT_PERC[key]
-        # draw lines and store references in dictionary
-        for ax in self.axs:
-            line = ax.axvline(d[key], color=PHASE_COLORS[key],
-                    linewidth=AXVLINEWIDTH, linestyle=PHASE_LINESTYLES[key],
-                    ymin=ymin, ymax=ymax)
-            self.lines[key][ax] = line
-    
-    def delLine(self, key):
-        """
-        Delete all lines for pick of given key in all axes of the current
-        stream.
-        
-        See drawLine().
-        """
-        if key not in self.lines:
-            return
-        for ax, line in self.lines[key].iteritems():
-            ax.lines.remove(line)
-        del self.lines[key]
+    #    self.Lines contains dict for each phase type (e.g. "P").
+    #    self.Lines[phase_type] is a dict mapping axes objects to line objects.
+    #    e.g.: self.Lines["P"][<matplotlib.axes.AxesSubplot object at 0x...>]
+    #          would return the line object for the P phase in the given axes.
+    #    """
+    #    if key in self.lines:
+    #        self.delLine(key)
+    #    d = self.dicts[self.stPt]
+    #    if key not in d:
+    #        return
+    #    self.lines[key] = {}
+    #    ymin = 1.0 - PHASE_LINEHEIGHT_PERC[key]
+    #    ymax = PHASE_LINEHEIGHT_PERC[key]
+    #    # draw lines and store references in dictionary
+    #    for ax in self.axs:
+    #        line = ax.axvline(d[key], color=PHASE_COLORS[key],
+    #                linewidth=AXVLINEWIDTH, linestyle=PHASE_LINESTYLES[key],
+    #                ymin=ymin, ymax=ymax)
+    #        self.lines[key][ax] = line
+    #
+    #def delLine(self, key):
+    #    """
+    #    Delete all lines for pick of given key in all axes of the current
+    #    stream.
+    #    
+    #    See drawLine().
+    #    """
+    #    if key not in self.lines:
+    #        return
+    #    for ax, line in self.lines[key].iteritems():
+    #        ax.lines.remove(line)
+    #    del self.lines[key]
 
-    def updateLine(self, key):
-        self.delLine(key)
-        self.drawLine(key)
+    #def clearLines(self):
+    #    for ax in self.axes:
+    #        ax.lines = ax.lines[1:]
+    #    self.redraw()
+
+    #def drawLines(self):
+    #    for ax, d, tr in zip(self.axes, self.dicts):
+    #        for phase in SEISMIC_PHASES:
+    #            pick = dict['picks'].get(phase)
+    #            if not pick:
+    #                continue
+    #            reltime = self.time_abs2rel(pick.time)
+    #            ax.axvline(reltime, color=PHASE_COLORS[phase],
+    #                       linewidth=AXVLINEWIDTH, linestyle=PHASE_LINESTYLES['P'],
+    #                       ymin=0, ymax=1)
+    #    self.redraw()
+
+    #def updateLines(self):
+    #    self.clearLines()
+    #    self.drawLines()
+    #
+    #def updateLine(self, key):
+    #    self.delLine(key)
+    #    self.drawLine(key)
     
     def drawLabel(self, key):
         """
@@ -1347,26 +1368,32 @@ class ObsPyck(QtGui.QMainWindow):
             if not ev.inaxes in self.axs:
                 return
             if phase_type in SEISMIC_PHASES:
-                dict[phase_type] = pickSample
+                pick = dict['picks'].setdefault(phase_type, Pick())
+                pick.time = self.time_rel2abs(pickSample)
+                wave = WaveformStreamID()
+                pick.waveform_id = wave
+                wave.network_code = tr.stats.network
+                wave.station_code = tr.stats.station
+                wave.location_code = tr.stats.location
+                wave.channel_code = tr.stats.channel
                 if phase_type == "S":
                     dict['Saxind'] = self.axs.index(ev.inaxes)
-                depending_keys = (phase_type + k for k in ['', 'synth'])
-                for key in depending_keys:
-                    self.updateLine(key)
-                    self.updateLabel(key)
-                #check if the new P pick lies outside of the Error Picks
-                key1 = phase_type + "Err1"
-                key2 = phase_type + "Err2"
-                if key1 in dict and dict[phase_type] < dict[key1]:
-                    self.delLine(key1)
-                    self.delKey(key1)
-                if key2 in dict and dict[phase_type] > dict[key2]:
-                    self.delLine(key2)
-                    self.delKey(key2)
+                #depending_keys = (phase_type + k for k in ['', 'synth'])
+                #for key in depending_keys:
+                #    self.updateLine(key)
+                #    self.updateLabel(key)
+                ##check if the new P pick lies outside of the Error Picks
+                #key1 = phase_type + "Err1"
+                #key2 = phase_type + "Err2"
+                #if key1 in dict and dict[phase_type] < dict[key1]:
+                #    self.delLine(key1)
+                #    self.delKey(key1)
+                #if key2 in dict and dict[phase_type] > dict[key2]:
+                #    self.delLine(key2)
+                #    self.delKey(key2)
+                self.updateAxes(ev.inaxes)
                 self.redraw()
-                abs_time = self.time_rel2abs(dict[phase_type])
-                print "%s set at %.3f (%s)" % (KEY_FULLNAMES[phase_type],
-                                               dict[phase_type], abs_time.isoformat())
+                print "%s set at %s" % (KEY_FULLNAMES[phase_type], pick.time.isoformat())
                 return
 
         if ev.key in keys['setWeight'].keys():
@@ -1430,19 +1457,19 @@ class ObsPyck(QtGui.QMainWindow):
             if not ev.inaxes in self.axs:
                 return
             if phase_type in SEISMIC_PHASES:
-                if phase_type not in dict:
+                pick = dict['picks'].setdefault(phase_type, Pick())
+                if not pick.time:
                     return
+                reltime = self.time_abs2rel(pick.time)
                 # Determine if left or right Error Pick
-                if pickSample < dict[phase_type]:
-                    key = phase_type + 'Err1'
-                elif pickSample > dict[phase_type]:
-                    key = phase_type + 'Err2'
-                dict[key] = pickSample
-                self.updateLine(key)
+                if pickSample < reltime:
+                    pick.time_errors.lower_uncertainty = pickSample
+                elif pickSample > reltime:
+                    pick.time_errors.upper_uncertainty = pickSample
+                #self.updateLine(key)
                 self.redraw()
-                abs_time = self.time_rel2abs(dict[key])
-                print "%s set at %.3f (%s)" % (KEY_FULLNAMES[key],
-                                               dict[key], abs_time.isoformat())
+                print "Error %s set at %s" % (KEY_FULLNAMES[phase_type],
+                                        pickSample.isoformat())
                 return
 
         if ev.key == keys['setMagMin']:
@@ -1783,8 +1810,8 @@ class ObsPyck(QtGui.QMainWindow):
             # if the error picks are not set, we use a default of three samples
             default_error = 3 / st[0].stats.sampling_rate
             for phase in SEISMIC_PHASES:
-                pick, arrival = dict.get(phase, (None, None))
-                if pick is None:
+                pick = dict['picks'].get(phase)
+                if not pick:
                     continue
                 t = pick.time
                 millisec = int(round(t.microsecond / 1e3))
@@ -1835,8 +1862,9 @@ class ObsPyck(QtGui.QMainWindow):
         count = 0
         for dict, st in zip(self.dicts, self.streams):
             for phase_type in SEISMIC_PHASES:
-                pick, arrival = dict.get(phase, (None, None))
-                if arrival is None:
+                pick = dict['picks'].get(phase)
+                arrival = dict['arrivals'].get(phase)
+                if not arrival:
                     continue
                 pt = phase_type
                 if pick.polarity is None or arrival.azimuth is None or arrival.takeoff_angle is None:
@@ -1965,7 +1993,10 @@ class ObsPyck(QtGui.QMainWindow):
         ax.set_title(text)
         ax.set_axis_off()
         for dict, st in zip(self.dicts, self.streams):
-            pick, arrival = dict.get('P', (None, None))
+            pick = dict['picks'].get('P')
+            arrival = dict['arrivals'].get('P')
+            if not pick:
+                continue
             if pick.polarity is None or arrival.azimuth is None or arrival.takeoff_angle is None:
                 continue
             if pick.polarity == "positive":
@@ -2343,9 +2374,9 @@ class ObsPyck(QtGui.QMainWindow):
             
             # assign synthetic phase info
             dict = self.dicts[streamnum]
-            pick, _ = dict.get(type, (None, None))
+            pick = dict['picks'].setdefault(type, Pick())
             arrival = Arrival()
-            dict[type] = (pick, arrival)
+            dict['arrivals'][type] = arrival
             #dict['Psynth'] = res + dict['P']
             # residual is defined as P-Psynth by NLLOC and 3dloc!
             arrival.time_residual = res
@@ -2505,9 +2536,9 @@ class ObsPyck(QtGui.QMainWindow):
             
             # assign synthetic phase info
             dict = self.dicts[streamnum]
-            pick, _ = dict.get(type, (None, None))
+            pick = dict['picks'].setdefault(type, Pick())
             arrival = Arrival()
-            dict[type] = (pick, arrival)
+            dict['arrivals'][type] = arrival
             # residual is defined as P-Psynth by NLLOC and 3dloc!
             # XXX does this also hold for hyp2000???
             arrival.time_residual = res
@@ -2584,15 +2615,15 @@ class ObsPyck(QtGui.QMainWindow):
                         type = 'S'
                     else:
                         continue
-                    pick, _ = dict.get(type, (None, None))
+                    pick = dict['picks'].setdefault(type, Pick())
                     arrival = Arrival()
-                    dict[type] = (pick, arrival)
+                    dict['arrivals'][type] = arrival
                     arrival.azimuth = float(pickline[9])
                     arrival.takeoff_angle = float(pickline[10])
                     break
         o.used_station_count = len(self.dicts)
         for dict in self.dicts:
-            if dict['P'][1] is None and dict['S'][1] is None:
+            if not dict['arrivals']['P'] and not dict['arrivals']['S']:
                 o.used_station_count -= 1
     
     def updateNetworkMag(self):
@@ -2755,8 +2786,8 @@ class ObsPyck(QtGui.QMainWindow):
         spTimes = []
         stations = []
         for st, dict in zip(self.streams, self.dicts):
-            pick_p, arrival_p = dict.get('P', (None, None))
-            pick_s, arrival_s = dict.get('S', (None, None))
+            pick_p = dict['picks'].get('P')
+            pick_s = dict['picks'].get('S')
             if pick_p and pick_s:
                 p = pick_p.time
                 p = "%.3f" % p.getTimeStamp()
@@ -2906,7 +2937,7 @@ class ObsPyck(QtGui.QMainWindow):
         ypos = 0.97
         xpos = 0.03
         axEM.text(xpos, ypos,
-                  '%7.3f +/- %0.2fkm\n' % (o.longitude, o.longitude_errors]) + \
+                  '%7.3f +/- %0.2fkm\n' % (o.longitude, o.longitude_errors) + \
                   '%7.3f +/- %0.2fkm\n' % (o.latitude, o.latitude_errors) + \
                   '  %.1fkm +/- %.1fkm' % (o.depth, o.depth_errors),
                   va='top', ha='left', family='monospace', transform=axEM.transAxes)
@@ -2929,8 +2960,10 @@ class ObsPyck(QtGui.QMainWindow):
         self.scatterMagLat = []
         for i, dict in enumerate(self.dicts):
             # determine which stations are used in location, set color
-            pick_p, arrival_p = dict.get('P', (None, None))
-            pick_s, arrival_s = dict.get('S', (None, None))
+            pick_p = dict['picks'].get('P')
+            arrival_p = dict['arrivals'].get('P')
+            pick_s = dict['picks'].get('S')
+            arrival_s = dict['arrivals'].get('S')
             if (arrival_p and arrival_p.time_residual) or (arrival_s and arrival_s.time_residual):
                 stationColor = 'black'
             else:
@@ -3155,48 +3188,46 @@ class ObsPyck(QtGui.QMainWindow):
 
         for st, dict in zip(self.streams, self.dicts):
             sta = dict['Station']
-            if 'P' not in dict and 'S' not in dict:
+            pick_p = dict['picks'].get('P')
+            pick_s = dict['picks'].get('S')
+            if not pick_p and not pick_s:
                 continue
-            if 'P' in dict:
-                t = self.time_rel2abs(dict['P'])
+            if pick_p:
+                pick = pick_p
+                t = pick.time
                 hundredth = int(round(t.microsecond / 1e4))
-                if hundredth == 100:
-                    t_p = UTCDateTime(t) + 1
+                if hundredth == 100:  # XXX check!!
+                    t_p = t + 1
                     hundredth = 0
                 else:
-                    t_p = UTCDateTime(t)
+                    t_p = t
                 date = t_p.strftime("%y%m%d%H%M%S") + ".%02d" % hundredth
-                if 'POnset' in dict:
-                    if dict['POnset'] == 'impulsive':
-                        onset = 'I'
-                    elif dict['POnset'] == 'emergent':
-                        onset = 'E'
-                    else: #XXX check for other names correctly!!!
-                        onset = '?'
+                if pick.onset == 'impulsive':
+                    onset = 'I'
+                elif pick.onset == 'emergent':
+                    onset = 'E'
                 else:
                     onset = '?'
-                if 'PPol' in dict:
-                    if dict['PPol'] == "up" or dict['PPol'] == "poorup":
-                        polarity = "U"
-                    elif dict['PPol'] == "down" or dict['PPol'] == "poordown":
-                        polarity = "D"
-                    else: #XXX check for other names correctly!!!
-                        polarity = "?"
+                if pick.polarity == "positive":
+                    polarity = "U"
+                elif pick.polarity == "negative":
+                    polarity = "D"
                 else:
                     polarity = "?"
-                if 'PWeight' in dict:
-                    weight = int(dict['PWeight'])
-                else:
+                try:
+                    weight = int(pick.extra.weight)
+                except:
                     weight = 0
                 hypo71_string += fmtP % (sta, onset, polarity, weight, date)
-            if 'S' in dict:
-                if not 'P' in dict:
+            if pick_s:
+                if not pick_p:
                     err = "Warning: Trying to print a Hypo2000 phase file " + \
                           "with an S phase without P phase.\n" + \
                           "This case might not be covered correctly and " + \
                           "could screw our file up!"
                     print >> sys.stderr, err
-                t2 = self.time_rel2abs(dict['S'])
+                pick = pick_s
+                t2 = pick.time
                 # if the S time's absolute minute is higher than that of the
                 # P pick, we have to add 60 to the S second count for the
                 # hypo 2000 output file
@@ -3215,27 +3246,21 @@ class ObsPyck(QtGui.QMainWindow):
                     abs_sec += 1
                     hundredth = 0
                 date2 = "%s.%02d" % (abs_sec, hundredth)
-                if 'SOnset' in dict:
-                    if dict['SOnset'] == 'impulsive':
-                        onset2 = 'I'
-                    elif dict['SOnset'] == 'emergent':
-                        onset2 = 'E'
-                    else: #XXX check for other names correctly!!!
-                        onset2 = '?'
+                if pick.onset == 'impulsive':
+                    onset2 = 'I'
+                elif pick.onset == 'emergent':
+                    onset2 = 'E'
                 else:
                     onset2 = '?'
-                if 'SPol' in dict:
-                    if dict['SPol'] == "up" or dict['SPol'] == "poorup":
-                        polarity2 = "U"
-                    elif dict['SPol'] == "down" or dict['SPol'] == "poordown":
-                        polarity2 = "D"
-                    else: #XXX check for other names correctly!!!
-                        polarity2 = "?"
+                if pick.polarity == "positive":
+                    polarity2 = "U"
+                elif pick.polarity == "negative":
+                    polarity2 = "D"
                 else:
                     polarity2 = "?"
-                if 'SWeight' in dict:
-                    weight2 = int(dict['SWeight'])
-                else:
+                try:
+                    weight2 = int(pick.extra.weight)
+                except:
                     weight2 = 0
                 hypo71_string += fmtS % (date2, onset2, polarity2, weight2)
             else:
@@ -3323,38 +3348,44 @@ class ObsPyck(QtGui.QMainWindow):
 
         for st, d in zip(self.streams, self.dicts):
             sta = d['Station']
-            if 'P' not in d and 'S' not in d:
+            pick_p = dict['picks'].get('P')
+            pick_s = dict['picks'].get('S')
+            if not pick_p and not pick_s:
                 continue
-            for phase in ['P', 'S']:
-                if phase in d:
-                    sta = d['Station'].ljust(6)
-                    inst = "?".ljust(4)
-                    comp = "?".ljust(4)
-                    onset = "?"
-                    pha = phase.ljust(6)
-                    pol = "?"
-                    t = self.time_rel2abs(d[phase])
-                    date = t.strftime("%Y%m%d")
-                    hour_min = t.strftime("%H%M")
-                    sec = "%7.4f" % (t.second + t.microsecond / 1e6)
-                    error_type = "GAU"
-                    if phase + 'Err1' not in d or phase + 'Err2' not in d:
-                        err = "Warning: Missing error pick. " + \
-                              "Discarding %s phase of station %s."
-                        err = err % (phase, sta)
-                        print >> sys.stderr, err
-                        continue
-                    error_1 = d[phase + 'Err1']
-                    error_2 = d[phase + 'Err2']
-                    error = error_2 - error_1
-                    error = "%9.2e" % error
-                    coda_dur = "-1.00e+00"
-                    ampl = "-1.00e+00"
-                    period = "-1.00e+00"
-                    fields = [sta, inst, comp, onset, pha, pol, date, hour_min,
-                              sec, error_type, error, coda_dur, ampl, period]
-                    phase_str = " ".join(fields)
-                    nlloc_str += phase_str + "\n"
+            for phase in SEISMIC_PHASES:
+                pick = dict['picks'].get(phase)
+                if not pick:
+                    continue
+                sta = d['Station'].ljust(6)
+                inst = "?".ljust(4)
+                comp = "?".ljust(4)
+                onset = "?"
+                pha = phase.ljust(6)
+                pol = "?"
+                t = pick.time
+                date = t.strftime("%Y%m%d")
+                hour_min = t.strftime("%H%M")
+                sec = "%7.4f" % (t.second + t.microsecond / 1e6)
+                error_type = "GAU"
+                error = None
+                if pick.time_errors.upper_uncertainty and pick.time_errors.lower_uncertainty:
+                    error = pick.time_errors.upper_uncertainty + pick.time_errors.lower_uncertainty
+                elif pick.time_errors.uncertainty:
+                    error = 2 * pick.time_errors.uncertainty
+                if error is None:
+                    err = "Warning: Missing pick error. " + \
+                          "Discarding %s phase of station %s."
+                    err = err % (phase, sta)
+                    print >> sys.stderr, err
+                    continue
+                error = "%9.2e" % error
+                coda_dur = "-1.00e+00"
+                ampl = "-1.00e+00"
+                period = "-1.00e+00"
+                fields = [sta, inst, comp, onset, pha, pol, date, hour_min,
+                          sec, error_type, error, coda_dur, ampl, period]
+                phase_str = " ".join(fields)
+                nlloc_str += phase_str + "\n"
         return nlloc_str
 
     def dicts2XML(self):
@@ -3363,7 +3394,7 @@ class ObsPyck(QtGui.QMainWindow):
         """
         e = self.event
         o = self.origin
-        event_id = e.split("/")[2]
+        event_id = str(e.resource_id).split("/")[2]
         # if the sysop checkbox is checked, we set the account in the xml
         # to sysop (and also use sysop as the seishub user)
         if self.widgets.qCheckBox_sysop.isChecked():
@@ -3391,125 +3422,156 @@ class ObsPyck(QtGui.QMainWindow):
         for st, dict in zip(self.streams, self.dicts):
             # write P Pick info
             _i = 0
-            if 'P' in dict:
+            for phase in SEISMIC_PHASES:
+                pick = dict['picks'].get(phase)
+                arrival = dict.get('%s_arrival' % phase, None)
+                if not pick and not arrival:
+                    continue
+                if pick:
+                    pick.resource_id = "/".join((ID_ROOT, "pick", event_id, str(_i)))
+                    e.picks.append(pick)
+                if arrival:
+                    arrival.resource_id = "/".join((ID_ROOT, "arrival", event_id, str(_i)))
+                    arrival.pick_id = pick.resource_id
+                    arrival.phase = pick.phase_hint
+                    o.arrivals.append(arrival)
                 _i += 1
-                p = Pick()
-                e.picks.append(p)
-                p.extra = AttribDict()
-                p.resource_id = "/".join((ID_ROOT, "pick", event_id, _i))
-                p.waveform_id = WaveformStreamID()
-                p.waveform_id.network_code = st[0].stats.network
-                p.waveform_id.station_code = st[0].stats.station 
-                p.waveform_id.location_code = st[0].stats.location
-                p.waveform_id.channel_code = st[0].stats.channel
-                p.time_errors = QuantityError()
-                # prepare time of pick (global reference + relative time)
-                picktime = self.time_rel2abs(dict['P'])
-                p.time = picktime.isoformat() # + '.%06i' % picktime.microsecond)
-                if 'PErr1' in dict and 'PErr2' in dict:
-                    p.time_errors.uncertainty = dict['PErr2'] - dict['PErr1']
-                if 'PErr1' in dict:
-                    p.time_errors.lower_uncertainty = dict['P'] - dict['PErr1']
-                if 'PErr2' in dict:
-                    p.time_errors.upper_uncertainty = dict['PErr2'] - dict['P']
-                p.phase_hint = "P"
-                if 'POnset' in dict:
-                    p.onset = dict['POnset']
-                if 'PPol' in dict:
-                    p.polarity = dict['PPol']
-                if 'PWeight' in dict:
-                    p.extra.weight = {'value': dict['PWeight'], '_namespace': NAMESPACE}
-                
-                if 'Psynth' in dict:
-                    a = Arrival()
-                    o.arrivals.append(a)
-                    a.resource_id = "/".join((ID_ROOT, "arrival", event_id, _i))
-                    a.pick_id = p.resource_id
-                    a.time_residual = dict['Pres']
-                    if 'PsynthWeight' in dict:
-                        a.time_weight = dict['PsynthWeight']
-                    a.azimuth = dict['PAzim']
-                    a.incident = dict['PInci']
-                    #a.distance = dict['distEpi']
+            #if 'P' in dict:
+            #    _i += 1
+            #    p = Pick()
+            #    e.picks.append(p)
+            #    p.extra = AttribDict()
+            #    p.resource_id = "/".join((ID_ROOT, "pick", event_id, _i))
+            #    p.waveform_id = WaveformStreamID()
+            #    p.waveform_id.network_code = st[0].stats.network
+            #    p.waveform_id.station_code = st[0].stats.station 
+            #    p.waveform_id.location_code = st[0].stats.location
+            #    p.waveform_id.channel_code = st[0].stats.channel
+            #    p.time_errors = QuantityError()
+            #    # prepare time of pick (global reference + relative time)
+            #    picktime = self.time_rel2abs(dict['P'])
+            #    p.time = picktime.isoformat() # + '.%06i' % picktime.microsecond)
+            #    if 'PErr1' in dict and 'PErr2' in dict:
+            #        p.time_errors.uncertainty = dict['PErr2'] - dict['PErr1']
+            #    if 'PErr1' in dict:
+            #        p.time_errors.lower_uncertainty = dict['P'] - dict['PErr1']
+            #    if 'PErr2' in dict:
+            #        p.time_errors.upper_uncertainty = dict['PErr2'] - dict['P']
+            #    p.phase_hint = "P"
+            #    if 'POnset' in dict:
+            #        p.onset = dict['POnset']
+            #    if 'PPol' in dict:
+            #        p.polarity = dict['PPol']
+            #    if 'PWeight' in dict:
+            #        p.extra.weight = {'value': dict['PWeight'], '_namespace': NAMESPACE}
+            #    
+            #    if 'Psynth' in dict:
+            #        a = Arrival()
+            #        o.arrivals.append(a)
+            #        a.resource_id = "/".join((ID_ROOT, "arrival", event_id, _i))
+            #        a.pick_id = p.resource_id
+            #        a.time_residual = dict['Pres']
+            #        if 'PsynthWeight' in dict:
+            #            a.time_weight = dict['PsynthWeight']
+            #        a.azimuth = dict['PAzim']
+            #        a.incident = dict['PInci']
+            #        #a.distance = dict['distEpi']
         
-            # write S Pick info
-            if 'S' in dict:
-                try:
-                    axind = dict['Saxind']
-                except:
-                    axind = 1
-                    err = "Warning: Could not determine axis for S pick. Using middle axis."
-                    print >> sys.stderr, err
-                _i += 1
-                p = Pick()
-                e.picks.append(p)
-                p.extra = AttribDict()
-                p.resource_id = "/".join((ID_ROOT, "pick", event_id, _i))
-                p.waveform_id = WaveformStreamID()
-                p.waveform_id.network_code = st[axind].stats.network
-                p.waveform_id.station_code = st[axind].stats.station 
-                p.waveform_id.location_code = st[axind].stats.location
-                p.waveform_id.channel_code = st[axind].stats.channel
-                p.time_errors = QuantityError()
-                # prepare time of pick (global reference + relative time)
-                picktime = self.time_rel2abs(dict['S'])
-                p.time = picktime.isoformat() # + '.%06i' % picktime.microsecond)
-                if 'SErr1' in dict and 'SErr2' in dict:
-                    p.time_errors.uncertainty = dict['SErr2'] - dict['SErr1']
-                if 'SErr1' in dict:
-                    p.time_errors.lower_uncertainty = dict['S'] - dict['SErr1']
-                if 'SErr2' in dict:
-                    p.time_errors.upper_uncertainty = dict['SErr2'] - dict['S']
-                p.phase_hint = "S"
-                if 'SOnset' in dict:
-                    p.onset = dict['SOnset']
-                if 'SPol' in dict:
-                    p.polarity = dict['SPol']
-                if 'SWeight' in dict:
-                    p.extra.weight = {'value': dict['SWeight'], '_namespace': NAMESPACE}
-                
-                if 'Ssynth' in dict:
-                    a = Arrival()
-                    o.arrivals.append(a)
-                    a.resource_id = "/".join((ID_ROOT, "arrival", event_id, _i))
-                    a.pick_id = p.resource_id
-                    a.time_residual = dict['Sres']
-                    if 'SsynthWeight' in dict:
-                        a.time_weight = dict['SsynthWeight']
-                    a.azimuth = dict['SAzim']
-                    a.incident = dict['SInci']
-                    #a.distance = dict['distEpi']
+            ## write S Pick info
+            #if 'S' in dict:
+            #    try:
+            #        axind = dict['Saxind']
+            #    except:
+            #        axind = 1
+            #        err = "Warning: Could not determine axis for S pick. Using middle axis."
+            #        print >> sys.stderr, err
+            #    _i += 1
+            #    p = Pick()
+            #    e.picks.append(p)
+            #    p.extra = AttribDict()
+            #    p.resource_id = "/".join((ID_ROOT, "pick", event_id, _i))
+            #    p.waveform_id = WaveformStreamID()
+            #    p.waveform_id.network_code = st[axind].stats.network
+            #    p.waveform_id.station_code = st[axind].stats.station 
+            #    p.waveform_id.location_code = st[axind].stats.location
+            #    p.waveform_id.channel_code = st[axind].stats.channel
+            #    p.time_errors = QuantityError()
+            #    # prepare time of pick (global reference + relative time)
+            #    picktime = self.time_rel2abs(dict['S'])
+            #    p.time = picktime.isoformat() # + '.%06i' % picktime.microsecond)
+            #    if 'SErr1' in dict and 'SErr2' in dict:
+            #        p.time_errors.uncertainty = dict['SErr2'] - dict['SErr1']
+            #    if 'SErr1' in dict:
+            #        p.time_errors.lower_uncertainty = dict['S'] - dict['SErr1']
+            #    if 'SErr2' in dict:
+            #        p.time_errors.upper_uncertainty = dict['SErr2'] - dict['S']
+            #    p.phase_hint = "S"
+            #    if 'SOnset' in dict:
+            #        p.onset = dict['SOnset']
+            #    if 'SPol' in dict:
+            #        p.polarity = dict['SPol']
+            #    if 'SWeight' in dict:
+            #        p.extra.weight = {'value': dict['SWeight'], '_namespace': NAMESPACE}
+            #    
+            #    if 'Ssynth' in dict:
+            #        a = Arrival()
+            #        o.arrivals.append(a)
+            #        a.resource_id = "/".join((ID_ROOT, "arrival", event_id, _i))
+            #        a.pick_id = p.resource_id
+            #        a.time_residual = dict['Sres']
+            #        if 'SsynthWeight' in dict:
+            #            a.time_weight = dict['SsynthWeight']
+            #        a.azimuth = dict['SAzim']
+            #        a.incident = dict['SInci']
+            #        #a.distance = dict['distEpi']
 
         #magnitude output
         m = self.magnitude
         
         #focal mechanism output
-        dF = self.dictFocalMechanism
-        #we always have one key 'Program', if len > 1 we have real information
-        #its possible that we have set the 'Program' key but afterwards
-        #the actual program run does not fill our dictionary...
-        if 'Strike' in dF:
-            focmec = Sub(xml, "focalMechanism")
-            Sub(focmec, "program").text = dF['Program']
-            nodplanes = Sub(focmec, "nodalPlanes")
-            nodplanes.set("preferredPlane", "1")
-            nodplane1 = Sub(nodplanes, "nodalPlane1")
-            strike = Sub(nodplane1, "strike")
-            Sub(strike, "value").text = str(dF['Strike'])
-            Sub(strike, "uncertainty")
-            dip = Sub(nodplane1, "dip")
-            Sub(dip, "value").text = str(dF['Dip'])
-            Sub(dip, "uncertainty")
-            rake = Sub(nodplane1, "rake")
-            Sub(rake, "value").text = str(dF['Rake'])
-            Sub(rake, "uncertainty")
-            Sub(focmec, "stationPolarityCount").text = "%i" % \
-                    dF['Station Polarity Count']
-            Sub(focmec, "stationPolarityErrorCount").text = "%i" % dF['Errors']
-            Sub(focmec, "possibleSolutionCount").text = "%i" % \
-                    dF['Possible Solution Count']
-
-        return lxml.etree.tostring(xml, pretty_print=True, xml_declaration=True)
+        f = self.focalMechanism
+        #dF = self.dictFocalMechanism
+        ##we always have one key 'Program', if len > 1 we have real information
+        ##its possible that we have set the 'Program' key but afterwards
+        ##the actual program run does not fill our dictionary...
+        #if 'Strike' in dF:
+        #    focmec = Sub(xml, "focalMechanism")
+        #    Sub(focmec, "program").text = dF['Program']
+        #    nodplanes = Sub(focmec, "nodalPlanes")
+        #    nodplanes.set("preferredPlane", "1")
+        #    nodplane1 = Sub(nodplanes, "nodalPlane1")
+        #    strike = Sub(nodplane1, "strike")
+        #    Sub(strike, "value").text = str(dF['Strike'])
+        #    Sub(strike, "uncertainty")
+        #    dip = Sub(nodplane1, "dip")
+        #    Sub(dip, "value").text = str(dF['Dip'])
+        #    Sub(dip, "uncertainty")
+        #    rake = Sub(nodplane1, "rake")
+        #    Sub(rake, "value").text = str(dF['Rake'])
+        #    Sub(rake, "uncertainty")
+        #    Sub(focmec, "stationPolarityCount").text = "%i" % \
+        #            dF['Station Polarity Count']
+        #    Sub(focmec, "stationPolarityErrorCount").text = "%i" % dF['Errors']
+        #    Sub(focmec, "possibleSolutionCount").text = "%i" % \
+        #            dF['Possible Solution Count']
+        cat = Catalog([e])
+        e.origins = [o]
+        e.magnitudes = [m]
+        e.focal_mechanisms = [f]
+        e.picks = []
+        o.arrivals = []
+        for d in self.dicts:
+            for phase in SEISMIC_PHASES:
+                pick = dict['picks'].get(phase)
+                arrival = dict['arrivals'].get(phase)
+                if pick:
+                    e.picks.append(pick)
+                if arrival:
+                    o.arrivals.append(arrival)
+        xml = StringIO()
+        cat.write(xml, format="quakeml")
+        xml = xml.read()
+        return xml
     
     def setXMLEventID(self, event_id=None):
         #XXX is problematic if two people make a location at the same second!
@@ -3537,12 +3599,12 @@ class ObsPyck(QtGui.QMainWindow):
 
         # if we did no location at all, and only picks would be saved the
         # EventID ist still not set, so we have to do this now.
-        if not self.event.public_id:
-            err = "Error: Event public_id not set."
+        if not self.event.resource_id:
+            err = "Error: Event resource_id not set."
             print >> sys.stderr, err
             return
             #self.setXMLEventID()
-        name = self.event.public_id.split("/")[1] #XXX id of the file
+        name = str(self.event.resource_id).split("/")[2] #XXX id of the file
         # create XML and also save in temporary directory for inspection purposes
         print "creating xml..."
         data = self.dicts2XML()
@@ -3656,36 +3718,68 @@ class ObsPyck(QtGui.QMainWindow):
         self.focMechCount = None
 
     def drawAllItems(self):
-        keys_line = (phase_type + suffix \
-                     for phase_type in SEISMIC_PHASES \
-                     for suffix in ('', 'Err1', 'Err2', 'synth'))
-        keys_label = (phase_type + suffix \
-                      for phase_type in SEISMIC_PHASES \
-                      for suffix in ('', 'synth'))
-        for key in keys_line:
-            self.drawLine(key)
-        for key in keys_label:
-            self.drawLabel(key)
-        for key in ('MagMin1', 'MagMax1', 'MagMin2', 'MagMax2'):
-            self.drawMagMarker(key)
-    
-    def delAllItems(self):
-        keys_line = (phase_type + suffix \
-                     for phase_type in SEISMIC_PHASES \
-                     for suffix in ('', 'Err1', 'Err2', 'synth'))
-        keys_label = (phase_type + suffix \
-                      for phase_type in SEISMIC_PHASES \
-                      for suffix in ('', 'synth'))
-        for key in keys_line:
-            self.delLine(key)
-        for key in keys_label:
-            self.delLabel(key)
-        for key in ('MagMin1', 'MagMax1', 'MagMin2', 'MagMax2'):
-            self.delMagMarker(key)
+        for ax in self.axs:
+            self.updateAxes(ax)
+    #    keys_line = (phase_type + suffix \
+    #                 for phase_type in SEISMIC_PHASES \
+    #                 for suffix in ('', 'Err1', 'Err2', 'synth'))
+    #    keys_label = (phase_type + suffix \
+    #                  for phase_type in SEISMIC_PHASES \
+    #                  for suffix in ('', 'synth'))
+    #    for key in keys_line:
+    #        self.drawLine(key)
+    #    for key in keys_label:
+    #        self.drawLabel(key)
+    #    for key in ('MagMin1', 'MagMax1', 'MagMin2', 'MagMax2'):
+    #        self.drawMagMarker(key)
 
-    def updateAllItems(self):
-        self.delAllItems()
-        self.drawAllItems()
+    def updateAxes(self, ax):
+        ax.lines = ax.lines[:1]
+        pick = self.getPick(ax)
+        if pick:
+            self.drawPick(ax, pick, "r")
+            self.redraw()
+
+    def drawPick(self, ax, pick, color):
+        if not pick.time:
+            return
+        reltime = self.time_abs2rel(pick.time)
+        ax.axvline(reltime)
+
+    def getPick(self, ax):
+        _i = self.axs.index(ax)
+        if _i == 0:
+            component = "Z"
+        elif _i == 1:
+            component = "N"
+        elif _i == 2:
+            component = "E"
+        else:
+            raise ValueError
+        for pick in self.dicts[self.stPt]['picks'].itervalues():
+            print pick, self.dicts[self.stPt]['picks']
+            if pick.waveform_id.channel_code.endswith(component):
+                return pick
+        return None
+    
+    #def delAllItems(self):
+    #    #keys_line = (phase_type + suffix \
+    #    #             for phase_type in SEISMIC_PHASES \
+    #    #             for suffix in ('', 'Err1', 'Err2', 'synth'))
+    #    #keys_label = (phase_type + suffix \
+    #    #              for phase_type in SEISMIC_PHASES \
+    #    #              for suffix in ('', 'synth'))
+    #    self.delLines()
+    #    #for key in keys_line:
+    #    #    self.delLine(key)
+    #    #for key in keys_label:
+    #    #    self.delLabel(key)
+    #    for key in ('MagMin1', 'MagMax1', 'MagMin2', 'MagMax2'):
+    #        self.delMagMarker(key)
+
+    #def updateAllItems(self):
+    #    self.delAllItems()
+    #    self.drawAllItems()
 
     def getEventFromSeisHub(self, resource_name):
         """
@@ -3714,6 +3808,11 @@ class ObsPyck(QtGui.QMainWindow):
 
         #analyze picks:
         for pick in ev.picks:
+            arrival = None
+            for _a in ev.arrivals:
+                if _a.pick_id == pick.resource_id:
+                    arrival = _a
+                    break
             # attributes
             network = p.waveform_id.network_code
             station = p.waveform_id.station_code
@@ -3732,236 +3831,37 @@ class ObsPyck(QtGui.QMainWindow):
                       "data with station id: \"%s\"" % station.strip()
                 print >> sys.stderr, err
                 continue
-            # values
-            time = pick.xpath(".//time/value")[0].text
-            uncertainty = pick.xpath(".//time/uncertainty")[0].text
-            try:
-                lower_uncertainty = pick.xpath(".//time/lowerUncertainty")[0].text
-            except:
-                lower_uncertainty = None
-            try:
-                upper_uncertainty = pick.xpath(".//time/upperUncertainty")[0].text
-            except:
-                upper_uncertainty = None
-            try:
-                onset = pick.xpath(".//onset")[0].text
-            except:
-                onset = None
-            try:
-                polarity = pick.xpath(".//polarity")[0].text
-            except:
-                polarity = None
-            try:
-                weight = pick.xpath(".//weight")[0].text
-            except:
-                weight = None
-            try:
-                phase_res = pick.xpath(".//phase_res/value")[0].text
-            except:
-                phase_res = None
-            try:
-                phase_weight = pick.xpath(".//phase_res/weight")[0].text
-            except:
-                phase_weight = None
-            try:
-                azimuth = pick.xpath(".//azimuth/value")[0].text
-            except:
-                azimuth = None
-            try:
-                incident = pick.xpath(".//incident/value")[0].text
-            except:
-                incident = None
-            try:
-                epi_dist = pick.xpath(".//epi_dist/value")[0].text
-            except:
-                epi_dist = None
-            try:
-                hyp_dist = pick.xpath(".//hyp_dist/value")[0].text
-            except:
-                hyp_dist = None
-            # convert UTC time to seconds after global reference time
-            time = self.time_abs2rel(UTCDateTime(time))
             # assign to dictionary
             dict = self.dicts[streamnum]
-            # map uncertainty in seconds to error picks in seconds
-            if uncertainty:
-                uncertainty = float(uncertainty) / 2.0
-            if lower_uncertainty:
-                lower_uncertainty = float(lower_uncertainty)
-            if upper_uncertainty:
-                upper_uncertainty = float(upper_uncertainty)
-            if pick.xpath(".//phaseHint")[0].text == "P":
-                dict['P'] = time
-                if lower_uncertainty and upper_uncertainty:
-                    dict['PErr1'] = time - lower_uncertainty
-                    dict['PErr2'] = time + upper_uncertainty
-                elif uncertainty:
-                    dict['PErr1'] = time - uncertainty
-                    dict['PErr2'] = time + uncertainty
-                if onset:
-                    dict['POnset'] = onset
-                if polarity:
-                    dict['PPol'] = polarity
-                if weight:
-                    dict['PWeight'] = int(weight)
-                if phase_res:
-                    # residual is defined as P-Psynth by NLLOC and 3dloc!
-                    # XXX does this also hold for hyp2000???
-                    dict['Psynth'] = time - float(phase_res)
-                    dict['Pres'] = float(phase_res)
-                # hypo2000 uses this weight internally during the inversion
-                # this is not the same as the weight assigned during picking
-                if phase_weight:
-                    dict['PsynthWeight'] = phase_weight
-                if azimuth:
-                    dict['PAzim'] = float(azimuth)
-                if incident:
-                    dict['PInci'] = float(incident)
-            if pick.xpath(".//phaseHint")[0].text == "S":
-                dict['S'] = time
-                # XXX maybe dangerous to check last character:
-                if channel.endswith('N'):
+            dict['picks'][pick.phase_hint] = pick
+            if arrival:
+                dict['arrivals'][arrival.phase] = arrival
+                cha = pick.waveform_id.channel_code
+                if cha.endswith('N'):
                     dict['Saxind'] = 1
-                if channel.endswith('E'):
+                elif cha.endswith('E'):
                     dict['Saxind'] = 2
-                if lower_uncertainty and upper_uncertainty:
-                    dict['SErr1'] = time - lower_uncertainty
-                    dict['SErr2'] = time + upper_uncertainty
-                elif uncertainty:
-                    dict['SErr1'] = time - uncertainty
-                    dict['SErr2'] = time + uncertainty
-                if onset:
-                    dict['SOnset'] = onset
-                if polarity:
-                    dict['SPol'] = polarity
-                if weight:
-                    dict['SWeight'] = int(weight)
-                if phase_res:
-                    # residual is defined as S-Ssynth by NLLOC and 3dloc!
-                    # XXX does this also hold for hyp2000???
-                    dict['Ssynth'] = time - float(phase_res)
-                    dict['Sres'] = float(phase_res)
-                # hypo2000 uses this weight internally during the inversion
-                # this is not the same as the weight assigned during picking
-                if phase_weight:
-                    dict['SsynthWeight'] = phase_weight
-                if azimuth:
-                    dict['SAzim'] = float(azimuth)
-                if incident:
-                    dict['SInci'] = float(incident)
-            if epi_dist:
-                dict['distEpi'] = float(epi_dist)
-            if hyp_dist:
-                dict['distHypo'] = float(hyp_dist)
 
         #analyze origin:
-        dO = self.dictOrigin
-        try:
-            origin = resource_xml.xpath(u".//origin")[0]
-            try:
-                dO['Program'] = origin.xpath(".//program")[0].text
-            except:
-                pass
-            try:
-                dO['Time'] = UTCDateTime(origin.xpath(".//time/value")[0].text)
-            except:
-                pass
-            try:
-                dO['Latitude'] = float(origin.xpath(".//latitude/value")[0].text)
-            except:
-                pass
-            try:
-                dO['Longitude'] = float(origin.xpath(".//longitude/value")[0].text)
-            except:
-                pass
-            try:
-                dO['Longitude Error'] = float(origin.xpath(".//longitude/uncertainty")[0].text)
-            except:
-                pass
-            try:
-                dO['Latitude Error'] = float(origin.xpath(".//latitude/uncertainty")[0].text)
-            except:
-                pass
-            try:
-                dO['Depth'] = float(origin.xpath(".//depth/value")[0].text)
-            except:
-                pass
-            try:
-                dO['Depth Error'] = float(origin.xpath(".//depth/uncertainty")[0].text)
-            except:
-                pass
-            try:
-                dO['Depth Type'] = origin.xpath(".//depth_type")[0].text
-            except:
-                pass
-            try:
-                dO['Earth Model'] = origin.xpath(".//earth_mod")[0].text
-            except:
-                pass
-            try:
-                dO['used P Count'] = int(origin.xpath(".//originQuality/P_usedPhaseCount")[0].text)
-            except:
-                pass
-            try:
-                dO['used S Count'] = int(origin.xpath(".//originQuality/S_usedPhaseCount")[0].text)
-            except:
-                pass
-            try:
-                dO['used Station Count'] = int(origin.xpath(".//originQuality/usedStationCount")[0].text)
-            except:
-                pass
-            try:
-                dO['Standarderror'] = float(origin.xpath(".//originQuality/standardError")[0].text)
-            except:
-                pass
-            try:
-                dO['Azimuthal Gap'] = float(origin.xpath(".//originQuality/azimuthalGap")[0].text)
-            except:
-                pass
-            try:
-                dO['Minimum Distance'] = float(origin.xpath(".//originQuality/minimumDistance")[0].text)
-            except:
-                pass
-            try:
-                dO['Maximum Distance'] = float(origin.xpath(".//originQuality/maximumDistance")[0].text)
-            except:
-                pass
-            try:
-                dO['Median Distance'] = float(origin.xpath(".//originQuality/medianDistance")[0].text)
-            except:
-                pass
-        except:
-            pass
+        if ev.origins:
+            self.origin = ev.origins[0]
 
         #analyze magnitude:
-        dM = self.dictMagnitude
-        try:
-            magnitude = resource_xml.xpath(u".//magnitude")[0]
+        if ev.magnitudes:
+            self.magnitude = ev.magnitudes[0]
             try:
-                dM['Program'] = magnitude.xpath(".//program")[0].text
-            except:
-                pass
-            try:
-                dM['Magnitude'] = float(magnitude.xpath(".//mag/value")[0].text)
                 self.netMagLabel = '\n\n\n\n\n %.2f (Var: %.2f)' % \
-                        (dM['Magnitude'], dM['Uncertainty'])
+                        (self.magnitude.mag, self.magnitude.mag_errors)
             except:
                 pass
-            try:
-                dM['Uncertainty'] = float(magnitude.xpath(".//mag/uncertainty")[0].text)
-            except:
-                pass
-            try:
-                dM['Station Count'] = int(magnitude.xpath(".//stationCount")[0].text)
-            except:
-                pass
-        except:
-            pass
 
         #analyze stationmagnitudes:
-        for stamag in resource_xml.xpath(u".//stationMagnitude"):
-            station = stamag.xpath(".//station")[0].text
-            streamnum = None
+        for stamag in ev.station_magnitudes:
+            stamagcontrib = None
+            for _c in self.magnitude.station_magnitude_contributions:
+                if _c.station_magnitude_id == stamag.resource_id:
+                    stamagcontrib = _c
+                    break
             # search for streamnumber corresponding to pick
             for i, dict in enumerate(self.dicts):
                 if station.strip() != dict['Station']:
@@ -3974,99 +3874,55 @@ class ObsPyck(QtGui.QMainWindow):
                       "magnitude data with id: \"%s\"" % station.strip()
                 print >> sys.stderr, err
                 continue
-            st = self.streams[streamnum]
-            # values
-            mag = float(stamag.xpath(".//mag/value")[0].text)
-            mag_channel = stamag.xpath(".//channels")[0].text
-            mag_weight = float(stamag.xpath(".//weight")[0].text)
-            if mag_weight == 0:
-                mag_use = False
-            else:
-                mag_use = True
             # assign to dictionary
             dict = self.dicts[streamnum]
-            dict['Mag'] = mag
-            dict['MagUse'] = mag_use
-            dict['MagChannel'] = mag_channel
+            dict['station_magnitude'] = stamag
+            dict['station_magnitude_contribution'] = stamagcontrib
         
-        # analyze amplitudes (magnitude picks):
-        for ampl in resource_xml.xpath(u".//stationMagnitude/amplitude"):
-            # attributes
-            id = ampl.find("waveform").attrib
-            network = id["networkCode"]
-            station = id["stationCode"]
-            location = id["locationCode"]
-            channel = id['channelCode']
-            streamnum = None
-            # search for streamnumber corresponding to pick
-            for i, dict in enumerate(self.dicts):
-                if station.strip() != dict['Station']:
-                    continue
-                else:
-                    streamnum = i
-                    break
-            if streamnum is None:
-                err = "Warning: Did not find matching stream for pick " + \
-                      "data with station id: \"%s\"" % station.strip()
-                print >> sys.stderr, err
-                continue
-            dict = self.dicts[streamnum]
-            st = self.streams[streamnum].copy()
-            if self.widgets.qToolButton_filter.isChecked():
-                st = st.copy()
-                self._filter(st)
-            # values
-            tr = st.select(channel=channel)[0]
-            ind = st.traces.index(tr)
-            time = ampl.xpath(".//timeWindow/reference")[0].text
-            time = self.time_abs2rel(UTCDateTime(time))
-            dict['MagMin%dT' % ind] = time
-            data_index = int(time * tr.stats.sampling_rate)
-            data = tr.data[data_index]
-            dict['MagMin%d' % ind] = data
-            time += float(ampl.xpath(".//timeWindow/end")[0].text)
-            dict['MagMax%dT' % ind] = time
-            data_index = int(time * tr.stats.sampling_rate)
-            data = tr.data[data_index]
-            dict['MagMax%d' % ind] = data
+        ## analyze amplitudes (magnitude picks):
+        #for ampl in resource_xml.xpath(u".//stationMagnitude/amplitude"):
+        #    # attributes
+        #    id = ampl.find("waveform").attrib
+        #    network = id["networkCode"]
+        #    station = id["stationCode"]
+        #    location = id["locationCode"]
+        #    channel = id['channelCode']
+        #    streamnum = None
+        #    # search for streamnumber corresponding to pick
+        #    for i, dict in enumerate(self.dicts):
+        #        if station.strip() != dict['Station']:
+        #            continue
+        #        else:
+        #            streamnum = i
+        #            break
+        #    if streamnum is None:
+        #        err = "Warning: Did not find matching stream for pick " + \
+        #              "data with station id: \"%s\"" % station.strip()
+        #        print >> sys.stderr, err
+        #        continue
+        #    dict = self.dicts[streamnum]
+        #    st = self.streams[streamnum].copy()
+        #    if self.widgets.qToolButton_filter.isChecked():
+        #        st = st.copy()
+        #        self._filter(st)
+        #    # values
+        #    tr = st.select(channel=channel)[0]
+        #    ind = st.traces.index(tr)
+        #    time = ampl.xpath(".//timeWindow/reference")[0].text
+        #    time = self.time_abs2rel(UTCDateTime(time))
+        #    dict['MagMin%dT' % ind] = time
+        #    data_index = int(time * tr.stats.sampling_rate)
+        #    data = tr.data[data_index]
+        #    dict['MagMin%d' % ind] = data
+        #    time += float(ampl.xpath(".//timeWindow/end")[0].text)
+        #    dict['MagMax%dT' % ind] = time
+        #    data_index = int(time * tr.stats.sampling_rate)
+        #    data = tr.data[data_index]
+        #    dict['MagMax%d' % ind] = data
         
         #analyze focal mechanism:
-        dF = self.dictFocalMechanism
-        try:
-            focmec = resource_xml.xpath(u".//focalMechanism")[0]
-            try:
-                dF['Program'] = focmec.xpath(".//program")[0].text
-            except:
-                pass
-            try:
-                strike = focmec.xpath(".//nodalPlanes/nodalPlane1/strike/value")[0].text
-                dF['Strike'] = float(strike)
-                self.focMechCount = 1
-                self.focMechCurrent = 0
-            except:
-                pass
-            try:
-                dip = focmec.xpath(".//nodalPlanes/nodalPlane1/dip/value")[0].text
-                dF['Dip'] = float(dip)
-            except:
-                pass
-            try:
-                rake = focmec.xpath(".//nodalPlanes/nodalPlane1/rake/value")[0].text
-                dF['Rake'] = float(rake)
-            except:
-                pass
-            try:
-                staPolCount = focmec.xpath(".//stationPolarityCount")[0].text
-                dF['Station Polarity Count'] = int(staPolCount)
-            except:
-                pass
-            try:
-                staPolErrCount = focmec.xpath(".//stationPolarityErrorCount")[0].text
-                dF['Errors'] = int(staPolErrCount)
-            except:
-                pass
-        except:
-            pass
+        if ev.focal_mechanisms:
+            self.focalMechanism = ev.focal_mechanisms[0]
         print "Fetched event %i of %i: %s (account: %s, user: %s)"% \
               (self.seishubEventCurrent + 1, self.seishubEventCount,
                resource_name, account, user)
