@@ -535,7 +535,7 @@ class ObsPyck(QtGui.QMainWindow):
                 return
         self.setXMLEventID()
         self.uploadSeisHub()
-        self.on_qToolButton_updateEventList_clicked(event)
+        self.on_qToolButton_updateEventList_clicked()
         self.checkForSysopEventDuplicates(self.T0, self.T1)
 
     def on_qCheckBox_publishEvent_toggled(self):
@@ -575,7 +575,7 @@ class ObsPyck(QtGui.QMainWindow):
             self.deleteEventInSeisHub(resource_name)
             self.setXMLEventID(event_id)
             self.uploadSeisHub()
-            self.on_qToolButton_updateEventList_clicked(event)
+            self.on_qToolButton_updateEventList_clicked()
             self.checkForSysopEventDuplicates(self.T0, self.T1)
 
     def on_qToolButton_deleteEvent_clicked(self, *args):
@@ -2947,12 +2947,27 @@ class ObsPyck(QtGui.QMainWindow):
             
             # z axis in km
             axEMiXY.hexbin(data[0], data[1], cmap=cmap)
-            axEMiXZ.hexbin(data[0], data[2]/1000., cmap=cmap)
-            axEMiZY.hexbin(data[2]/1000., data[1], cmap=cmap)
+            axEMiXZ.hexbin(data[0], data[2], cmap=cmap)
+            axEMiZY.hexbin(data[2], data[1], cmap=cmap)
+            stalons = [d['StaLon'] for d in self.dicts]
+            stalats = [d['StaLat'] for d in self.dicts]
+            stadepths = [d['StaEle'] / 1e3 for d in self.dicts]
+            axEMiXY.scatter(stalons, stalats, s=200, marker='v', color='k')
+            axEMiXZ.scatter(stalons, stadepths, s=200, marker='v', color='k')
+            axEMiZY.scatter(stadepths, stalats, s=200, marker='v', color='k')
 
+            min_x = min(data[0])
+            max_x = max(data[0])
+            min_y = min(data[1])
+            max_y = max(data[1])
+            min_z = min(data[2])
+            max_z = max(data[2])
+            axEMiZY.set_xlim(min_z, max_z)
+            axEMiXZ.set_ylim(min_z, max_z)
+            axEMiXY.set_xlim(min_x, max_x)
+            axEMiXY.set_ylim(min_y, max_y)
             axEMiXZ.invert_yaxis()
             axEMiZY.invert_xaxis()
-            axEMiXY.axis("equal")
             
             formatter = FormatStrFormatter("%.3f")
             axEMiXY.xaxis.set_major_formatter(formatter)
@@ -2966,6 +2981,7 @@ class ObsPyck(QtGui.QMainWindow):
             # hide ticklabels on XY plot
             for ax in [axEMiXY.xaxis, axEMiXY.yaxis]:
                 plt.setp(ax.get_ticklabels(), visible=False)
+
 
     def delEventMap(self):
         try:
