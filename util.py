@@ -678,7 +678,7 @@ def setup_external_programs(options):
     if not os.path.isdir(options.pluginpath):
         msg = "No such directory: '%s'" % options.pluginpath
         raise IOError(msg)
-    tmp_dir = tempfile.mkdtemp()
+    tmp_dir = tempfile.mkdtemp(prefix="obspyck-")
     # set binary names to use depending on architecture and platform...
     env = os.environ
     architecture = platform.architecture()[0]
