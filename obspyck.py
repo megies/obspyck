@@ -847,6 +847,8 @@ class ObsPyck(QtGui.QMainWindow):
             msg = "%s (zerophase=%s): %.2f Hz" % \
                     (type, options['zerophase'], options['freq'])
         try:
+            stream.detrend("linear")
+            stream.taper()
             stream.filter(type, **options)
             print msg
         except:
