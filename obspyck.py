@@ -1357,6 +1357,8 @@ class ObsPyck(QtGui.QMainWindow):
                 abs_time = self.time_rel2abs(dict[phase_type])
                 print "%s set at %.3f (%s)" % (KEY_FULLNAMES[phase_type],
                                                dict[phase_type], abs_time.isoformat())
+                if 'S' in dict and 'P' in dict:
+                    print "S-P time: %.3f" % (dict['S'] - dict['P'])
                 return
 
         if ev.key in keys['setWeight'].keys():
