@@ -945,8 +945,8 @@ class ObsPyck(QtGui.QMainWindow):
         ## DEBUG PYQT START
         QtCore.pyqtRemoveInputHook()
         try:
-            import ipdb
-            ipdb.set_trace()
+            from IPython.core.debugger import Tracer
+            Tracer(colors="Linux")()
         except ImportError:
             import pdb
             pdb.set_trace()
