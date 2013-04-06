@@ -40,6 +40,8 @@ except ImportError:
 #os.chdir("/baysoft/obspyck/")
 from obspy.core import UTCDateTime, Stream
 from obspy.core.event import readEvents
+from obspy.core.event import *  # XXX
+from obspy.core.util import NamedTemporaryFile
 try:
     from obspy.signal.util import utlLonLat, utlGeoKm
     from obspy.signal.invsim import estimateMagnitude, paz2AmpValueOfFreqResp
@@ -521,7 +523,7 @@ class ObsPyck(QtGui.QMainWindow):
         self.seishubEventCurrent = (self.seishubEventCurrent + 1) % \
                                    self.seishubEventCount
         event = self.seishubEventList[self.seishubEventCurrent]
-        resource_name = event.get('resource_name')
+        resource_name = str(event.get('resource_name'))
         self.clearDictionaries()
         self.getEventFromSeisHub(resource_name)
         self.updateAllItems()
@@ -953,8 +955,8 @@ class ObsPyck(QtGui.QMainWindow):
         ## DEBUG PYQT START
         QtCore.pyqtRemoveInputHook()
         try:
-            import ipdb
-            ipdb.set_trace()
+            from IPython.core.debugger import Tracer
+            Tracer(colors="Linux")()
         except ImportError:
             import pdb
             pdb.set_trace()
@@ -2729,6 +2731,7 @@ class ObsPyck(QtGui.QMainWindow):
             if not amplitudes:
                 continue
 
+            # XXX hyp_dist doesnt exist anymore
             mag = estimateMagnitude(pazs, amplitudes, timedeltas,
                                     dict['distHypo'])
             dict['Mag'] = mag
@@ -2906,7 +2909,7 @@ class ObsPyck(QtGui.QMainWindow):
         ypos = 0.97
         xpos = 0.03
         axEM.text(xpos, ypos,
-                  '%7.3f +/- %0.2fkm\n' % (o.longitude, o.longitude_errors]) + \
+                  '%7.3f +/- %0.2fkm\n' % (o.longitude, o.longitude_errors) + \
                   '%7.3f +/- %0.2fkm\n' % (o.latitude, o.latitude_errors) + \
                   '  %.1fkm +/- %.1fkm' % (o.depth, o.depth_errors),
                   va='top', ha='left', family='monospace', transform=axEM.transAxes)
@@ -3363,7 +3366,7 @@ class ObsPyck(QtGui.QMainWindow):
         """
         e = self.event
         o = self.origin
-        event_id = e.split("/")[2]
+        event_id = str(self.event.resource_id).split("/")[-2] #XXX id of the file
         # if the sysop checkbox is checked, we set the account in the xml
         # to sysop (and also use sysop as the seishub user)
         if self.widgets.qCheckBox_sysop.isChecked():
@@ -3396,7 +3399,7 @@ class ObsPyck(QtGui.QMainWindow):
                 p = Pick()
                 e.picks.append(p)
                 p.extra = AttribDict()
-                p.resource_id = "/".join((ID_ROOT, "pick", event_id, _i))
+                p.resource_id = "/".join((ID_ROOT, "pick", event_id, str(_i)))
                 p.waveform_id = WaveformStreamID()
                 p.waveform_id.network_code = st[0].stats.network
                 p.waveform_id.station_code = st[0].stats.station 
@@ -3481,43 +3484,28 @@ class ObsPyck(QtGui.QMainWindow):
                     #a.distance = dict['distEpi']
 
         #magnitude output
-        m = self.magnitude
+        if self.magnitude:
+            e.magnitudes.append(self.magnitude)
         
         #focal mechanism output
-        dF = self.dictFocalMechanism
-        #we always have one key 'Program', if len > 1 we have real information
-        #its possible that we have set the 'Program' key but afterwards
-        #the actual program run does not fill our dictionary...
-        if 'Strike' in dF:
-            focmec = Sub(xml, "focalMechanism")
-            Sub(focmec, "program").text = dF['Program']
-            nodplanes = Sub(focmec, "nodalPlanes")
-            nodplanes.set("preferredPlane", "1")
-            nodplane1 = Sub(nodplanes, "nodalPlane1")
-            strike = Sub(nodplane1, "strike")
-            Sub(strike, "value").text = str(dF['Strike'])
-            Sub(strike, "uncertainty")
-            dip = Sub(nodplane1, "dip")
-            Sub(dip, "value").text = str(dF['Dip'])
-            Sub(dip, "uncertainty")
-            rake = Sub(nodplane1, "rake")
-            Sub(rake, "value").text = str(dF['Rake'])
-            Sub(rake, "uncertainty")
-            Sub(focmec, "stationPolarityCount").text = "%i" % \
-                    dF['Station Polarity Count']
-            Sub(focmec, "stationPolarityErrorCount").text = "%i" % dF['Errors']
-            Sub(focmec, "possibleSolutionCount").text = "%i" % \
-                    dF['Possible Solution Count']
+        if self.focalMechanism:
+            e.focal_mechanisms.append(self.focalMechanism)
 
-        return lxml.etree.tostring(xml, pretty_print=True, xml_declaration=True)
+        cat = Catalog(events=[e])
+        with NamedTemporaryFile() as tf:
+            tmp = tf.name
+            cat.write(tmp, "QUAKEML")
+            with open(tmp) as fh:
+                xml = fh.read()
+
+        return xml
     
     def setXMLEventID(self, event_id=None):
         #XXX is problematic if two people make a location at the same second!
         # then one event is overwritten with the other during submission.
         if event_id is None:
-            self.event.resource_id = "/".join([ID_ROOT, "event", UTCDateTime().strftime('%Y%m%d%H%M%S'), "1"])
-        else:
-            self.event.resource_id = "/".join([ID_ROOT, "event", event_id, "1"])
+            event_id = UTCDateTime().strftime('%Y%m%d%H%M%S') 
+        self.event.resource_id = "/".join([ID_ROOT, "event", event_id, "1"])
 
     def uploadSeisHub(self):
         """
@@ -3537,12 +3525,12 @@ class ObsPyck(QtGui.QMainWindow):
 
         # if we did no location at all, and only picks would be saved the
         # EventID ist still not set, so we have to do this now.
-        if not self.event.public_id:
-            err = "Error: Event public_id not set."
+        if not self.event.get("resource_id"):
+            err = "Error: Event resource_id not set."
             print >> sys.stderr, err
             return
             #self.setXMLEventID()
-        name = self.event.public_id.split("/")[1] #XXX id of the file
+        name = str(self.event.resource_id).split("/")[-2] #XXX id of the file
         # create XML and also save in temporary directory for inspection purposes
         print "creating xml..."
         data = self.dicts2XML()
@@ -3714,11 +3702,12 @@ class ObsPyck(QtGui.QMainWindow):
 
         #analyze picks:
         for pick in ev.picks:
+            arr = getArrivalForPick(ev, pick)
             # attributes
-            network = p.waveform_id.network_code
-            station = p.waveform_id.station_code
-            location = p.waveform_id.location_code
-            channel = p.waveform_id.channel_code
+            network = pick.waveform_id.network_code
+            station = pick.waveform_id.station_code
+            location = pick.waveform_id.location_code
+            channel = pick.waveform_id.channel_code
             streamnum = None
             # search for streamnumber corresponding to pick
             for i, dict in enumerate(self.dicts):
@@ -3733,52 +3722,23 @@ class ObsPyck(QtGui.QMainWindow):
                 print >> sys.stderr, err
                 continue
             # values
-            time = pick.xpath(".//time/value")[0].text
-            uncertainty = pick.xpath(".//time/uncertainty")[0].text
+            time = pick.time
+            uncertainty = pick.time_errors.get("uncertainty")
+            lower_uncertainty = pick.time_errors.get("lower_uncertainty")
+            upper_uncertainty = pick.time_errors.get("upper_uncertainty")
+            onset = pick.get("onset")
+            polarity = pick.get("polarity")
             try:
-                lower_uncertainty = pick.xpath(".//time/lowerUncertainty")[0].text
-            except:
-                lower_uncertainty = None
-            try:
-                upper_uncertainty = pick.xpath(".//time/upperUncertainty")[0].text
-            except:
-                upper_uncertainty = None
-            try:
-                onset = pick.xpath(".//onset")[0].text
-            except:
-                onset = None
-            try:
-                polarity = pick.xpath(".//polarity")[0].text
-            except:
-                polarity = None
-            try:
-                weight = pick.xpath(".//weight")[0].text
+                weight = pick.extra.weight.value
             except:
                 weight = None
-            try:
-                phase_res = pick.xpath(".//phase_res/value")[0].text
-            except:
-                phase_res = None
-            try:
-                phase_weight = pick.xpath(".//phase_res/weight")[0].text
-            except:
-                phase_weight = None
-            try:
-                azimuth = pick.xpath(".//azimuth/value")[0].text
-            except:
-                azimuth = None
-            try:
-                incident = pick.xpath(".//incident/value")[0].text
-            except:
-                incident = None
-            try:
-                epi_dist = pick.xpath(".//epi_dist/value")[0].text
-            except:
-                epi_dist = None
-            try:
-                hyp_dist = pick.xpath(".//hyp_dist/value")[0].text
-            except:
-                hyp_dist = None
+            phase_res = arr.get("time_residual")
+            phase_weight = arr.get("time_weight")
+            azimuth = arr.get("azimuth")
+            incident = arr.get("takeoff_angle")
+            epi_dist = arr.get("distance")
+            # XXX hyp_dist doesnt exist anymore
+            # hyp_dist = pick.xpath(".//hyp_dist/value")[0].text
             # convert UTC time to seconds after global reference time
             time = self.time_abs2rel(UTCDateTime(time))
             # assign to dictionary
@@ -3790,7 +3750,7 @@ class ObsPyck(QtGui.QMainWindow):
                 lower_uncertainty = float(lower_uncertainty)
             if upper_uncertainty:
                 upper_uncertainty = float(upper_uncertainty)
-            if pick.xpath(".//phaseHint")[0].text == "P":
+            if pick.phase_hint == "P":
                 dict['P'] = time
                 if lower_uncertainty and upper_uncertainty:
                     dict['PErr1'] = time - lower_uncertainty
@@ -3817,7 +3777,7 @@ class ObsPyck(QtGui.QMainWindow):
                     dict['PAzim'] = float(azimuth)
                 if incident:
                     dict['PInci'] = float(incident)
-            if pick.xpath(".//phaseHint")[0].text == "S":
+            elif pick.phase_hint == "S":
                 dict['S'] = time
                 # XXX maybe dangerous to check last character:
                 if channel.endswith('N'):
@@ -3851,8 +3811,9 @@ class ObsPyck(QtGui.QMainWindow):
                     dict['SInci'] = float(incident)
             if epi_dist:
                 dict['distEpi'] = float(epi_dist)
-            if hyp_dist:
-                dict['distHypo'] = float(hyp_dist)
+            # XXX hyp_dist doesnt exist anymore
+            #if hyp_dist:
+            #    dict['distHypo'] = float(hyp_dist)
 
         #analyze origin:
         dO = self.dictOrigin
@@ -4150,12 +4111,13 @@ class ObsPyck(QtGui.QMainWindow):
           - magnitude
           - used_p/used_s
         """
-        keys_origin = ("Time", "Latitude", "Longitude", "Depth",
-                       "used P Count", "used S Count")
-        keys_magnitude = ("Magnitude",)
-        if not all([key in self.dictOrigin for key in keys_origin]):
+        keys_origin = ("time", "latitude", "longitude", "depth")
+        # XXX not checking for used-P and used-S-count
+        # XXX causes problems for parsing in website?
+        keys_magnitude = ("mag",)
+        if not self.origin or not all([key in self.origin for key in keys_origin]):
             return False
-        if not all([key in self.dictMagnitude for key in keys_magnitude]):
+        if not self.magnitude or not all([key in self.magnitude for key in keys_magnitude]):
             return False
         return True
 
@@ -4163,11 +4125,12 @@ class ObsPyck(QtGui.QMainWindow):
         """
         pop up an error window indicating that event information is missing
         """
-        keys_origin = ("Time", "Latitude", "Longitude", "Depth",
-                       "used P Count", "used S Count")
-        keys_magnitude = ("Magnitude",)
-        missing = [key for key in keys_origin if key not in self.dictOrigin]
-        missing += [key for key in keys_magnitude if key not in self.dictMagnitude]
+        keys_origin = ("time", "latitude", "longitude", "depth")
+        # XXX not checking for used-P and used-S-count
+        # XXX causes problems for parsing in website?
+        keys_magnitude = ("mag",)
+        missing = [key for key in keys_origin if key not in self.origin]
+        missing += [key for key in keys_magnitude if key not in self.magnitude]
         missing = "\n".join(missing)
         err = "The sysop event to submit misses some mandatory information:"
         print >> sys.stderr, err

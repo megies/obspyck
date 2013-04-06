@@ -32,6 +32,7 @@ try:
     from obspy.core.util import gps2DistAzimuth
 except:
     from obspy.signal import gps2DistAzimuth
+from obspy.core.event import Arrival
 
 
 mpl.rc('figure.subplot', left=0.05, right=0.98, bottom=0.10, top=0.92,
@@ -962,3 +963,17 @@ class SplitWriter():
                 obj.appendPlainText(msg)
             else:
                 obj.write(msg)
+
+
+def getArrivalForPick(event, pick):
+    """
+    searches first origin of event for an arrival that references the given
+    pick and returns it (empty Arrival object otherwise).
+    """
+    arrival = Arrival()
+    if event.origins:
+        for a in event.origins[0].arrivals:
+            if a.pick_id == pick.resource_id:
+                arrival = a
+                break
+    return arrival
