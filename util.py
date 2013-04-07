@@ -28,6 +28,7 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as QFigureCanva
 from matplotlib.widgets import MultiCursor as MplMultiCursor
 
 from obspy.core import UTCDateTime
+from obspy.core.event import StationMagnitude, StationMagnitudeContribution
 try:
     from obspy.core.util import gps2DistAzimuth
 except:
@@ -619,6 +620,10 @@ def setup_dicts(streams, options):
     for i in range(len(streams))[::-1]:
         dict = dicts[i]
         st = streams[i]
+        dict['picks'] = {}
+        dict['arrivals'] = {}
+        dict['station_magnitude'] = StationMagnitude()
+        dict['station_magnitude_contribution'] = StationMagnitudeContribution()
         trZ = st.select(component="Z")[0]
         if len(st) == 3:
             trN = st.select(component="N")[0]
