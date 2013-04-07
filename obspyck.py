@@ -1372,6 +1372,7 @@ class ObsPyck(QtGui.QMainWindow):
             if phase_type in SEISMIC_PHASES:
                 pick = dict['picks'].setdefault(phase_type, Pick())
                 pick.time = self.time_rel2abs(pickSample)
+                pick.phase_hint = phase_type
                 wave = WaveformStreamID()
                 pick.waveform_id = wave
                 wave.network_code = tr.stats.network
@@ -1393,7 +1394,8 @@ class ObsPyck(QtGui.QMainWindow):
                 #if key2 in dict and dict[phase_type] > dict[key2]:
                 #    self.delLine(key2)
                 #    self.delKey(key2)
-                self.updateAxes(ev.inaxes)
+                #self.updateAxes(ev.inaxes)
+                self.updateAllAxes()
                 self.redraw()
                 print "%s set at %s" % (KEY_FULLNAMES[phase_type], pick.time.isoformat())
                 return
@@ -1465,13 +1467,15 @@ class ObsPyck(QtGui.QMainWindow):
                 reltime = self.time_abs2rel(pick.time)
                 # Determine if left or right Error Pick
                 if pickSample < reltime:
-                    pick.time_errors.lower_uncertainty = pickSample
+                    pick.time_errors.lower_uncertainty = reltime - pickSample
                 elif pickSample > reltime:
-                    pick.time_errors.upper_uncertainty = pickSample
+                    pick.time_errors.upper_uncertainty = pickSample - reltime
                 #self.updateLine(key)
+                #self.updateAxes(ev.inaxes)
+                self.updateAllAxes()
                 self.redraw()
                 print "Error %s set at %s" % (KEY_FULLNAMES[phase_type],
-                                        pickSample.isoformat())
+                                        self.time_rel2abs(pickSample).isoformat())
                 return
 
         if ev.key == keys['setMagMin']:
@@ -3440,7 +3444,7 @@ class ObsPyck(QtGui.QMainWindow):
         
 
         #origin output
-        if self.orign:
+        if self.origin:
             e.origins = [self.origin]
         
         #magnitude output
@@ -3619,18 +3623,50 @@ class ObsPyck(QtGui.QMainWindow):
     #    for key in ('MagMin1', 'MagMax1', 'MagMin2', 'MagMax2'):
     #        self.drawMagMarker(key)
 
+    def updateAllAxes(self):
+        for ax in self.axs:
+            ax.lines = ax.lines[:1]
+            pick = self.getPick(ax)
+            if pick:
+                self.drawPick(ax, pick)
+                self.redraw()
+
     def updateAxes(self, ax):
         ax.lines = ax.lines[:1]
         pick = self.getPick(ax)
         if pick:
-            self.drawPick(ax, pick, "r")
+            self.drawPick(ax, pick)
             self.redraw()
 
-    def drawPick(self, ax, pick, color):
+    def drawPick(self, ax, pick):
         if not pick.time:
             return
+        color = PHASE_COLORS[pick.phase_hint]
+        linestyle = PHASE_LINESTYLES[pick.phase_hint]
         reltime = self.time_abs2rel(pick.time)
-        ax.axvline(reltime)
+        ax.axvline(reltime, color=color,
+                   linewidth=AXVLINEWIDTH, linestyle=linestyle,
+                   ymin=0, ymax=1)
+        if pick.time_errors.lower_uncertainty or pick.time_errors.upper_uncertainty:
+            if pick.time_errors.lower_uncertainty:
+                time = reltime - pick.time_errors.lower_uncertainty
+                ax.axvline(time, color=color,
+                           linewidth=AXVLINEWIDTH, linestyle=linestyle,
+                           ymin=0.25, ymax=0.75)
+            if pick.time_errors.upper_uncertainty:
+                time = reltime + pick.time_errors.upper_uncertainty
+                ax.axvline(time, color=color,
+                           linewidth=AXVLINEWIDTH, linestyle=linestyle,
+                           ymin=0.25, ymax=0.75)
+        elif pick.time_errors.uncertainty:
+            time = reltime - pick.time_errors.uncertainty
+            ax.axvline(time, color=color,
+                       linewidth=AXVLINEWIDTH, linestyle=linestyle,
+                       ymin=0.25, ymax=0.75)
+            time = reltime + pick.time_errors.uncertainty
+            ax.axvline(time, color=color,
+                       linewidth=AXVLINEWIDTH, linestyle=linestyle,
+                       ymin=0.25, ymax=0.75)
 
     def getPick(self, ax):
         _i = self.axs.index(ax)
@@ -3663,9 +3699,10 @@ class ObsPyck(QtGui.QMainWindow):
     #    for key in ('MagMin1', 'MagMax1', 'MagMin2', 'MagMax2'):
     #        self.delMagMarker(key)
 
-    #def updateAllItems(self):
-    #    self.delAllItems()
-    #    self.drawAllItems()
+    def updateAllItems(self):
+        #self.delAllItems()
+        #self.drawAllItems()
+        self.updateAllAxes()
 
     def getEventFromSeisHub(self, resource_name):
         """
@@ -3715,7 +3752,7 @@ class ObsPyck(QtGui.QMainWindow):
                 continue
             # assign to dictionary
             dict = self.dicts[streamnum]
-            dict['picks'][pick.phase_hint] = pick
+            dict.setdefault('picks', {})[pick.phase_hint] = pick
 
         #analyze origin:
         if ev.origins:
@@ -3798,6 +3835,7 @@ class ObsPyck(QtGui.QMainWindow):
         #analyze focal mechanism:
         if ev.focal_mechanisms:
             self.focalMechanism = ev.focal_mechanisms[0]
+        account = "TODO"  # XXX
         print "Fetched event %i of %i: %s (account: %s, user: %s)"% \
               (self.seishubEventCurrent + 1, self.seishubEventCount,
                resource_name, account, user)
