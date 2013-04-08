@@ -377,21 +377,21 @@ class ObsPyck(QtGui.QMainWindow):
     def on_qToolButton_do3dloc_clicked(self, *args):
         msg = "Not updated after massive QuakeML restructuring."
         raise NotImplementedError(msg)
-        if args:
-            return
-        #self.delAllItems()
-        self.clearOriginMagnitudeDictionaries()
-        self.origin.method_id = "/".join([ID_ROOT, "location_method", "3dloc"])
-        self.do3dLoc()
-        self.load3dlocSyntheticPhases()
-        self.load3dlocData()
-        self.calculateEpiHypoDists()
-        self.magnitude.method_id = "/".join([ID_ROOT, "magnitude_method", "obspy"])
-        self.calculateStationMagnitudes()
-        self.updateNetworkMag()
-        self.drawAllItems()
-        self.redraw()
-        self.widgets.qToolButton_showMap.setChecked(True)
+        #if args:
+        #    return
+        ##self.delAllItems()
+        #self.clearOriginMagnitudeDictionaries()
+        #self.origin.method_id = "/".join([ID_ROOT, "location_method", "3dloc"])
+        #self.do3dLoc()
+        #self.load3dlocSyntheticPhases()
+        #self.load3dlocData()
+        #self.calculateEpiHypoDists()
+        #self.magnitude.method_id = "/".join([ID_ROOT, "magnitude_method", "obspy"])
+        #self.calculateStationMagnitudes()
+        #self.updateNetworkMag()
+        #self.drawAllItems()
+        #self.redraw()
+        #self.widgets.qToolButton_showMap.setChecked(True)
 
     def on_qToolButton_doNlloc_clicked(self, *args):
         if args:
@@ -1757,117 +1757,117 @@ class ObsPyck(QtGui.QMainWindow):
     def load3dlocSyntheticPhases(self):
         msg = "Not updated after massive QuakeML restructuring."
         raise NotImplementedError(msg)
-        files = PROGRAMS['3dloc']['files']
-        try:
-            fhandle = open(files['out'], 'rt')
-            phaseList = fhandle.readlines()
-            fhandle.close()
-        except:
-            return
-        for key in ['Psynth', 'Ssynth']:
-            self.delKey(key)
-        for phase in phaseList[1:]:
-            # example for a synthetic pick line from 3dloc:
-            # RJOB P 2009 12 27 10 52 59.425 -0.004950 298.199524 136.000275
-            # station phase YYYY MM DD hh mm ss.sss (picked time!) residual
-            # (add this to get synthetic time) azimuth? incidenceangle?
-            # XXX maybe we should avoid reading this absolute time and rather
-            # use our dict['P'] or dict['S'] time and simple subtract the
-            # residual to simplify things!?
-            phase = phase.split()
-            phStat = phase[0]
-            phType = phase[1]
-            phUTCTime = UTCDateTime(int(phase[2]), int(phase[3]),
-                                    int(phase[4]), int(phase[5]),
-                                    int(phase[6]), float(phase[7]))
-            phResid = float(phase[8])
-            # residual is defined as P-Psynth by NLLOC and 3dloc!
-            phUTCTime = phUTCTime - phResid
-            for st, dict in zip(self.streams, self.dicts):
-                # check for matching station names
-                if not phStat == st[0].stats.station.strip():
-                    continue
-                else:
-                    # check if synthetic pick is within global time range
-                    if (phUTCTime < self.T0 or phUTCTime > self.T1):
-                        err = "Warning: Synthetic pick outside timespan."
-                        print >> sys.stderr, err
-                    # phSeconds is the time in seconds after the stream-
-                    # starttime at which the time of the synthetic phase
-                    # is located
-                    phSeconds = self.time_abs2rel(phUTCTime)
-                    if phType == 'P':
-                        dict['Psynth'] = phSeconds
-                        dict['Pres'] = phResid
-                    elif phType == 'S':
-                        dict['Ssynth'] = phSeconds
-                        dict['Sres'] = phResid
-        for key in ['Psynth', 'Ssynth']:
-            self.updateLine(key)
-            self.updateLabel(key)
-        self.redraw()
+        #files = PROGRAMS['3dloc']['files']
+        #try:
+        #    fhandle = open(files['out'], 'rt')
+        #    phaseList = fhandle.readlines()
+        #    fhandle.close()
+        #except:
+        #    return
+        #for key in ['Psynth', 'Ssynth']:
+        #    self.delKey(key)
+        #for phase in phaseList[1:]:
+        #    # example for a synthetic pick line from 3dloc:
+        #    # RJOB P 2009 12 27 10 52 59.425 -0.004950 298.199524 136.000275
+        #    # station phase YYYY MM DD hh mm ss.sss (picked time!) residual
+        #    # (add this to get synthetic time) azimuth? incidenceangle?
+        #    # XXX maybe we should avoid reading this absolute time and rather
+        #    # use our dict['P'] or dict['S'] time and simple subtract the
+        #    # residual to simplify things!?
+        #    phase = phase.split()
+        #    phStat = phase[0]
+        #    phType = phase[1]
+        #    phUTCTime = UTCDateTime(int(phase[2]), int(phase[3]),
+        #                            int(phase[4]), int(phase[5]),
+        #                            int(phase[6]), float(phase[7]))
+        #    phResid = float(phase[8])
+        #    # residual is defined as P-Psynth by NLLOC and 3dloc!
+        #    phUTCTime = phUTCTime - phResid
+        #    for st, dict in zip(self.streams, self.dicts):
+        #        # check for matching station names
+        #        if not phStat == st[0].stats.station.strip():
+        #            continue
+        #        else:
+        #            # check if synthetic pick is within global time range
+        #            if (phUTCTime < self.T0 or phUTCTime > self.T1):
+        #                err = "Warning: Synthetic pick outside timespan."
+        #                print >> sys.stderr, err
+        #            # phSeconds is the time in seconds after the stream-
+        #            # starttime at which the time of the synthetic phase
+        #            # is located
+        #            phSeconds = self.time_abs2rel(phUTCTime)
+        #            if phType == 'P':
+        #                dict['Psynth'] = phSeconds
+        #                dict['Pres'] = phResid
+        #            elif phType == 'S':
+        #                dict['Ssynth'] = phSeconds
+        #                dict['Sres'] = phResid
+        #for key in ['Psynth', 'Ssynth']:
+        #    self.updateLine(key)
+        #    self.updateLabel(key)
+        #self.redraw()
 
     def do3dLoc(self):
         msg = "Not updated after massive QuakeML restructuring."
         raise NotImplementedError(msg)
-        prog_dict = PROGRAMS['3dloc']
-        files = prog_dict['files']
-        #self.setXMLEventID()
-        precall = prog_dict['PreCall']
-        precall(prog_dict)
+        #prog_dict = PROGRAMS['3dloc']
+        #files = prog_dict['files']
+        ##self.setXMLEventID()
+        #precall = prog_dict['PreCall']
+        #precall(prog_dict)
 
-        f = open(files['in'], 'wt')
-        network = "BW"
-        fmt = "%04s  %s        %s %5.3f -999.0 0.000 -999. 0.000 T__DR_ %9.6f %9.6f %8.6f\n"
-        self.coords = []
-        for st, dict in zip(self.streams, self.dicts):
-            lon = dict['StaLon']
-            lat = dict['StaLat']
-            ele = dict['StaEle']
-            self.coords.append([lon, lat])
-            # if the error picks are not set, we use a default of three samples
-            default_error = 3 / st[0].stats.sampling_rate
-            for phase in SEISMIC_PHASES:
-                pick = dict['picks'].get(phase)
-                if not pick:
-                    continue
-                t = pick.time
-                millisec = int(round(t.microsecond / 1e3))
-                if millisec == 1000:
-                    t += 1
-                    millisec = 0
-                date = t.strftime("%Y %m %d %H %M %S")
-                date += ".%03d" % millisec
-                error_1 = pick.time_errors.uncertainty
-                if error_1 is None:
-                    pick.time_errors.uncertainty
-                error_2 = pick.time_errors.uncertainty
-                if error_2 is None:
-                    pick.time_errors.uncertainty
-                if error_1 is None:
-                    err = "Warning: Left error pick for %s missing. " + \
-                          "Using a default of 3 samples left of %s."
-                    err = err % (phase, phase)
-                    print >> sys.stderr, err
-                    error_1 = t - default_error
-                if error_2 is None:
-                    err = "Warning: Right error pick for %s missing. " + \
-                          "Using a default of 3 samples right of %s."
-                    err = err % (phase, phase)
-                    print >> sys.stderr, err
-                    error_2 = t + default_error
-                delta = error_2 - error_1
-                f.write(fmt % (dict['Station'], phase, date, delta, lon, lat,
-                               ele))
-        f.close()
-        print 'Phases for 3Dloc:'
-        self.catFile(files['in'])
-        call = prog_dict['Call']
-        (msg, err, returncode) = call(prog_dict)
-        print msg
-        print >> sys.stderr, err
-        print '--> 3dloc finished'
-        self.catFile(files['out'])
+        #f = open(files['in'], 'wt')
+        #network = "BW"
+        #fmt = "%04s  %s        %s %5.3f -999.0 0.000 -999. 0.000 T__DR_ %9.6f %9.6f %8.6f\n"
+        #self.coords = []
+        #for st, dict in zip(self.streams, self.dicts):
+        #    lon = dict['StaLon']
+        #    lat = dict['StaLat']
+        #    ele = dict['StaEle']
+        #    self.coords.append([lon, lat])
+        #    # if the error picks are not set, we use a default of three samples
+        #    default_error = 3 / st[0].stats.sampling_rate
+        #    for phase in SEISMIC_PHASES:
+        #        pick = dict['picks'].get(phase)
+        #        if not pick:
+        #            continue
+        #        t = pick.time
+        #        millisec = int(round(t.microsecond / 1e3))
+        #        if millisec == 1000:
+        #            t += 1
+        #            millisec = 0
+        #        date = t.strftime("%Y %m %d %H %M %S")
+        #        date += ".%03d" % millisec
+        #        error_1 = pick.time_errors.uncertainty
+        #        if error_1 is None:
+        #            pick.time_errors.uncertainty
+        #        error_2 = pick.time_errors.uncertainty
+        #        if error_2 is None:
+        #            pick.time_errors.uncertainty
+        #        if error_1 is None:
+        #            err = "Warning: Left error pick for %s missing. " + \
+        #                  "Using a default of 3 samples left of %s."
+        #            err = err % (phase, phase)
+        #            print >> sys.stderr, err
+        #            error_1 = t - default_error
+        #        if error_2 is None:
+        #            err = "Warning: Right error pick for %s missing. " + \
+        #                  "Using a default of 3 samples right of %s."
+        #            err = err % (phase, phase)
+        #            print >> sys.stderr, err
+        #            error_2 = t + default_error
+        #        delta = error_2 - error_1
+        #        f.write(fmt % (dict['Station'], phase, date, delta, lon, lat,
+        #                       ele))
+        #f.close()
+        #print 'Phases for 3Dloc:'
+        #self.catFile(files['in'])
+        #call = prog_dict['Call']
+        #(msg, err, returncode) = call(prog_dict)
+        #print msg
+        #print >> sys.stderr, err
+        #print '--> 3dloc finished'
+        #self.catFile(files['out'])
 
     def doFocmec(self):
         prog_dict = PROGRAMS['focmec']
@@ -2555,75 +2555,75 @@ class ObsPyck(QtGui.QMainWindow):
     def load3dlocData(self):
         msg = "Not updated after massive QuakeML restructuring."
         raise NotImplementedError(msg)
-        files = PROGRAMS['3dloc']['files']
-        #self.load3dlocSyntheticPhases()
-        event = open(files['out'], "rt").readline().split()
-        lon = float(event[8])
-        lat = float(event[9])
-        depth = float(event[10])
-        errX = float(event[11])
-        errY = float(event[12])
-        errZ = float(event[13])
-        rms = float(event[14])
-        gap = float(event[15])
-        model = "STAUFEN"
-        time = UTCDateTime(int(event[2]), int(event[3]), int(event[4]),
-                                 int(event[5]), int(event[6]), float(event[7]))
-        o = self.origin
-        o.origin_uncertainty = OriginUncertainty()
-        o.quality = OriginQuality()
-        ou = o.origin_uncertainty
-        oq = o.quality
-        o.longitude = lon
-        o.latitude = lat
-        o.depth = depth * (-1e3)  # meters positive down!
-        if errY > errX:
-            ou.azimuth_max_horizontal_uncertainty = 0
-        else:
-            ou.azimuth_max_horizontal_uncertainty = 90
-            ou.min_horizontal_uncertainty, \
-                    ou.max_horizontal_uncertainty = \
-                    sorted([errX * 1e3, errY * 1e3])
-            ou.preferred_description = "uncertainty ellipse"
-        o.depth_errors.uncertainty = errZ * 1e3
-        oq.quality.standard_error = rms #XXX stimmt diese Zuordnung!!!?!
-        oq.quality.azimuthal_gap = gap
-        o.depth_type = "from location"
-        o.earth_model_id = "%s/earth_model/%s" % (ID_ROOT, model)
-        o.time = time
-        o.quality.used_phase_count = 0
-        lines = open(files['in'], "rt").readlines()
-        for line in lines:
-            pickline = line.split()
-            for st in self.streams:
-                if pickline[0].strip() == st[0].stats.station.strip():
-                    if pickline[1] == 'P':
-                        o.quality.used_phase_count += 1
-                    elif pickline[1] == 'S':
-                        o.quality.used_phase_count += 1
-                    break
-        lines = open(files['out'], "rt").readlines()
-        for line in lines[1:]:
-            pickline = line.split()
-            for st, dict in zip(self.streams, self.dicts):
-                if pickline[0].strip() == st[0].stats.station.strip():
-                    if pickline[1] == 'P':
-                        type = 'P'
-                    elif pickline[1] == 'S':
-                        type = 'S'
-                    else:
-                        continue
-                    # XXX why set empty pick ?!?!?
-                    pick = dict['picks'].setdefault(type, Pick())
-                    arrival = Arrival()
-                    dict['arrivals'][type] = arrival
-                    arrival.azimuth = float(pickline[9])
-                    arrival.takeoff_angle = float(pickline[10])
-                    break
-        o.used_station_count = len(self.dicts)
-        for dict in self.dicts:
-            if not dict['arrivals']['P'] and not dict['arrivals']['S']:
-                o.used_station_count -= 1
+        #files = PROGRAMS['3dloc']['files']
+        ##self.load3dlocSyntheticPhases()
+        #event = open(files['out'], "rt").readline().split()
+        #lon = float(event[8])
+        #lat = float(event[9])
+        #depth = float(event[10])
+        #errX = float(event[11])
+        #errY = float(event[12])
+        #errZ = float(event[13])
+        #rms = float(event[14])
+        #gap = float(event[15])
+        #model = "STAUFEN"
+        #time = UTCDateTime(int(event[2]), int(event[3]), int(event[4]),
+        #                         int(event[5]), int(event[6]), float(event[7]))
+        #o = self.origin
+        #o.origin_uncertainty = OriginUncertainty()
+        #o.quality = OriginQuality()
+        #ou = o.origin_uncertainty
+        #oq = o.quality
+        #o.longitude = lon
+        #o.latitude = lat
+        #o.depth = depth * (-1e3)  # meters positive down!
+        #if errY > errX:
+        #    ou.azimuth_max_horizontal_uncertainty = 0
+        #else:
+        #    ou.azimuth_max_horizontal_uncertainty = 90
+        #    ou.min_horizontal_uncertainty, \
+        #            ou.max_horizontal_uncertainty = \
+        #            sorted([errX * 1e3, errY * 1e3])
+        #    ou.preferred_description = "uncertainty ellipse"
+        #o.depth_errors.uncertainty = errZ * 1e3
+        #oq.quality.standard_error = rms #XXX stimmt diese Zuordnung!!!?!
+        #oq.quality.azimuthal_gap = gap
+        #o.depth_type = "from location"
+        #o.earth_model_id = "%s/earth_model/%s" % (ID_ROOT, model)
+        #o.time = time
+        #o.quality.used_phase_count = 0
+        #lines = open(files['in'], "rt").readlines()
+        #for line in lines:
+        #    pickline = line.split()
+        #    for st in self.streams:
+        #        if pickline[0].strip() == st[0].stats.station.strip():
+        #            if pickline[1] == 'P':
+        #                o.quality.used_phase_count += 1
+        #            elif pickline[1] == 'S':
+        #                o.quality.used_phase_count += 1
+        #            break
+        #lines = open(files['out'], "rt").readlines()
+        #for line in lines[1:]:
+        #    pickline = line.split()
+        #    for st, dict in zip(self.streams, self.dicts):
+        #        if pickline[0].strip() == st[0].stats.station.strip():
+        #            if pickline[1] == 'P':
+        #                type = 'P'
+        #            elif pickline[1] == 'S':
+        #                type = 'S'
+        #            else:
+        #                continue
+        #            # XXX why set empty pick ?!?!?
+        #            pick = dict['picks'].setdefault(type, Pick())
+        #            arrival = Arrival()
+        #            dict['arrivals'][type] = arrival
+        #            arrival.azimuth = float(pickline[9])
+        #            arrival.takeoff_angle = float(pickline[10])
+        #            break
+        #o.used_station_count = len(self.dicts)
+        #for dict in self.dicts:
+        #    if not dict['arrivals']['P'] and not dict['arrivals']['S']:
+        #        o.used_station_count -= 1
     
     def updateNetworkMag(self):
         print "updating network magnitude..."
