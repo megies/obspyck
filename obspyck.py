@@ -257,6 +257,31 @@ class ObsPyck(QtGui.QMainWindow):
         if 'SeisHub' in self.clients:
             self.updateEventListFromSeisHub(self.T0, self.T1)
 
+    def getCurrentStream(self):
+        """
+        returns currently active/displayed stream
+        """
+        return self.streams[self.stPt]
+
+    def getCurrentDict(self):
+        """
+        returns dictionary for currently active/displayed stream
+        """
+        return self.dicts[self.stPt]
+
+    def getCurrentPicks(self):
+        """
+        returns dictionary with picks for currently active/displayed stream
+        (empty dictionary else)
+        """
+        return self.dicts[self.stPt].get("picks", {})
+
+    def getCurrentPhase(self):
+        """
+        returns currently active phase as a string
+        """
+        return str(self.widgets.qComboBox_phaseType.currentText())
+
     def time_abs2rel(self, abstime):
         """
         Converts an absolute UTCDateTime to the time in ObsPyck's relative time
@@ -3608,23 +3633,11 @@ class ObsPyck(QtGui.QMainWindow):
         self.focMechCount = None
 
     def drawAllItems(self):
-        for ax in self.axs:
-            self.updateAxes(ax)
-    #    keys_line = (phase_type + suffix \
-    #                 for phase_type in SEISMIC_PHASES \
-    #                 for suffix in ('', 'Err1', 'Err2', 'synth'))
-    #    keys_label = (phase_type + suffix \
-    #                  for phase_type in SEISMIC_PHASES \
-    #                  for suffix in ('', 'synth'))
-    #    for key in keys_line:
-    #        self.drawLine(key)
-    #    for key in keys_label:
-    #        self.drawLabel(key)
-    #    for key in ('MagMin1', 'MagMax1', 'MagMin2', 'MagMax2'):
-    #        self.drawMagMarker(key)
+        self.updateAllAxes()
 
     def updateAllAxes(self):
         for ax in self.axs:
+            # first line is waveform, leave it
             ax.lines = ax.lines[:1]
             pick = self.getPick(ax)
             if pick:
@@ -3670,17 +3683,23 @@ class ObsPyck(QtGui.QMainWindow):
 
     def getPick(self, ax):
         _i = self.axs.index(ax)
-        if _i == 0:
-            component = "Z"
-        elif _i == 1:
-            component = "N"
-        elif _i == 2:
-            component = "E"
-        else:
-            raise ValueError
-        for pick in self.dicts[self.stPt]['picks'].itervalues():
-            print pick, self.dicts[self.stPt]['picks']
-            if pick.waveform_id.channel_code.endswith(component):
+        _id = self.getCurrentStream()[_i].id
+        phase_hint = self.getCurrentPhase()
+        print _id
+        #if _i == 0:
+        #    component = "Z"
+        #elif _i == 1:
+        #    component = "N"
+        #elif _i == 2:
+        #    component = "E"
+        #else:
+        #    raise ValueError
+        for pick in self.getCurrentDict()['picks'].itervalues():
+            #print pick, self.dicts[self.stPt]['picks']
+            #print pick.waveform_id.channel_code
+            #print pick.waveform_id
+            if pick.waveform_id.getSEEDString() == _id and pick.phase_hint == phase_hint:
+                #print "returning pick!"
                 return pick
         return None
     
