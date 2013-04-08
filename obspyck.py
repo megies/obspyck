@@ -156,6 +156,7 @@ class ObsPyck(QtGui.QMainWindow):
             msg = "Cannot find external programs dir, localization " + \
                   "methods/functions are deactivated"
             warnings.warn(msg)
+        self.picks = []
         self.origin = Origin()
         self.magnitude = Magnitude()
         self.focalMechanism = FocalMechanism() # currently selected focal mechanism
@@ -269,12 +270,12 @@ class ObsPyck(QtGui.QMainWindow):
         """
         return self.dicts[self.stPt]
 
-    def getCurrentPicks(self):
-        """
-        returns dictionary with picks for currently active/displayed stream
-        (empty dictionary else)
-        """
-        return self.dicts[self.stPt].get("picks", {})
+    #def getCurrentPicks(self):
+    #    """
+    #    returns dictionary with picks for currently active/displayed stream
+    #    (empty dictionary else)
+    #    """
+    #    return self.dicts[self.stPt].get("picks", {})
 
     def getCurrentPhase(self):
         """
@@ -389,6 +390,8 @@ class ObsPyck(QtGui.QMainWindow):
         self.widgets.qToolButton_showMap.setChecked(True)
 
     def on_qToolButton_do3dloc_clicked(self, *args):
+        msg = "Not updated after massive QuakeML restructuring."
+        raise NotImplementedError(msg)
         if args:
             return
         #self.delAllItems()
@@ -1395,15 +1398,11 @@ class ObsPyck(QtGui.QMainWindow):
             if not ev.inaxes in self.axs:
                 return
             if phase_type in SEISMIC_PHASES:
-                pick = dict['picks'].setdefault(phase_type, Pick())
+                pick = self.getPick(axes=ev.inaxes, phase_hint=phase_type, setdefault=True)
+                if not pick:
+                    pick.waveform_id = WaveformStreamID(seed_string=tr.id)
+                    pick.phase_hint = phase_type
                 pick.time = self.time_rel2abs(pickSample)
-                pick.phase_hint = phase_type
-                wave = WaveformStreamID()
-                pick.waveform_id = wave
-                wave.network_code = tr.stats.network
-                wave.station_code = tr.stats.station
-                wave.location_code = tr.stats.location
-                wave.channel_code = tr.stats.channel
                 if phase_type == "S":
                     dict['Saxind'] = self.axs.index(ev.inaxes)
                 #depending_keys = (phase_type + k for k in ['', 'synth'])
@@ -1486,8 +1485,8 @@ class ObsPyck(QtGui.QMainWindow):
             if not ev.inaxes in self.axs:
                 return
             if phase_type in SEISMIC_PHASES:
-                pick = dict['picks'].setdefault(phase_type, Pick())
-                if not pick.time:
+                pick = self.getPick(axes=ev.inaxes, phase_hint=phase_type)
+                if not pick or not pick.time:
                     return
                 reltime = self.time_abs2rel(pick.time)
                 # Determine if left or right Error Pick
@@ -1772,6 +1771,8 @@ class ObsPyck(QtGui.QMainWindow):
         self.updateStreamNameCombobox()
 
     def load3dlocSyntheticPhases(self):
+        msg = "Not updated after massive QuakeML restructuring."
+        raise NotImplementedError(msg)
         files = PROGRAMS['3dloc']['files']
         try:
             fhandle = open(files['out'], 'rt')
@@ -1823,6 +1824,8 @@ class ObsPyck(QtGui.QMainWindow):
         self.redraw()
 
     def do3dLoc(self):
+        msg = "Not updated after massive QuakeML restructuring."
+        raise NotImplementedError(msg)
         prog_dict = PROGRAMS['3dloc']
         files = prog_dict['files']
         #self.setXMLEventID()
@@ -1891,47 +1894,45 @@ class ObsPyck(QtGui.QMainWindow):
         #fmt = "ONTN  349.00   96.00C"
         fmt = "%4s  %6.2f  %6.2f%1s\n"
         count = 0
-        for dict, st in zip(self.dicts, self.streams):
-            for phase_type in SEISMIC_PHASES:
-                pick = dict['picks'].get(phase)
-                arrival = dict['arrivals'].get(phase)
-                if not arrival:
-                    continue
-                pt = phase_type
-                if pick.polarity is None or arrival.azimuth is None or arrival.takeoff_angle is None:
-                    continue
-                sta = pick.waveform_id.station_code[:4] #focmec has only 4 chars
-                # XXX commenting the following out again
-                # XXX only polarities with Azim/Inci info from location used
-                #if pt + 'Azim' not in dict or pt + 'Inci' not in dict:
-                #    azim, bazim, inci = coords2azbazinc(st, self.dictOrigin)
-                #    err = "Warning: No azimuth/incidence information for " + \
-                #          "phase pick found, using azimuth/incidence from " + \
-                #          "source/receiver geometry."
-                #    print >> sys.stderr, err
-                # XXX hack for nonlinloc: they return different angles:
-                # XXX they use takeoff dip instead of incidence
-                #elif self.dictOrigin['Program'] == "NLLoc":
-                #    azim, bazim, inci = coords2azbazinc(st, self.dictOrigin)
-                #    err = "Warning: Location program is nonlinloc, " + \
-                #          "returning takeoff angles instead of incidence " + \
-                #          "angles. Using azimuth/incidence from " + \
-                #          "source/receiver geometry."
-                #    print >> sys.stderr, err
-                #else:
-                azim = arrival.azimuth
-                inci = arrival.takeoff_angle
-                pol = pick.polarity
-                try:
-                    pol = POLARITY_2_FOCMEC[pol]
-                except:
-                    err = "Error: Failed to map polarity information to " + \
-                          "FOCMEC identifier (%s, %s, %s), skipping."
-                    err = err % (dict['Station'], pt, pol)
-                    print >> sys.stderr, err
-                    continue
-                count += 1
-                f.write(fmt % (sta, azim, inci, pol))
+        for pick in self.picks:
+            arrival = getArrivalForPick(self.event, pick)
+            if not arrival:
+                continue
+            pt = pick.phase_hint
+            if pick.polarity is None or arrival.azimuth is None or arrival.takeoff_angle is None:
+                continue
+            sta = pick.waveform_id.station_code[:4] #focmec has only 4 chars
+            # XXX commenting the following out again
+            # XXX only polarities with Azim/Inci info from location used
+            #if pt + 'Azim' not in dict or pt + 'Inci' not in dict:
+            #    azim, bazim, inci = coords2azbazinc(st, self.dictOrigin)
+            #    err = "Warning: No azimuth/incidence information for " + \
+            #          "phase pick found, using azimuth/incidence from " + \
+            #          "source/receiver geometry."
+            #    print >> sys.stderr, err
+            # XXX hack for nonlinloc: they return different angles:
+            # XXX they use takeoff dip instead of incidence
+            #elif self.dictOrigin['Program'] == "NLLoc":
+            #    azim, bazim, inci = coords2azbazinc(st, self.dictOrigin)
+            #    err = "Warning: Location program is nonlinloc, " + \
+            #          "returning takeoff angles instead of incidence " + \
+            #          "angles. Using azimuth/incidence from " + \
+            #          "source/receiver geometry."
+            #    print >> sys.stderr, err
+            #else:
+            azim = arrival.azimuth
+            inci = arrival.takeoff_angle
+            pol = pick.polarity
+            try:
+                pol = POLARITY_2_FOCMEC[pol]
+            except:
+                err = "Error: Failed to map polarity information to " + \
+                      "FOCMEC identifier (%s, %s, %s), skipping."
+                err = err % (dict['Station'], pt, pol)
+                print >> sys.stderr, err
+                continue
+            count += 1
+            f.write(fmt % (sta, azim, inci, pol))
         f.close()
         print 'Phases for focmec: %i' % count
         self.catFile(files['phases'])
@@ -2024,8 +2025,10 @@ class ObsPyck(QtGui.QMainWindow):
         ax.set_title(text)
         ax.set_axis_off()
         for dict, st in zip(self.dicts, self.streams):
-            pick = dict['picks'].get('P')
-            arrival = dict['arrivals'].get('P')
+            net = st[0].stats.network
+            sta = st[0].stats.station
+            pick = self.getPick(network=net, station=sta, phase_hint='P')
+            arrival = getArrivalForPick(self.event, pick)
             if not pick:
                 continue
             if pick.polarity is None or arrival.azimuth is None or arrival.takeoff_angle is None:
@@ -2046,7 +2049,7 @@ class ObsPyck(QtGui.QMainWindow):
             #axes orientation
             plotazim = (np.pi / 2.) - ((azim / 180.) * np.pi)
             ax.scatter([plotazim], [inci], facecolor=color)
-            ax.text(plotazim, inci, " " + dict['Station'], va="top")
+            ax.text(plotazim, inci, " " + sta, va="top")
         #this fits the 90 degree incident value to the beachball edge best
         ax.set_ylim([0., 91])
         self.canv.draw()
@@ -2244,6 +2247,7 @@ class ObsPyck(QtGui.QMainWindow):
 
         # assign origin info
         o = self.origin
+        o.clear()
         o.origin_uncertainty = OriginUncertainty()
         o.quality = OriginQuality()
         ou = o.origin_uncertainty
@@ -2389,25 +2393,13 @@ class ObsPyck(QtGui.QMainWindow):
             res = float(line[16])
             weight = float(line[17])
 
-            # search for streamnumber corresponding to pick
-            streamnum = None
-            for i, dict in enumerate(self.dicts):
-                if station.strip() != dict['Station']:
-                    continue
-                else:
-                    streamnum = i
-                    break
-            if streamnum is None:
-                err = "Warning: Did not find matching stream for pick " + \
-                      "data with station id: \"%s\"" % station.strip()
-                print >> sys.stderr, err
-                continue
-            
             # assign synthetic phase info
-            dict = self.dicts[streamnum]
-            pick = dict['picks'].setdefault(type, Pick())
+            pick = self.getPick(station=station, phase_hint=type)
+            if pick is None:
+                msg = "This should not happen! Location output was read and a corresponding pick is missing!"
+                warnings.warn(msg)
             arrival = Arrival()
-            dict['arrivals'][type] = arrival
+            o.arrivals.append(arrival)
             #dict['Psynth'] = res + dict['P']
             # residual is defined as P-Psynth by NLLOC and 3dloc!
             arrival.time_residual = res
@@ -2421,8 +2413,8 @@ class ObsPyck(QtGui.QMainWindow):
             arrival.time_weight = weight
             o.quality.used_phase_count += 1
         o.used_station_count = len(self.dicts)
-        for dict in self.dicts:
-            if dict['P'][1] is None and dict['S'][1] is None:
+        for st in self.streams:
+            if not self.getPick(station=st[0].stats.station):
                 o.used_station_count -= 1
 
     def loadHyp2000Data(self):
@@ -2490,6 +2482,7 @@ class ObsPyck(QtGui.QMainWindow):
 
         # assign origin info
         o = self.origin
+        o.clear()
         o.origin_uncertainty = OriginUncertainty()
         o.quality = OriginQuality()
         ou = o.origin_uncertainty
@@ -2551,25 +2544,13 @@ class ObsPyck(QtGui.QMainWindow):
             res = float(lines[i][61:66])
             weight = float(lines[i][68:72])
 
-            # search for streamnumber corresponding to pick
-            streamnum = None
-            for i, dict in enumerate(self.dicts):
-                if station.strip() != dict['Station']:
-                    continue
-                else:
-                    streamnum = i
-                    break
-            if streamnum is None:
-                err = "Warning: Did not find matching stream for pick " + \
-                      "data with station id: \"%s\"" % station.strip()
-                print >> sys.stderr, err
-                continue
-            
             # assign synthetic phase info
-            dict = self.dicts[streamnum]
-            pick = dict['picks'].setdefault(type, Pick())
+            pick = self.getPick(station=station, phase_hint=type)
+            if pick is None:
+                msg = "This should not happen! Location output was read and a corresponding pick is missing!"
+                warnings.warn(msg)
             arrival = Arrival()
-            dict['arrivals'][type] = arrival
+            o.arrivals.append(arrival)
             # residual is defined as P-Psynth by NLLOC and 3dloc!
             # XXX does this also hold for hyp2000???
             arrival.time_residual = res
@@ -2588,6 +2569,8 @@ class ObsPyck(QtGui.QMainWindow):
                 o.used_station_count -= 1
 
     def load3dlocData(self):
+        msg = "Not updated after massive QuakeML restructuring."
+        raise NotImplementedError(msg)
         files = PROGRAMS['3dloc']['files']
         #self.load3dlocSyntheticPhases()
         event = open(files['out'], "rt").readline().split()
@@ -2646,6 +2629,7 @@ class ObsPyck(QtGui.QMainWindow):
                         type = 'S'
                     else:
                         continue
+                    # XXX why set empty pick ?!?!?
                     pick = dict['picks'].setdefault(type, Pick())
                     arrival = Arrival()
                     dict['arrivals'][type] = arrival
@@ -2818,8 +2802,10 @@ class ObsPyck(QtGui.QMainWindow):
         spTimes = []
         stations = []
         for st, dict in zip(self.streams, self.dicts):
-            pick_p = dict['picks'].get('P')
-            pick_s = dict['picks'].get('S')
+            net = st[0].stats.network
+            sta = st[0].stats.station
+            pick_p = self.getPick(network=net, station=sta, phase_hint='P')
+            pick_s = self.getPick(network=net, station=sta, phase_hint='S')
             if pick_p and pick_s:
                 p = pick_p.time
                 p = "%.3f" % p.getTimeStamp()
@@ -2990,12 +2976,14 @@ class ObsPyck(QtGui.QMainWindow):
         self.scatterMagIndices = []
         self.scatterMagLon = []
         self.scatterMagLat = []
-        for i, dict in enumerate(self.dicts):
+        for i, (st, dict) in enumerate(zip(self.streams, self.dicts)):
             # determine which stations are used in location, set color
-            pick_p = dict['picks'].get('P')
-            arrival_p = dict['arrivals'].get('P')
-            pick_s = dict['picks'].get('S')
-            arrival_s = dict['arrivals'].get('S')
+            net = st[0].stats.network
+            sta = st[0].stats.station
+            pick_p = self.getPick(network=net, station=sta, phase_hint='P')
+            pick_s = self.getPick(network=net, station=sta, phase_hint='S')
+            arrival_p = getArrivalForPick(self.event, pick_p)
+            arrival_p = getArrivalForPick(self.event, pick_s)
             if (arrival_p and arrival_p.time_residual) or (arrival_s and arrival_s.time_residual):
                 stationColor = 'black'
             else:
@@ -3219,38 +3207,42 @@ class ObsPyck(QtGui.QMainWindow):
         hypo71_string = ""
 
         for st, dict in zip(self.streams, self.dicts):
-            sta = dict['Station']
-            pick_p = dict['picks'].get('P')
-            pick_s = dict['picks'].get('S')
+            net = st[0].stats.network
+            sta = st[0].stats.station
+            pick_p = self.getPick(network=net, station=sta, phase_hint='P')
+            pick_s = self.getPick(network=net, station=sta, phase_hint='S')
             if not pick_p and not pick_s:
                 continue
-            if pick_p:
-                pick = pick_p
-                t = pick.time
-                hundredth = int(round(t.microsecond / 1e4))
-                if hundredth == 100:  # XXX check!!
-                    t_p = t + 1
-                    hundredth = 0
-                else:
-                    t_p = t
-                date = t_p.strftime("%y%m%d%H%M%S") + ".%02d" % hundredth
-                if pick.onset == 'impulsive':
-                    onset = 'I'
-                elif pick.onset == 'emergent':
-                    onset = 'E'
-                else:
-                    onset = '?'
-                if pick.polarity == "positive":
-                    polarity = "U"
-                elif pick.polarity == "negative":
-                    polarity = "D"
-                else:
-                    polarity = "?"
-                try:
-                    weight = int(pick.extra.weight)
-                except:
-                    weight = 0
-                hypo71_string += fmtP % (sta, onset, polarity, weight, date)
+
+            # P Pick
+            pick = pick_p
+            t = pick.time
+            hundredth = int(round(t.microsecond / 1e4))
+            if hundredth == 100:  # XXX check!!
+                t_p = t + 1
+                hundredth = 0
+            else:
+                t_p = t
+            date = t_p.strftime("%y%m%d%H%M%S") + ".%02d" % hundredth
+            if pick.onset == 'impulsive':
+                onset = 'I'
+            elif pick.onset == 'emergent':
+                onset = 'E'
+            else:
+                onset = '?'
+            if pick.polarity == "positive":
+                polarity = "U"
+            elif pick.polarity == "negative":
+                polarity = "D"
+            else:
+                polarity = "?"
+            try:
+                weight = int(pick.extra.weight)
+            except:
+                weight = 0
+            hypo71_string += fmtP % (sta, onset, polarity, weight, date)
+
+            # S Pick
             if pick_s:
                 if not pick_p:
                     err = "Warning: Trying to print a Hypo2000 phase file " + \
@@ -3378,46 +3370,38 @@ class ObsPyck(QtGui.QMainWindow):
         """
         nlloc_str = ""
 
-        for st, d in zip(self.streams, self.dicts):
-            sta = d['Station']
-            pick_p = dict['picks'].get('P')
-            pick_s = dict['picks'].get('S')
-            if not pick_p and not pick_s:
+        for pick in self.picks:
+            sta = pick.waveform_id.station.ljust(6)
+            inst = "?".ljust(4)
+            comp = "?".ljust(4)
+            onset = "?"
+            pha = pick.phase_hint.ljust(6)
+            pol = "?"
+            t = pick.time
+            date = t.strftime("%Y%m%d")
+            hour_min = t.strftime("%H%M")
+            sec = "%7.4f" % (t.second + t.microsecond / 1e6)
+            error_type = "GAU"
+            error = None
+            # XXX check: should we take only half of the complete left-to-right error?!?
+            if pick.time_errors.upper_uncertainty and pick.time_errors.lower_uncertainty:
+                error = pick.time_errors.upper_uncertainty + pick.time_errors.lower_uncertainty
+            elif pick.time_errors.uncertainty:
+                error = 2 * pick.time_errors.uncertainty
+            if error is None:
+                err = "Warning: Missing pick error. " + \
+                      "Discarding %s phase of station %s."
+                err = err % (phase, sta)
+                print >> sys.stderr, err
                 continue
-            for phase in SEISMIC_PHASES:
-                pick = dict['picks'].get(phase)
-                if not pick:
-                    continue
-                sta = d['Station'].ljust(6)
-                inst = "?".ljust(4)
-                comp = "?".ljust(4)
-                onset = "?"
-                pha = phase.ljust(6)
-                pol = "?"
-                t = pick.time
-                date = t.strftime("%Y%m%d")
-                hour_min = t.strftime("%H%M")
-                sec = "%7.4f" % (t.second + t.microsecond / 1e6)
-                error_type = "GAU"
-                error = None
-                if pick.time_errors.upper_uncertainty and pick.time_errors.lower_uncertainty:
-                    error = pick.time_errors.upper_uncertainty + pick.time_errors.lower_uncertainty
-                elif pick.time_errors.uncertainty:
-                    error = 2 * pick.time_errors.uncertainty
-                if error is None:
-                    err = "Warning: Missing pick error. " + \
-                          "Discarding %s phase of station %s."
-                    err = err % (phase, sta)
-                    print >> sys.stderr, err
-                    continue
-                error = "%9.2e" % error
-                coda_dur = "-1.00e+00"
-                ampl = "-1.00e+00"
-                period = "-1.00e+00"
-                fields = [sta, inst, comp, onset, pha, pol, date, hour_min,
-                          sec, error_type, error, coda_dur, ampl, period]
-                phase_str = " ".join(fields)
-                nlloc_str += phase_str + "\n"
+            error = "%9.2e" % error
+            coda_dur = "-1.00e+00"
+            ampl = "-1.00e+00"
+            period = "-1.00e+00"
+            fields = [sta, inst, comp, onset, pha, pol, date, hour_min,
+                      sec, error_type, error, coda_dur, ampl, period]
+            phase_str = " ".join(fields)
+            nlloc_str += phase_str + "\n"
         return nlloc_str
 
     def dicts2XML(self):
@@ -3452,21 +3436,15 @@ class ObsPyck(QtGui.QMainWindow):
         epidists = []
         # go through all stream-dictionaries and look for picks
         _i = 0
-        for st, dict in zip(self.streams, self.dicts):
-            # write P Pick info
-            for phase in SEISMIC_PHASES:
-                pick = dict['picks'].get(phase)
-                arrival = getArrivalForPick(self.event, pick)
-                if not pick and not arrival:
-                    continue
-                if pick:
-                    pick.resource_id = "/".join((ID_ROOT, "pick", event_id, str(_i)))
-                    e.picks.append(pick)
-                if arrival:
-                    arrival.resource_id = "/".join((ID_ROOT, "arrival", event_id, str(_i)))
-                    arrival.pick_id = pick.resource_id
-                _i += 1
-        
+        e.picks.clear()
+        for pick in self.picks:
+            arrival = getArrivalForPick(self.event, pick)
+            pick.resource_id = "/".join((ID_ROOT, "pick", event_id, str(_i)))
+            e.picks.append(pick)
+            if arrival:
+                arrival.resource_id = "/".join((ID_ROOT, "arrival", event_id, str(_i)))
+                arrival.pick_id = pick.resource_id
+            _i += 1
 
         #origin output
         if self.origin:
@@ -3637,19 +3615,18 @@ class ObsPyck(QtGui.QMainWindow):
 
     def updateAllAxes(self):
         for ax in self.axs:
-            # first line is waveform, leave it
-            ax.lines = ax.lines[:1]
-            pick = self.getPick(ax)
-            if pick:
-                self.drawPick(ax, pick)
-                self.redraw()
+            self.updateAxes(ax)
 
     def updateAxes(self, ax):
+        # first line is waveform, leave it
         ax.lines = ax.lines[:1]
-        pick = self.getPick(ax)
-        if pick:
-            self.drawPick(ax, pick)
-            self.redraw()
+        # find all picks that have a matching waveform_id and plot them
+        i = self.axs.index(ax)
+        _id = self.getCurrentStream()[i].id
+        for pick in self.picks:
+            if pick.waveform_id.getSEEDString() == _id:
+                self.drawPick(ax, pick)
+        self.redraw()
 
     def drawPick(self, ax, pick):
         if not pick.time:
@@ -3681,27 +3658,63 @@ class ObsPyck(QtGui.QMainWindow):
                        linewidth=AXVLINEWIDTH, linestyle=linestyle,
                        ymin=0.25, ymax=0.75)
 
-    def getPick(self, ax):
-        _i = self.axs.index(ax)
-        _id = self.getCurrentStream()[_i].id
-        phase_hint = self.getCurrentPhase()
-        print _id
-        #if _i == 0:
-        #    component = "Z"
-        #elif _i == 1:
-        #    component = "N"
-        #elif _i == 2:
-        #    component = "E"
-        #else:
-        #    raise ValueError
-        for pick in self.getCurrentDict()['picks'].itervalues():
-            #print pick, self.dicts[self.stPt]['picks']
-            #print pick.waveform_id.channel_code
-            #print pick.waveform_id
-            if pick.waveform_id.getSEEDString() == _id and pick.phase_hint == phase_hint:
-                #print "returning pick!"
-                return pick
-        return None
+    def getPick(self, network=None, station=None, phase_hint=None, waveform_id=None, axes=None, setdefault=False):
+        """
+        returns first matching pick, does NOT ensure there is only one!
+        if setdefault is True then if no pick is found an empty one is returned and inserted into self.picks.
+        """
+        for p in self.picks:
+            if network is not None and network != p.waveform_id.network_code:
+                continue
+            if station is not None and station != p.waveform_id.station_code:
+                continue
+            if phase_hint is not None and phase_hint != p.phase_hint:
+                continue
+            if waveform_id is not None and waveform_id != p.waveform_id:
+                continue
+            if axes is not None:
+                _i = self.axs.index(axes)
+                _id = self.getCurrentStream()[_i].id
+                phase_hint = self.getCurrentPhase()
+                if p.waveform_id.getSEEDString() != _id:
+                    continue
+                if p.phase_hint != phase_hint:
+                    continue
+            return p
+        if setdefault:
+            p = Pick()
+            self.picks.append(p)
+            return p
+        else:
+            return None
+
+    # XXX should be called when getting new event!! XXX
+    def removeDuplicatePicks(self):
+        """
+        Makes sure that any waveform_id/phase_hint combination is unique in
+        picks. Leave first occurence, remove all others and warn.
+        """
+        _ids = [p.waveform_id for p in self.picks]
+        _phase_hints = [p.phase_hint for p in self.picks]
+        msg = "For picks, any waveform_id / phase_hint combination must " + \
+              "be unique. Some non-unique picks were removed!"
+        for _id in _ids:
+            for _phase_hint in _phase_hints:
+                picks = [p for p in self.picks \
+                         if pick.phase_hint == p.phase_hint and \
+                         pick.waveform_id == p.waveform_id]
+                if len(picks) > 1:
+                    warnings.warn(msg)
+                    for p in picks[1:]:
+                        self.picks.remove(p)
+
+    def setPick(self, pick):
+        """
+        Replace stored pick with given pick object.
+        """
+        old = self.getPick(waveform_id=pick.waveform_id, phase_hint=pick.phase_hint)
+        self.picks.remove(old)
+        self.picks.append(pick)
     
     #def delAllItems(self):
     #    #keys_line = (phase_type + suffix \
@@ -3749,29 +3762,8 @@ class ObsPyck(QtGui.QMainWindow):
         self.widgets.qComboBox_eventType.setCurrentIndex(index)
 
         #analyze picks:
-        for pick in ev.picks:
-            arr = getArrivalForPick(ev, pick)
-            # attributes
-            network = pick.waveform_id.network_code
-            station = pick.waveform_id.station_code
-            location = pick.waveform_id.location_code
-            channel = pick.waveform_id.channel_code
-            streamnum = None
-            # search for streamnumber corresponding to pick
-            for i, dict in enumerate(self.dicts):
-                if station.strip() != dict['Station']:
-                    continue
-                else:
-                    streamnum = i
-                    break
-            if streamnum is None:
-                err = "Warning: Did not find matching stream for pick " + \
-                      "data with station id: \"%s\"" % station.strip()
-                print >> sys.stderr, err
-                continue
-            # assign to dictionary
-            dict = self.dicts[streamnum]
-            dict.setdefault('picks', {})[pick.phase_hint] = pick
+        self.picks = ev.picks
+        self.removeDuplicatePicks()
 
         #analyze origin:
         if ev.origins:
