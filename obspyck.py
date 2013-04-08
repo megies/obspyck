@@ -3435,7 +3435,7 @@ class ObsPyck(QtGui.QMainWindow):
         epidists = []
         # go through all stream-dictionaries and look for picks
         _i = 0
-        e.picks.clear()
+        e.picks[:] = []
         for pick in self.picks:
             arrival = getArrivalForPick(self.event, pick)
             pick.resource_id = "/".join((ID_ROOT, "pick", event_id, str(_i)))
