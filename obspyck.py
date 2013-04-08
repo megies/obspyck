@@ -1469,14 +1469,13 @@ class ObsPyck(QtGui.QMainWindow):
                 return
 
         if ev.key == keys['delPick']:
+            # some keyPress events only make sense inside our matplotlib axes
+            if not ev.inaxes in self.axs:
+                return
             if phase_type in SEISMIC_PHASES:
-                depending_keys = (phase_type + k for k in ['', 'Err1', 'Err2'])
-                for key in depending_keys:
-                    self.delLine(key)
-                depending_keys = (phase_type + k for k in ['', 'Weight', 'Pol', 'Onset', 'Err1', 'Err2'])
-                for key in depending_keys:
-                    self.delKey(key)
-                self.delLabel(phase_type)
+                pick = self.getPick(axes=ev.inaxes, phase_hint=phase_type)
+                self.delPick(pick)
+                self.updateAllAxes()
                 self.redraw()
                 return
 
@@ -3657,6 +3656,10 @@ class ObsPyck(QtGui.QMainWindow):
             ax.axvline(time, color=color,
                        linewidth=AXVLINEWIDTH, linestyle=linestyle,
                        ymin=0.25, ymax=0.75)
+
+    def delPick(self, pick):
+        if pick in self.picks:
+            self.picks.remove(pick)
 
     def getPick(self, network=None, station=None, phase_hint=None, waveform_id=None, axes=None, setdefault=False):
         """
