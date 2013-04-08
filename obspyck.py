@@ -41,7 +41,7 @@ except ImportError:
 from obspy.core.event import readEvents
 from obspy.core.util import NamedTemporaryFile
 from obspy.core import UTCDateTime, Stream, AttribDict
-from obspy.core.event import readEvents, Catalog, Event, Origin, Pick, Arrival, Magnitude, StationMagnitude, StationMagnitudeContribution, FocalMechanism, CreationInfo, WaveformStreamID
+from obspy.core.event import readEvents, Catalog, Event, Origin, Pick, Arrival, Magnitude, StationMagnitude, StationMagnitudeContribution, FocalMechanism, CreationInfo, WaveformStreamID, OriginUncertainty
 try:
     from obspy.signal.util import utlLonLat, utlGeoKm
     from obspy.signal.invsim import estimateMagnitude, paz2AmpValueOfFreqResp
@@ -3370,7 +3370,7 @@ class ObsPyck(QtGui.QMainWindow):
         nlloc_str = ""
 
         for pick in self.picks:
-            sta = pick.waveform_id.station.ljust(6)
+            sta = pick.waveform_id.station_code.ljust(6)
             inst = "?".ljust(4)
             comp = "?".ljust(4)
             onset = "?"
@@ -3704,8 +3704,8 @@ class ObsPyck(QtGui.QMainWindow):
         for _id in _ids:
             for _phase_hint in _phase_hints:
                 picks = [p for p in self.picks \
-                         if pick.phase_hint == p.phase_hint and \
-                         pick.waveform_id == p.waveform_id]
+                         if p.phase_hint == _phase_hint and \
+                         p.waveform_id == _id]
                 if len(picks) > 1:
                     warnings.warn(msg)
                     for p in picks[1:]:
