@@ -37,7 +37,7 @@ from lxml.etree import SubElement as Sub
 from obspy.core.event import readEvents
 from obspy.core.util import NamedTemporaryFile
 from obspy.core import UTCDateTime, Stream, AttribDict
-from obspy.core.event import readEvents, Catalog, Event, Origin, Pick, Arrival, Magnitude, StationMagnitude, StationMagnitudeContribution, FocalMechanism, CreationInfo, WaveformStreamID, OriginUncertainty
+from obspy.core.event import readEvents, Catalog, Event, Origin, Pick, Arrival, Magnitude, StationMagnitude, StationMagnitudeContribution, FocalMechanism, CreationInfo, WaveformStreamID, OriginUncertainty, OriginQuality
 from obspy.signal.util import utlLonLat, utlGeoKm
 from obspy.signal.invsim import estimateMagnitude, paz2AmpValueOfFreqResp
 from obspy.signal import rotate_ZNE_LQT, rotate_NE_RT
@@ -2248,9 +2248,9 @@ class ObsPyck(QtGui.QMainWindow):
                     sorted([errX * 1e3, errY * 1e3])
             ou.preferred_description = "uncertainty ellipse"
         o.depth_errors.uncertainty = errZ * 1e3
-        oq.quality.standard_error = rms #XXX stimmt diese Zuordnung!!!?!
-        oq.quality.azimuthal_gap = gap
-        o.depth_type = "from location program"
+        oq.standard_error = rms #XXX stimmt diese Zuordnung!!!?!
+        oq.azimuthal_gap = gap
+        o.depth_type = "from location"
         o.earth_model_id = "%s/earth_model/%s" % (ID_ROOT, model)
         o.time = time
         
@@ -2479,7 +2479,7 @@ class ObsPyck(QtGui.QMainWindow):
         o.depth_errors.uncertainty = errZ * 1e3
         oq.quality.standard_error = rms #XXX stimmt diese Zuordnung!!!?!
         oq.quality.azimuthal_gap = gap
-        o.depth_type = "from location program"
+        o.depth_type = "from location"
         o.earth_model_id = "%s/earth_model/%s" % (ID_ROOT, model)
         o.time = time
         
@@ -2588,7 +2588,7 @@ class ObsPyck(QtGui.QMainWindow):
         o.depth_errors.uncertainty = errZ * 1e3
         oq.quality.standard_error = rms #XXX stimmt diese Zuordnung!!!?!
         oq.quality.azimuthal_gap = gap
-        o.depth_type = "from location program"
+        o.depth_type = "from location"
         o.earth_model_id = "%s/earth_model/%s" % (ID_ROOT, model)
         o.time = time
         o.quality.used_phase_count = 0
@@ -2700,26 +2700,22 @@ class ObsPyck(QtGui.QMainWindow):
             self.netMagText.set_text(self.netMagLabel)
     
     def calculateEpiHypoDists(self):
-        if not 'Longitude' in self.dictOrigin or \
-           not 'Latitude' in self.dictOrigin:
+        o = self.origin
+        if not o.longitude or not o.latitude:
             err = "Error: No coordinates for origin!"
             print >> sys.stderr, err
-        o = self.origin
         epidists = []
         for dict in self.dicts:
             x, y = utlGeoKm(o.longitude, o.latitude,
                             dict['StaLon'], dict['StaLat'])
             z = abs(dict['StaEle'] - dO['Depth'])
-            dict['distX'] = x
-            dict['distY'] = y
-            dict['distZ'] = z
-            dict['distEpi'] = np.sqrt(x**2 + y**2)
+            epi = np.sqrt(x**2 + y**2)
             # Median and Max/Min of epicentral distances should only be used
             # for stations with a pick that goes into the location.
             # The epicentral distance of all other stations may be needed for
             # magnitude estimation nonetheless.
             if 'Psynth' in dict or 'Ssynth' in dict:
-                epidists.append(dict['distEpi'])
+                epidists.append(epi)
             dict['distHypo'] = np.sqrt(x**2 + y**2 + z**2)
         if not o.quality:
             o.quality = OriginQuality()
