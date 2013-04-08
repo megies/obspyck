@@ -29,12 +29,8 @@ from matplotlib.patches import Ellipse
 from matplotlib.ticker import FuncFormatter, FormatStrFormatter, MaxNLocator
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as QNavigationToolbar
 from matplotlib.backend_bases import MouseEvent as MplMouseEvent, KeyEvent as MplKeyEvent
-try:
-    import lxml.etree
-    from lxml.etree import SubElement as Sub
-except ImportError:
-    msg = "Unable to import lxml. Creating event XML files will not work."
-    warnings.warn(msg)
+import lxml.etree
+from lxml.etree import SubElement as Sub
 
 #sys.path.append('/baysoft/obspy/misc/symlink')
 #os.chdir("/baysoft/obspyck/")
@@ -42,24 +38,13 @@ from obspy.core.event import readEvents
 from obspy.core.util import NamedTemporaryFile
 from obspy.core import UTCDateTime, Stream, AttribDict
 from obspy.core.event import readEvents, Catalog, Event, Origin, Pick, Arrival, Magnitude, StationMagnitude, StationMagnitudeContribution, FocalMechanism, CreationInfo, WaveformStreamID, OriginUncertainty
-try:
-    from obspy.signal.util import utlLonLat, utlGeoKm
-    from obspy.signal.invsim import estimateMagnitude, paz2AmpValueOfFreqResp
-    from obspy.signal import rotate_ZNE_LQT, rotate_NE_RT
-    from obspy.signal import arPick
-    from obspy.signal.util import az2baz2az
-except ImportError:
-    msg = "Unable to import obspy.signal. Locating and estimating " + \
-          "magnitudes will not work."
-    warnings.warn(msg)
-try:
-    from obspy.imaging.spectrogram import spectrogram
-    from obspy.imaging.beachball import Beachball
-except ImportError:
-    msg = "Unable to import obspy.imaging. Spectrograms and beach balls " + \
-          "will not work."
-    warnings.warn(msg)
-    warnings.warn("Import of obspy.imaging (spectrogram, beachball) failed.")
+from obspy.signal.util import utlLonLat, utlGeoKm
+from obspy.signal.invsim import estimateMagnitude, paz2AmpValueOfFreqResp
+from obspy.signal import rotate_ZNE_LQT, rotate_NE_RT
+from obspy.signal import arPick
+from obspy.signal.util import az2baz2az
+from obspy.imaging.spectrogram import spectrogram
+from obspy.imaging.beachball import Beachball
 
 from qt_designer import Ui_qMainWindow_obsPyck
 from util import *
