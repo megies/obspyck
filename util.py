@@ -480,6 +480,10 @@ def merge_check_and_cleanup_streams(streams, options):
 
     :returns: (warn_msg, merge_msg, list(:class:`obspy.core.stream.Stream`s))
     """
+    # we need to go through streams/dicts backwards in order not to get
+    # problems because of the pop() statement
+    warn_msg = ""
+    merge_msg = ""
     # Merge on every stream if this option is passed on command line:
     for st in streams:
         st.merge(method=-1)
@@ -489,7 +493,14 @@ def merge_check_and_cleanup_streams(streams, options):
                 st.merge(method=0)
         elif options.merge.lower() == "overwrite":
             for st in streams:
-                st.merge(method=1)
+                if st.getGaps() and max([gap[-1] for gap in st.getGaps()]) < 5:
+                    msg = 'Interpolated over gap(s) with less than 5 ' + \
+                          'samples for station: %s.%s'
+                    msg = msg % (st[0].stats.network, st[0].stats.station)
+                    warn_msg += msg + "\n"
+                    st.merge(method=1, fill_value="interpolate")
+                else:
+                    st.merge(method=1)
         else:
             err = "Unrecognized option for merging traces. Try " + \
                   "\"safe\" or \"overwrite\"."
@@ -500,10 +511,6 @@ def merge_check_and_cleanup_streams(streams, options):
         st.sort()
         st.reverse()
     sta_list = set()
-    # we need to go through streams/dicts backwards in order not to get
-    # problems because of the pop() statement
-    warn_msg = ""
-    merge_msg = ""
     # XXX we need the list() because otherwise the iterator gets garbled if
     # XXX removing streams inside the for loop!!
     for st in list(streams):
@@ -597,8 +604,16 @@ def merge_check_and_cleanup_streams(streams, options):
     # demean traces if not explicitly deactivated on command line
     if not options.nozeromean:
         for st in streams:
-            st.detrend('simple')
-            st.detrend('constant')
+            try:
+                st.detrend('simple')
+                st.detrend('constant')
+            except NotImplementedError as e:
+                if "Trace with masked values found." in e.message:
+                    msg = 'Detrending/demeaning not possible for station ' + \
+                          '(masked Traces): %s' % net_sta
+                    warn_msg += msg + "\n"
+                else:
+                    raise
     return (warn_msg, merge_msg, streams)
 
 def setup_dicts(streams, options):
@@ -672,7 +687,7 @@ def setup_external_programs(options):
     if not os.path.isdir(options.pluginpath):
         msg = "No such directory: '%s'" % options.pluginpath
         raise IOError(msg)
-    tmp_dir = tempfile.mkdtemp()
+    tmp_dir = tempfile.mkdtemp(prefix="obspyck-")
     # set binary names to use depending on architecture and platform...
     env = os.environ
     architecture = platform.architecture()[0]

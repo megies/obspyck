@@ -551,6 +551,7 @@ class ObsPyck(QtGui.QMainWindow):
                 return
         self.setXMLEventID()
         self.uploadSeisHub()
+        self.on_qToolButton_updateEventList_clicked()
         self.checkForSysopEventDuplicates(self.T0, self.T1)
 
     def on_qCheckBox_publishEvent_toggled(self):
@@ -592,7 +593,7 @@ class ObsPyck(QtGui.QMainWindow):
             self.deleteEventInSeisHub(resource_name)
             self.setXMLEventID(event_id)
             self.uploadSeisHub()
-            self.on_qToolButton_updateEventList_clicked(event)
+            self.on_qToolButton_updateEventList_clicked()
             self.checkForSysopEventDuplicates(self.T0, self.T1)
 
     def on_qToolButton_deleteEvent_clicked(self, *args):
@@ -615,7 +616,7 @@ class ObsPyck(QtGui.QMainWindow):
         qMessageBox.setDefaultButton(QtGui.QMessageBox.Cancel)
         if qMessageBox.exec_() == QtGui.QMessageBox.Ok:
             self.deleteEventInSeisHub(resource_name)
-            self.on_qToolButton_updateEventList_clicked(event)
+            self.on_qToolButton_updateEventList_clicked()
     
     def on_qCheckBox_sysop_toggled(self):
         newstate = self.widgets.qCheckBox_sysop.isChecked()
@@ -866,6 +867,8 @@ class ObsPyck(QtGui.QMainWindow):
             msg = "%s (zerophase=%s): %.2f Hz" % \
                     (type, options['zerophase'], options['freq'])
         try:
+            stream.detrend("linear")
+            stream.taper()
             stream.filter(type, **options)
             print msg
         except:
@@ -1402,7 +1405,21 @@ class ObsPyck(QtGui.QMainWindow):
                 #self.updateAxes(ev.inaxes)
                 self.updateAllAxes()
                 self.redraw()
-                print "%s set at %s" % (KEY_FULLNAMES[phase_type], pick.time.isoformat())
+                print "%s set at %.3f (%s)" % (KEY_FULLNAMES[phase_type],
+                                               self.time_abs2rel(pick.time),
+                                               pick.time.isoformat())
+                net = pick.waveform_id.network_code
+                sta = pick.waveform_id.station_code
+                phase_hint2 = None
+                if pick.phase_hint == "P":
+                    phase_hint2 = "S"
+                elif pick.phase_hint == "S":
+                    phase_hint2 = "P"
+                if phase_hint2:
+                    pick2 = self.getPick(network=net, station=sta,
+                                         phase_hint=phase_hint2)
+                    if pick2:
+                        print "S-P time: %.3f" % abs(pick.time - pick2.time)
                 return
 
         if ev.key in keys['setWeight'].keys():
@@ -2782,7 +2799,7 @@ class ObsPyck(QtGui.QMainWindow):
             pick_s = self.getPick(network=net, station=sta, phase_hint='S')
             if pick_p and pick_s:
                 p = pick_p.time
-                p = "%.3f" % p.getTimeStamp()
+                p = "%.3f" % p.timestamp
                 p = float(p[-7:])
                 pTimes.append(p)
                 sp = pick_s.time - pick_p.time
@@ -2821,8 +2838,8 @@ class ObsPyck(QtGui.QMainWindow):
         ax.axvline(x0, color="blue", ls=":",
                    label="origin time from wadati diagram")
         # origin time from event location
-        if self.origin:
-            otime = "%.3f" % self.origin.time.getTimeStamp()
+        if self.origin.time:
+            otime = "%.3f" % self.origin.time.timestamp
             otime = float(otime[-7:])
             ax.axvline(otime, color="red", ls=":",
                        label="origin time from event location")
@@ -3049,12 +3066,27 @@ class ObsPyck(QtGui.QMainWindow):
             
             # z axis in km
             axEMiXY.hexbin(data[0], data[1], cmap=cmap)
-            axEMiXZ.hexbin(data[0], data[2]/1000., cmap=cmap)
-            axEMiZY.hexbin(data[2]/1000., data[1], cmap=cmap)
+            axEMiXZ.hexbin(data[0], data[2], cmap=cmap)
+            axEMiZY.hexbin(data[2], data[1], cmap=cmap)
+            stalons = [d['StaLon'] for d in self.dicts]
+            stalats = [d['StaLat'] for d in self.dicts]
+            stadepths = [d['StaEle'] / 1e3 for d in self.dicts]
+            axEMiXY.scatter(stalons, stalats, s=200, marker='v', color='k')
+            axEMiXZ.scatter(stalons, stadepths, s=200, marker='v', color='k')
+            axEMiZY.scatter(stadepths, stalats, s=200, marker='v', color='k')
 
+            min_x = min(data[0])
+            max_x = max(data[0])
+            min_y = min(data[1])
+            max_y = max(data[1])
+            min_z = min(data[2])
+            max_z = max(data[2])
+            axEMiZY.set_xlim(min_z, max_z)
+            axEMiXZ.set_ylim(min_z, max_z)
+            axEMiXY.set_xlim(min_x, max_x)
+            axEMiXY.set_ylim(min_y, max_y)
             axEMiXZ.invert_yaxis()
             axEMiZY.invert_xaxis()
-            axEMiXY.axis("equal")
             
             formatter = FormatStrFormatter("%.3f")
             axEMiXY.xaxis.set_major_formatter(formatter)
@@ -3068,6 +3100,7 @@ class ObsPyck(QtGui.QMainWindow):
             # hide ticklabels on XY plot
             for ax in [axEMiXY.xaxis, axEMiXY.yaxis]:
                 plt.setp(ax.get_ticklabels(), visible=False)
+
 
     def delEventMap(self):
         try:
