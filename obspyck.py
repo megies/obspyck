@@ -3995,10 +3995,8 @@ def main():
             "%prog -t 2010-08-01T12:00:00 -d 30 --seishub-ids BW.R*..EH*,BW.BGLD..EH*\n" + \
             " * ArcLink:\n    " + \
             "%prog -t 2010-08-01T12:00:00 -d 30 --arclink-ids GE.APE..BH*,GE.IMMV..BH*\n" + \
-            " * Fissures:\n    " + \
-            "%prog -t 2010-08-01T12:00:00 -d 30 --fissures-ids GR.GRA1..BH*,DK.BSD..BH*\n" + \
             " * combination of clients:\n    " + \
-            "%prog -t 2010-08-01T12:00:00 -d 30 -i BW.R*..EH* --arclink-ids GE.APE..BH* --fissures-ids GR.GRA1..BH*" + \
+            "%prog -t 2010-08-01T12:00:00 -d 30 -i BW.R*..EH* --arclink-ids GE.APE..BH*" + \
             "\n\nGet all available options with: %prog -h"
     parser = optparse.OptionParser(usage)
     for opt_args, opt_kwargs in COMMANDLINE_OPTIONS:
@@ -4011,7 +4009,7 @@ def main():
         return
     # check for necessary options
     if not any([getattr(parser.values, parser.get_option(opt).dest) \
-                for opt in ("--seishub-ids", "--arclink-ids", "--fissures-ids", "-f")]) \
+                for opt in ("--seishub-ids", "--arclink-ids", "-f")]) \
        or not all([getattr(parser.values, parser.get_option(opt).dest) \
                    for opt in ('-d', '-t')]):
         parser.print_usage()

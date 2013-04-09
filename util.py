@@ -153,18 +153,6 @@ COMMANDLINE_OPTIONS = (
                 'help': "Password for arclink server"}),
         (("--arclink-timeout",), {'dest': "arclink_timeout", 'type': "int",
                 'default': 20, 'help': "Timeout for arclink server"}),
-        (("--fissures-ids",), {'dest': "fissures_ids", 'default': '',
-                'help': "Ids to retrieve via Fissures, star for component "
-                "is allowed, e.g. 'GE.APE..BH*,GR.GRA1..BH*'"}),
-        (("--fissures-network_dc",), {'dest': "fissures_network_dc",
-                'default': ("/edu/iris/dmc", "IRIS_NetworkDC"),
-                'help': "Tuple containing Fissures dns and NetworkDC name."}),
-        (("--fissures-seismogram_dc",), {'dest': "fissures_seismogram_dc",
-                'default': ("/edu/iris/dmc", "IRIS_DataCenter"),
-                'help': "Tuple containing Fissures dns and DataCenter name."}),
-        (("--fissures-name_service",), {'dest': "fissures_name_service",
-                'default': "dmc.iris.washington.edu:6371/NameService",
-                'help': "String containing the Fissures name service."}),
         (("--ignore-chksum",), {'action': "store_false", 'dest': "verify_chksum",
                 'default': True,
                 'help': "Deactivate chksum check for local GSE2 files"}),
@@ -305,8 +293,7 @@ def fetch_waveforms_with_metadata(options):
     """
     Sets up obspy clients and fetches waveforms and metadata according to command
     line options.
-    Now also fetches data via arclink (fissures) if --arclink-ids
-    (--fissures-ids) is used.
+    Now also fetches data via arclink if --arclink-ids is used.
     XXX Notes: XXX
      - there is a problem in the arclink client with duplicate traces in
        fetched streams. therefore at the moment it might be necessary to use
@@ -432,39 +419,6 @@ def fetch_waveforms_with_metadata(options):
                 tr.stats['_format'] = "ArcLink"
             streams.append(st)
         clients['ArcLink'] = client
-    # Fissures
-    if options.fissures_ids:
-        from obspy.fissures import Client
-        print "=" * 80
-        print "Fetching waveforms and metadata via Fissures:"
-        print "-" * 80
-        client = Client(network_dc=options.fissures_network_dc,
-                        seismogram_dc=options.fissures_seismogram_dc,
-                        name_service=options.fissures_name_service)
-        for id in options.fissures_ids.split(","):
-            net, sta, loc, cha = id.split(".")
-            net_sta = "%s.%s" % (net, sta)
-            if net_sta in sta_fetched:
-                print "%s skipped! (Was already retrieved)" % net_sta.ljust(8)
-                continue
-            try:
-                sys.stdout.write("\r%s ..." % net_sta.ljust(8))
-                sys.stdout.flush()
-                st = client.getWaveform(network=net, station=sta,
-                                        location=loc, channel=cha,
-                                        starttime=t1, endtime=t2,
-                                        getPAZ=getPAZ, getCoordinates=getCoordinates)
-                sta_fetched.add(net_sta)
-                sys.stdout.write("\r%s fetched.\n" % net_sta.ljust(8))
-                sys.stdout.flush()
-            except Exception, e:
-                sys.stdout.write("\r%s skipped! (Server replied: %s)\n" % (net_sta.ljust(8), e))
-                sys.stdout.flush()
-                continue
-            for tr in st:
-                tr.stats['_format'] = "Fissures"
-            streams.append(st)
-        clients['Fissures'] = client
     print "=" * 80
     return (clients, streams)
 
