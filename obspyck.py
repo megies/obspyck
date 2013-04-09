@@ -1205,7 +1205,7 @@ class ObsPyck(QtGui.QMainWindow):
             del dict[key2]
     
     def drawAxes(self):
-        st = self.streams[self.stPt]
+        st = self.getCurrentStream()
         fig = self.fig
         axs = []
         self.axs = axs
@@ -3441,49 +3441,51 @@ class ObsPyck(QtGui.QMainWindow):
         self.updateAllAxes()
 
     def updateAllAxes(self):
-        for ax in self.axs:
-            self.updateAxes(ax)
-
-    def updateAxes(self, ax):
-        # first line is waveform, leave it
-        ax.lines = ax.lines[:1]
-        # find all picks that have a matching waveform_id and plot them
-        i = self.axs.index(ax)
-        _id = self.getCurrentStream()[i].id
+        st = self.getCurrentStream()
+        ids = []
+        for _i, ax in enumerate(self.axs):
+            # first line is waveform, leave it
+            ax.lines = ax.lines[:1]
+            ids.append(st[_i].id)
         for pick in self.picks:
-            if pick.waveform_id.getSEEDString() == _id:
-                self.drawPick(ax, pick)
-        self.redraw()
+            if not pick.time:
+                continue
+            for _id, ax in zip(ids, self.axs):
+                plot_kwargs = {}
+                if pick.waveform_id.getSEEDString() == _id:
+                    plot_kwargs['alpha'] = 1
+                else:
+                    plot_kwargs['alpha'] = 0.2
+                self.drawPick(ax, pick, plot_kwargs=plot_kwargs)
 
-    def drawPick(self, ax, pick):
+    def drawPick(self, ax, pick, plot_kwargs={}):
         if not pick.time:
             return
         color = PHASE_COLORS[pick.phase_hint]
-        linestyle = PHASE_LINESTYLES[pick.phase_hint]
         reltime = self.time_abs2rel(pick.time)
         ax.axvline(reltime, color=color,
-                   linewidth=AXVLINEWIDTH, linestyle=linestyle,
-                   ymin=0, ymax=1)
+                   linewidth=AXVLINEWIDTH,
+                   ymin=0, ymax=1, **plot_kwargs)
         if pick.time_errors.lower_uncertainty or pick.time_errors.upper_uncertainty:
             if pick.time_errors.lower_uncertainty:
                 time = reltime - pick.time_errors.lower_uncertainty
                 ax.axvline(time, color=color,
-                           linewidth=AXVLINEWIDTH, linestyle=linestyle,
-                           ymin=0.25, ymax=0.75)
+                           linewidth=AXVLINEWIDTH,
+                           ymin=0.25, ymax=0.75, **plot_kwargs)
             if pick.time_errors.upper_uncertainty:
                 time = reltime + pick.time_errors.upper_uncertainty
                 ax.axvline(time, color=color,
-                           linewidth=AXVLINEWIDTH, linestyle=linestyle,
-                           ymin=0.25, ymax=0.75)
+                           linewidth=AXVLINEWIDTH,
+                           ymin=0.25, ymax=0.75, **plot_kwargs)
         elif pick.time_errors.uncertainty:
             time = reltime - pick.time_errors.uncertainty
             ax.axvline(time, color=color,
-                       linewidth=AXVLINEWIDTH, linestyle=linestyle,
-                       ymin=0.25, ymax=0.75)
+                       linewidth=AXVLINEWIDTH,
+                       ymin=0.25, ymax=0.75, **plot_kwargs)
             time = reltime + pick.time_errors.uncertainty
             ax.axvline(time, color=color,
-                       linewidth=AXVLINEWIDTH, linestyle=linestyle,
-                       ymin=0.25, ymax=0.75)
+                       linewidth=AXVLINEWIDTH,
+                       ymin=0.25, ymax=0.75, **plot_kwargs)
 
     def delPick(self, pick):
         if pick in self.picks:
