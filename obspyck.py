@@ -363,11 +363,9 @@ class ObsPyck(QtGui.QMainWindow):
             return
         #self.delAllItems()
         self.clearOriginMagnitudeDictionaries()
-        self.origin.method_id = "/".join([ID_ROOT, "location_method", "hyp2000"])
         self.doHyp2000()
         self.loadHyp2000Data()
         self.calculateEpiHypoDists()
-        self.magnitude.method_id = "/".join([ID_ROOT, "magnitude_method", "obspy"])
         self.calculateStationMagnitudes()
         self.updateNetworkMag()
         self.drawAllItems()
@@ -381,12 +379,12 @@ class ObsPyck(QtGui.QMainWindow):
         #    return
         ##self.delAllItems()
         #self.clearOriginMagnitudeDictionaries()
-        #self.origin.method_id = "/".join([ID_ROOT, "location_method", "3dloc"])
+        #self.origin.method_id = "/".join([ID_ROOT, "location_method", "3dloc", "1"])
         #self.do3dLoc()
         #self.load3dlocSyntheticPhases()
         #self.load3dlocData()
         #self.calculateEpiHypoDists()
-        #self.magnitude.method_id = "/".join([ID_ROOT, "magnitude_method", "obspy"])
+        #self.magnitude.method_id = "/".join([ID_ROOT, "magnitude_method", "obspy", "1"])
         #self.calculateStationMagnitudes()
         #self.updateNetworkMag()
         #self.drawAllItems()
@@ -398,11 +396,9 @@ class ObsPyck(QtGui.QMainWindow):
             return
         #self.delAllItems()
         self.clearOriginMagnitudeDictionaries()
-        self.origin.method_id = "/".join([ID_ROOT, "location_method", "NLLoc"])
         self.doNLLoc()
         self.loadNLLocOutput()
         self.calculateEpiHypoDists()
-        self.magnitude.method_id = "/".join([ID_ROOT, "magnitude_method", "obspy"])
         self.calculateStationMagnitudes()
         self.updateNetworkMag()
         self.drawAllItems()
@@ -413,7 +409,6 @@ class ObsPyck(QtGui.QMainWindow):
         if args:
             return
         self.calculateEpiHypoDists()
-        self.magnitude.method_id = "/".join([ID_ROOT, "magnitude_method", "obspy"])
         self.calculateStationMagnitudes()
         self.updateNetworkMag()
 
@@ -421,7 +416,6 @@ class ObsPyck(QtGui.QMainWindow):
         if args:
             return
         self.clearFocmecDictionary()
-        self.FocalMechanism.method_id = "/".join([ID_ROOT, "focal_mechanism_method", "focmec"])
         self.doFocmec()
 
     def on_qToolButton_showMap_toggled(self):
@@ -1939,7 +1933,7 @@ class ObsPyck(QtGui.QMainWindow):
             np1 = NodalPlane()
             np = NodalPlanes(nodal_plane_1=np1)
             fm = FocalMechanism(nodal_planes=np)
-            fm.method_id = "/".join([ID_ROOT, "focal_mechanism_method", "focmec"])
+            fm.method_id = "/".join([ID_ROOT, "focal_mechanism_method", "focmec", "1"])
             np1.dip = float(line[0])
             np1.strike = float(line[1])
             np1.rake = float(line[2])
@@ -2234,6 +2228,7 @@ class ObsPyck(QtGui.QMainWindow):
         # assign origin info
         o = self.origin
         o.clear()
+        o.method_id = "/".join([ID_ROOT, "location_method", "nlloc", "1"])
         o.origin_uncertainty = OriginUncertainty()
         o.quality = OriginQuality()
         ou = o.origin_uncertainty
@@ -2471,6 +2466,7 @@ class ObsPyck(QtGui.QMainWindow):
         # assign origin info
         o = self.origin
         o.clear()
+        o.method_id = "/".join([ID_ROOT, "location_method", "hyp2000", "1"])
         o.origin_uncertainty = OriginUncertainty()
         o.quality = OriginQuality()
         ou = o.origin_uncertainty
@@ -2635,7 +2631,7 @@ class ObsPyck(QtGui.QMainWindow):
         return
         m = self.magnitude
         m.clear()
-        m.method_id = "/".join([ID_ROOT, "magnitude_method", "obspy"])
+        m.method_id = "/".join([ID_ROOT, "magnitude_method", "obspy", "1"])
         m.type = "Ml"
         sms = self.event.station_magnitudes
         sms = []
@@ -2938,26 +2934,30 @@ class ObsPyck(QtGui.QMainWindow):
         errLat -= o.latitude
         ypos = 0.97
         xpos = 0.03
-        axEM.text(xpos, ypos,
-                  # XXX TODO handle horizontal errors correctly
-                  '%7.3f +/- %0.2fkm\n' % (o.longitude, o.origin_uncertainty.min_horizontal_uncertainty / 1e3) + \
-                  '%7.3f +/- %0.2fkm\n' % (o.latitude, o.origin_uncertainty.max_horizontal_uncertainty / 1e3) + \
-                  '  %.1fkm +/- %.1fkm' % (o.depth, o.depth_errors),
-                  va='top', ha='left', family='monospace', transform=axEM.transAxes)
-        if o.quality and o.quality.standard_error:
-            axEM.text(xpos, ypos, "\n\n\n\n Residual: %.3f s" % \
-                      o.quality.standard_error, va='top', ha='left',
-                      color=PHASE_COLORS['P'], transform=axEM.transAxes,
-                      family='monospace')
+        info = str(o).replace("\t", " ")
+        axEM.text(xpos, ypos, info, va='top', ha='left', family='monospace',
+                  transform=axEM.transAxes)
+        #if o.quality and o.quality.standard_error:
+        #    axEM.text(xpos, ypos, "\n\n\n\n Residual: %.3f s" % \
+        #              o.quality.standard_error, va='top', ha='left',
+        #              color=PHASE_COLORS['P'], transform=axEM.transAxes,
+        #              family='monospace')
         if m.mag and m.mag_errors:
             self.netMagLabel = '\n\n\n\n\n %.2f (Var: %.2f)' % \
                                (m.mag, m.mag_errors)
             self.netMagText = axEM.text(xpos, ypos, self.netMagLabel, va='top',
                     ha='left', transform=axEM.transAxes,
                     color=PHASE_COLORS['Mag'], family='monospace')
-        errorell = Ellipse(xy=[o.longitude, o.latitude],
-                           width=errLon, height=errLat, angle=0, fill=False)
-        axEM.add_artist(errorell)
+        ou = o.origin_uncertainty
+        if ou:
+            if ou.preferred_description == "uncertainty ellipse":
+                print >> sys.stderr, "Lon/Lat scaling of plotted ellipse might be wrong."
+                errorell = Ellipse(xy=[o.longitude, o.latitude],
+                                   width=errLon,
+                                   height=errLat,
+                                   angle=ou.azimuth_max_horizontal_uncertainty,
+                                   fill=False)
+                axEM.add_artist(errorell)
         self.scatterMagIndices = []
         self.scatterMagLon = []
         self.scatterMagLat = []
@@ -2968,7 +2968,7 @@ class ObsPyck(QtGui.QMainWindow):
             pick_p = self.getPick(network=net, station=sta, phase_hint='P')
             pick_s = self.getPick(network=net, station=sta, phase_hint='S')
             arrival_p = getArrivalForPick(self.event, pick_p)
-            arrival_p = getArrivalForPick(self.event, pick_s)
+            arrival_s = getArrivalForPick(self.event, pick_s)
             if (arrival_p and arrival_p.time_residual) or (arrival_s and arrival_s.time_residual):
                 stationColor = 'black'
             else:
@@ -3032,7 +3032,7 @@ class ObsPyck(QtGui.QMainWindow):
         # make hexbin scatter plot, if located with NLLoc
         # XXX no vital commands should come after this block, as we do not
         # handle exceptions!
-        if o.method_id.endswith("NLLoc") and os.path.isfile(PROGRAMS['nlloc']['files']['scatter']):
+        if "NLLOC" in str(o.method_id).upper() and os.path.isfile(PROGRAMS['nlloc']['files']['scatter']):
             cmap = matplotlib.cm.gist_heat_r
             data = readNLLocScatter(PROGRAMS['nlloc']['files']['scatter'],
                                     self.widgets.qPlainTextEdit_stderr)
