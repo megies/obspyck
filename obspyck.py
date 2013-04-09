@@ -1309,6 +1309,7 @@ class ObsPyck(QtGui.QMainWindow):
         # check if rotation should be performed
         if self.widgets.qToolButton_rotateLQT.isChecked():
             try:
+                # XXX TODO needs fixing:
                 self._rotateLQT(st, self.dictOrigin)
             except Exception, e:
                 self.widgets.qToolButton_rotateLQT.setChecked(False)
@@ -1317,6 +1318,7 @@ class ObsPyck(QtGui.QMainWindow):
                 print >> sys.stderr, err
         elif self.widgets.qToolButton_rotateZRT.isChecked():
             try:
+                # XXX TODO needs fixing:
                 self._rotateZRT(st, self.dictOrigin)
             except Exception, e:
                 self.widgets.qToolButton_rotateZRT.setChecked(False)
@@ -2353,6 +2355,7 @@ class ObsPyck(QtGui.QMainWindow):
                 continue
             # get values from line
             station = line[0]
+            epidist = float(line[22])
             azimuth = float(line[23])
             incident = float(line[24])
             # if we do the location on traveltime-grids without angle-grids we
@@ -2386,6 +2389,7 @@ class ObsPyck(QtGui.QMainWindow):
             o.arrivals.append(arrival)
             #dict['Psynth'] = res + dict['P']
             # residual is defined as P-Psynth by NLLOC and 3dloc!
+            arrival.distance = epidist
             arrival.time_residual = res
             arrival.azimuth = azimuth
             arrival.takeoff_angle = incident
@@ -2627,6 +2631,8 @@ class ObsPyck(QtGui.QMainWindow):
     
     def updateNetworkMag(self):
         print "updating network magnitude..."
+        # XXX TODO magnitude handling
+        return
         m = self.magnitude
         m.clear()
         m.method_id = "/".join([ID_ROOT, "magnitude_method", "obspy"])
@@ -2699,24 +2705,16 @@ class ObsPyck(QtGui.QMainWindow):
         if hasattr(self, 'netMagText'):
             self.netMagText.set_text(self.netMagLabel)
     
+    # XXX TODO Hypo distances needed?? where??
     def calculateEpiHypoDists(self):
         o = self.origin
         if not o.longitude or not o.latitude:
             err = "Error: No coordinates for origin!"
             print >> sys.stderr, err
-        epidists = []
-        for dict in self.dicts:
-            x, y = utlGeoKm(o.longitude, o.latitude,
-                            dict['StaLon'], dict['StaLat'])
-            z = abs(dict['StaEle'] - dO['Depth'])
-            epi = np.sqrt(x**2 + y**2)
-            # Median and Max/Min of epicentral distances should only be used
-            # for stations with a pick that goes into the location.
-            # The epicentral distance of all other stations may be needed for
-            # magnitude estimation nonetheless.
-            if 'Psynth' in dict or 'Ssynth' in dict:
-                epidists.append(epi)
-            dict['distHypo'] = np.sqrt(x**2 + y**2 + z**2)
+        # XXX TODO need to check that distances are stored with arrival upon
+        # creation
+        epidists = [a.distance for a in o.arrivals]
+        # XXX TODO check if dict['distHypo'] is needed anywhere
         if not o.quality:
             o.quality = OriginQuality()
         o.quality.maximum_distance = max(epidists)
@@ -2928,15 +2926,22 @@ class ObsPyck(QtGui.QMainWindow):
         #axEM.set_aspect('equal', adjustable="datalim")
         #self.fig.subplots_adjust(bottom=0.07, top=0.95, left=0.07, right=0.98)
         axEM.scatter([o.longitude], [o.latitude], 30, color='red', marker='o')
-        errLon, errLat = utlLonLat(o.longitude, o.latitude, o.longitude_errors,
-                                   o.latitude_errors)
+        print o.origin_uncertainty.min_horizontal_uncertainty, o.origin_uncertainty.max_horizontal_uncertainty
+        # XXX TODO handle different origin uncertainty descriptions
+        #errLon, errLat = utlLonLat(o.longitude, o.latitude, o.longitude_errors,
+        #                           o.latitude_errors)
+        # XXX TODO handle horizontal errors correctly
+        errLon, errLat = utlLonLat(o.longitude, o.latitude,
+            o.origin_uncertainty.min_horizontal_uncertainty / 1e3,
+            o.origin_uncertainty.max_horizontal_uncertainty / 1e3)
         errLon -= o.longitude
         errLat -= o.latitude
         ypos = 0.97
         xpos = 0.03
         axEM.text(xpos, ypos,
-                  '%7.3f +/- %0.2fkm\n' % (o.longitude, o.longitude_errors) + \
-                  '%7.3f +/- %0.2fkm\n' % (o.latitude, o.latitude_errors) + \
+                  # XXX TODO handle horizontal errors correctly
+                  '%7.3f +/- %0.2fkm\n' % (o.longitude, o.origin_uncertainty.min_horizontal_uncertainty / 1e3) + \
+                  '%7.3f +/- %0.2fkm\n' % (o.latitude, o.origin_uncertainty.max_horizontal_uncertainty / 1e3) + \
                   '  %.1fkm +/- %.1fkm' % (o.depth, o.depth_errors),
                   va='top', ha='left', family='monospace', transform=axEM.transAxes)
         if o.quality and o.quality.standard_error:
