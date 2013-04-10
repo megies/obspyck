@@ -34,10 +34,9 @@ from lxml.etree import SubElement as Sub
 
 #sys.path.append('/baysoft/obspy/misc/symlink')
 #os.chdir("/baysoft/obspyck/")
-from obspy.core.event import readEvents
-from obspy.core.util import NamedTemporaryFile
-from obspy.core import UTCDateTime, Stream, AttribDict
-from obspy.core.event import readEvents, Catalog, Event, Origin, Pick, Arrival, Magnitude, StationMagnitude, StationMagnitudeContribution, FocalMechanism, CreationInfo, WaveformStreamID, OriginUncertainty, OriginQuality
+from obspy.core.util import NamedTemporaryFile, AttribDict
+from obspy import UTCDateTime, Stream, readEvents
+from obspy.core.event import Catalog, Event, Origin, Pick, Arrival, Magnitude, StationMagnitude, StationMagnitudeContribution, FocalMechanism, CreationInfo, WaveformStreamID, OriginUncertainty, OriginQuality, ResourceIdentifier
 from obspy.signal.util import utlLonLat, utlGeoKm
 from obspy.signal.invsim import estimateMagnitude, paz2AmpValueOfFreqResp
 from obspy.signal import rotate_ZNE_LQT, rotate_NE_RT
@@ -965,136 +964,37 @@ class ObsPyck(QtGui.QMainWindow):
     def setFocusToMatplotlib(self):
         self.canv.setFocus() # XXX needed??
 
-    #def drawLine(self, key):
-    #    """
-    #    Draw a line for pick of given key in all axes of the current stream.
-    #    Stores the line in a dict to be able to remove the line later on.
-
-    #    self.Lines contains dict for each phase type (e.g. "P").
-    #    self.Lines[phase_type] is a dict mapping axes objects to line objects.
-    #    e.g.: self.Lines["P"][<matplotlib.axes.AxesSubplot object at 0x...>]
-    #          would return the line object for the P phase in the given axes.
-    #    """
-    #    if key in self.lines:
-    #        self.delLine(key)
-    #    d = self.dicts[self.stPt]
-    #    if key not in d:
-    #        return
-    #    self.lines[key] = {}
-    #    ymin = 1.0 - PHASE_LINEHEIGHT_PERC[key]
-    #    ymax = PHASE_LINEHEIGHT_PERC[key]
-    #    # draw lines and store references in dictionary
-    #    for ax in self.axs:
-    #        line = ax.axvline(d[key], color=PHASE_COLORS[key],
-    #                linewidth=AXVLINEWIDTH, linestyle=PHASE_LINESTYLES[key],
-    #                ymin=ymin, ymax=ymax)
-    #        self.lines[key][ax] = line
-    #
-    #def delLine(self, key):
-    #    """
-    #    Delete all lines for pick of given key in all axes of the current
-    #    stream.
-    #    
-    #    See drawLine().
-    #    """
-    #    if key not in self.lines:
-    #        return
-    #    for ax, line in self.lines[key].iteritems():
-    #        ax.lines.remove(line)
-    #    del self.lines[key]
-
-    #def clearLines(self):
-    #    for ax in self.axes:
-    #        ax.lines = ax.lines[1:]
-    #    self.redraw()
-
-    #def drawLines(self):
-    #    for ax, d, tr in zip(self.axes, self.dicts):
-    #        for phase in SEISMIC_PHASES:
-    #            pick = dict['picks'].get(phase)
-    #            if not pick:
-    #                continue
-    #            reltime = self.time_abs2rel(pick.time)
-    #            ax.axvline(reltime, color=PHASE_COLORS[phase],
-    #                       linewidth=AXVLINEWIDTH, linestyle=PHASE_LINESTYLES['P'],
-    #                       ymin=0, ymax=1)
-    #    self.redraw()
-
-    #def updateLines(self):
-    #    self.clearLines()
-    #    self.drawLines()
-    #
-    #def updateLine(self, key):
-    #    self.delLine(key)
-    #    self.drawLine(key)
-    
-    def drawLabel(self, key):
+    def drawPickLabel(self, ax, pick):
         """
         Draws Labels at pick axvlines.
-        Currently expects as keys either "P" or "S".
         """
-        # delegate drawing of synthetic picks, this is different...
-        if 'synth' in key:
-            return self.drawSynthLabel(key)
-        dict = self.dicts[self.stPt]
-        if key not in dict:
-            return
-        label = key + ':'
-        # try to recognize and map the onset string to a character
-        key_onset = key + 'Onset'
-        if key_onset in dict:
-            label += ONSET_CHARS.get(dict[key_onset].lower(), "?")
+        label = '  ' + pick.get("phase_hint", "_") + ":"
+        label += ONSET_CHARS.get(pick.onset, "?")
+        label += POLARITY_CHARS.get(pick.polarity, "?")
+        # XXX TODO check handling of custom int weights
+        if "extra" in pick:
+            weight = pick.extra.get("weight", {"value": "_"})
+            label += str(weight["value"])
         else:
-            label += '_'
-        # try to recognize and map the polarity string to a character
-        key_pol = key + 'Pol'
-        if key_pol in dict:
-            label += POLARITY_CHARS.get(dict[key_pol].lower(), "?")
-        else:
-            label += '_'
-        key_weight = key + 'Weight'
-        if key_weight in dict:
-            label += str(dict[key_weight])
-        else:
-            label += '_'
-        ax = self.axs[0]
-        # draw text and store references in dictionary
-        self.texts[key] = {}
-        text = ax.text(dict[key], 1 - 0.01 * len(self.axs), '  ' + label,
-                transform=self.trans[0], color=PHASE_COLORS[key],
+            label += "_"
+        x = self.time_abs2rel(pick.time)
+        y = 1 - 0.01 * len(self.axs)
+        i = self.axs.index(ax)
+        color = PHASE_COLORS[pick.phase_hint]
+        ax.text(x, y, label, transform=self.trans[i], color=color,
                 family='monospace', va="top")
-        self.texts[key][ax] = text
 
-    def drawSynthLabel(self, key):
+    def drawArrivalLabel(self, ax, arrival, pick):
         """
-        Draw the label for a synthetic pick. This is a bit different from
-        the other labels.
+        Draw the label for an arrival.
         """
-        dict = self.dicts[self.stPt]
-        if key not in dict:
-            return
-        key_res = key[0] + "res"
-        label = '%s: %+.3fs' % (key, dict[key_res])
-        ax = self.axs[0]
-        # draw text and store references in dictionary
-        self.texts[key] = {}
-        text = ax.text(dict[key], 1 - 0.03 * len(self.axs), '  ' + label,
-                transform=self.trans[0], color=PHASE_COLORS[key],
+        label = '  %s %+.3fs' % (arrival.phase, arrival.time_residual)
+        x = self.time_abs2rel(pick.time) + arrival.time_residual
+        y = 1 - 0.03 * len(self.axs)
+        i = self.axs.index(ax)
+        ax.text(x, y, label, transform=self.trans[i], color='k',
                 family='monospace', va="top")
-        self.texts[key][ax] = text
     
-    def delLabel(self, key):
-        """
-        Delete label for pick of given key in the current stream.
-        
-        See drawLabel().
-        """
-        if key not in self.texts:
-            return
-        for ax, text in self.texts[key].iteritems():
-            ax.texts.remove(text)
-        del self.texts[key]
-
     def updateLabel(self, key):
         self.delLabel(key)
         self.drawLabel(key)
@@ -1367,7 +1267,7 @@ class ObsPyck(QtGui.QMainWindow):
             if not ev.inaxes in self.axs:
                 return
             if phase_type in SEISMIC_PHASES:
-                pick = self.getPick(axes=ev.inaxes, phase_hint=phase_type, setdefault=True)
+                pick = self.getPick(axes=ev.inaxes, phase_hint=phase_type, setdefault=True, new_id=True)
                 if not pick:
                     pick.waveform_id = WaveformStreamID(seed_string=tr.id)
                     pick.phase_hint = phase_type
@@ -1467,7 +1367,7 @@ class ObsPyck(QtGui.QMainWindow):
             if not ev.inaxes in self.axs:
                 return
             if phase_type in SEISMIC_PHASES:
-                pick = self.getPick(axes=ev.inaxes, phase_hint=phase_type)
+                pick = self.getPick(axes=ev.inaxes, phase_hint=phase_type, new_id=True)
                 if not pick or not pick.time:
                     return
                 reltime = self.time_abs2rel(pick.time)
@@ -2275,11 +2175,22 @@ class ObsPyck(QtGui.QMainWindow):
             if pick is None:
                 msg = "This should not happen! Location output was read and a corresponding pick is missing!"
                 warnings.warn(msg)
-            arrival = Arrival()
+            # XXX TODO make newArrival()/newPick() routines to avoid code
+            # duplication
+            prefix = "/".join((ID_ROOT, "arrival"))
+            r = ResourceIdentifier(prefix=prefix)
+            arrival = Arrival(resource_id=r)
+            # XXX TODO handling of pick/arrival resource_ids seems unsafe,
+            # maybe we should not try to keep nice names and just keep the
+            # first random value assigned to a pick/arrival when created
+            # (instead of resetting nice ids when outputting the result
+            # quakeml)
+            arrival.pick_id = pick.resource_id
             o.arrivals.append(arrival)
             #dict['Psynth'] = res + dict['P']
             # residual is defined as P-Psynth by NLLOC and 3dloc!
             arrival.distance = epidist
+            arrival.phase = type
             arrival.time_residual = res
             arrival.azimuth = azimuth
             arrival.takeoff_angle = incident
@@ -2428,7 +2339,12 @@ class ObsPyck(QtGui.QMainWindow):
             if pick is None:
                 msg = "This should not happen! Location output was read and a corresponding pick is missing!"
                 warnings.warn(msg)
-            arrival = Arrival()
+            # XXX TODO make newArrival()/newPick() routines to avoid code
+            # duplication
+            prefix = "/".join((ID_ROOT, "arrival"))
+            r = ResourceIdentifier(prefix=prefix)
+            arrival = Arrival(resource_id=r)
+            arrival.pick_id = pick.resource_id
             o.arrivals.append(arrival)
             # residual is defined as P-Psynth by NLLOC and 3dloc!
             # XXX does this also hold for hyp2000???
@@ -3264,6 +3180,9 @@ class ObsPyck(QtGui.QMainWindow):
         # go through all stream-dictionaries and look for picks
         _i = 0
         e.picks[:] = []
+        # XXX TODO change handling of resource ids. never change id set at
+        # creation and make sure that only wanted arrivals/picks get
+        # saved/stored.
         for pick in self.picks:
             arrival = getArrivalForPick(self.event, pick)
             pick.resource_id = "/".join((ID_ROOT, "pick", event_id, str(_i)))
@@ -3443,20 +3362,41 @@ class ObsPyck(QtGui.QMainWindow):
     def updateAllAxes(self):
         st = self.getCurrentStream()
         ids = []
+        sta = st[0].stats.station
         for _i, ax in enumerate(self.axs):
             # first line is waveform, leave it
             ax.lines = ax.lines[:1]
+            # first text is trace id, leave it
+            ax.texts = ax.texts[:1]
             ids.append(st[_i].id)
         for pick in self.picks:
             if not pick.time:
+                continue
+            if pick.waveform_id.station_code != sta:
+                continue
+            # do drawing in all axes
+            for _id, ax in zip(ids, self.axs):
+                plot_kwargs = {}
+                if pick.waveform_id.getSEEDString() == _id:
+                    plot_kwargs['alpha'] = 1
+                    self.drawPickLabel(ax, pick)
+                else:
+                    plot_kwargs['alpha'] = 0.2
+                self.drawPick(ax, pick, plot_kwargs=plot_kwargs)
+        for arrival in self.origin.arrivals:
+            pick = getPickForArrival(self.picks, arrival)
+            if not pick or not pick.time:
+                continue
+            if pick.waveform_id.station_code != sta:
                 continue
             for _id, ax in zip(ids, self.axs):
                 plot_kwargs = {}
                 if pick.waveform_id.getSEEDString() == _id:
                     plot_kwargs['alpha'] = 1
+                    self.drawArrivalLabel(ax, arrival, pick)
                 else:
                     plot_kwargs['alpha'] = 0.2
-                self.drawPick(ax, pick, plot_kwargs=plot_kwargs)
+                self.drawArrival(ax, arrival, pick, plot_kwargs=plot_kwargs)
 
     def drawPick(self, ax, pick, plot_kwargs={}):
         if not pick.time:
@@ -3487,14 +3427,24 @@ class ObsPyck(QtGui.QMainWindow):
                        linewidth=AXVLINEWIDTH,
                        ymin=0.25, ymax=0.75, **plot_kwargs)
 
+    def drawArrival(self, ax, arrival, pick, plot_kwargs={}):
+        if not pick.time:
+            return
+        color = "k"
+        reltime = self.time_abs2rel(pick.time) - arrival.time_residual
+        ax.axvline(reltime, color=color,
+                   linewidth=AXVLINEWIDTH,
+                   ymin=0, ymax=1, **plot_kwargs)
+
     def delPick(self, pick):
         if pick in self.picks:
             self.picks.remove(pick)
 
-    def getPick(self, network=None, station=None, phase_hint=None, waveform_id=None, axes=None, setdefault=False):
+    def getPick(self, network=None, station=None, phase_hint=None, waveform_id=None, axes=None, setdefault=False, new_id=False):
         """
         returns first matching pick, does NOT ensure there is only one!
         if setdefault is True then if no pick is found an empty one is returned and inserted into self.picks.
+        if new_id is True then a new resource identifer is set to avoid obsolete links against arrivals.
         """
         for p in self.picks:
             if network is not None and network != p.waveform_id.network_code:
@@ -3513,9 +3463,20 @@ class ObsPyck(QtGui.QMainWindow):
                     continue
                 if p.phase_hint != phase_hint:
                     continue
+            if new_id:
+                prefix = "/".join((ID_ROOT, "pick"))
+                r = ResourceIdentifier(prefix=prefix)
+                p.resource_id = r
             return p
         if setdefault:
-            p = Pick()
+            # XXX TODO check if handling of picks/arrivals with regard to
+            # resource ids is safe (overwritten picks, arrivals get deleted
+            # etc., association of picks/arrivals is ok)
+            # also check if setup of resource id strings make sense in general
+            # (make versioning of methods possible, etc)
+            prefix = "/".join((ID_ROOT, "pick"))
+            r = ResourceIdentifier(prefix=prefix)
+            p = Pick(resource_id=r)
             self.picks.append(p)
             return p
         else:

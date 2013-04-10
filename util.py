@@ -33,7 +33,7 @@ try:
     from obspy.core.util import gps2DistAzimuth
 except:
     from obspy.signal import gps2DistAzimuth
-from obspy.core.event import Arrival
+from obspy.core.event import Arrival, Pick
 
 
 mpl.rc('figure.subplot', left=0.05, right=0.98, bottom=0.10, top=0.92,
@@ -173,9 +173,7 @@ PROGRAMS = {
         '3dloc': {'filenames': {'exe': "3dloc_pitsa", 'out': "3dloc-out",
                                 'in': "3dloc-in"}}}
 SEISMIC_PHASES = ('P', 'S')
-PHASE_COLORS = {'P': "red", 'S': "blue", 'Psynth': "black", 'Ssynth': "black",
-        'Mag': "green", 'PErr1': "red", 'PErr2': "red", 'SErr1': "blue",
-        'SErr2': "blue"}
+PHASE_COLORS = {'P': "red", 'S': "blue", 'Mag': "green"}
 PHASE_LINESTYLES = {'P': "-", 'S': "-", 'Psynth': "--", 'Ssynth': "--",
         'PErr1': "-", 'PErr2': "-", 'SErr1': "-", 'SErr2': "-"}
 PHASE_LINEHEIGHT_PERC = {'P': 1, 'S': 1, 'Psynth': 1, 'Ssynth': 1,
@@ -243,9 +241,10 @@ S_POL_PHASE_TYPE = {'R': "SV", 'T': "SH"}
 POLARITY_2_FOCMEC = {'up': "U", 'poorup': "+", 'down': "D", 'poordown': "-",
                      'left': "L", 'right': "R", 'forward': "F", 'backward': "B"}
 
-# the following dicts' keys should be all lower case, we use "".lower() later
-POLARITY_CHARS = POLARITY_2_FOCMEC
-ONSET_CHARS = {'impulsive': "I", 'emergent': "E"}
+# only strings involved, so shallow copy is fine
+POLARITY_CHARS = POLARITY_2_FOCMEC.copy()
+POLARITY_CHARS.update({None: "_"})
+ONSET_CHARS = {'impulsive': "I", 'emergent': "E", None: "_"}
 
 class QMplCanvas(QFigureCanvas):
     """
@@ -939,6 +938,7 @@ class SplitWriter():
                 obj.write(msg)
 
 
+# XXX TODO change from event input to list of arrivals
 def getArrivalForPick(event, pick):
     """
     searches first origin of event for an arrival that references the given
@@ -951,3 +951,16 @@ def getArrivalForPick(event, pick):
                 arrival = a
                 break
     return arrival
+
+
+def getPickForArrival(picks, arrival):
+    """
+    searches list of picks for a pick that matches the arrivals pick_id
+    and returns it (empty Pick object otherwise).
+    """
+    pick = Pick()
+    for p in picks:
+        if arrival.pick_id == p.resource_id:
+            pick = p
+            break
+    return pick
