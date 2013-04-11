@@ -36,7 +36,6 @@ from lxml.etree import SubElement as Sub
 #os.chdir("/baysoft/obspyck/")
 from obspy.core.util import NamedTemporaryFile, AttribDict
 from obspy import UTCDateTime, Stream, readEvents
-from obspy.core.event import Catalog, Event, Origin, Pick, Arrival, Magnitude, StationMagnitude, StationMagnitudeContribution, FocalMechanism, CreationInfo, WaveformStreamID, OriginUncertainty, OriginQuality, ResourceIdentifier
 from obspy.signal.util import utlLonLat, utlGeoKm
 from obspy.signal.invsim import estimateMagnitude, paz2AmpValueOfFreqResp
 from obspy.signal import rotate_ZNE_LQT, rotate_NE_RT
@@ -47,9 +46,12 @@ from obspy.imaging.beachball import Beachball
 
 from qt_designer import Ui_qMainWindow_obsPyck
 from util import *
+from event_helper import Catalog, Event, Origin, Pick, Arrival, \
+    Magnitude, StationMagnitude, StationMagnitudeContribution, \
+    FocalMechanism, ResourceIdentifier, ID_ROOT
+from obspy.core.event import CreationInfo, WaveformStreamID, \
+    OriginUncertainty, OriginQuality
 
-
-ID_ROOT = "smi:de.erdbeben-in-bayern"
 NAMESPACE = ("edb", "http://erdbeben-in-bayern.de/xmlns/0.1")
 
 
@@ -1267,10 +1269,7 @@ class ObsPyck(QtGui.QMainWindow):
             if not ev.inaxes in self.axs:
                 return
             if phase_type in SEISMIC_PHASES:
-                pick = self.getPick(axes=ev.inaxes, phase_hint=phase_type, setdefault=True, new_id=True)
-                if not pick:
-                    pick.waveform_id = WaveformStreamID(seed_string=tr.id)
-                    pick.phase_hint = phase_type
+                pick = self.getPick(axes=ev.inaxes, phase_hint=phase_type, setdefault=True, new_id=True, seed_string=tr.id)
                 pick.time = self.time_rel2abs(pickSample)
                 if phase_type == "S":
                     dict['Saxind'] = self.axs.index(ev.inaxes)
@@ -2021,8 +2020,8 @@ class ObsPyck(QtGui.QMainWindow):
         model = model.split("/")[-1]
 
         # assign origin info
+        self.origin = Origin()
         o = self.origin
-        o.clear()
         o.method_id = "/".join([ID_ROOT, "location_method", "nlloc", "1"])
         o.origin_uncertainty = OriginUncertainty()
         o.quality = OriginQuality()
@@ -2175,18 +2174,12 @@ class ObsPyck(QtGui.QMainWindow):
             if pick is None:
                 msg = "This should not happen! Location output was read and a corresponding pick is missing!"
                 warnings.warn(msg)
-            # XXX TODO make newArrival()/newPick() routines to avoid code
-            # duplication
-            prefix = "/".join((ID_ROOT, "arrival"))
-            r = ResourceIdentifier(prefix=prefix)
-            arrival = Arrival(resource_id=r)
+            arrival = Arrival(origin=o, pick=pick)
             # XXX TODO handling of pick/arrival resource_ids seems unsafe,
             # maybe we should not try to keep nice names and just keep the
             # first random value assigned to a pick/arrival when created
             # (instead of resetting nice ids when outputting the result
             # quakeml)
-            arrival.pick_id = pick.resource_id
-            o.arrivals.append(arrival)
             #dict['Psynth'] = res + dict['P']
             # residual is defined as P-Psynth by NLLOC and 3dloc!
             arrival.distance = epidist
@@ -2339,13 +2332,7 @@ class ObsPyck(QtGui.QMainWindow):
             if pick is None:
                 msg = "This should not happen! Location output was read and a corresponding pick is missing!"
                 warnings.warn(msg)
-            # XXX TODO make newArrival()/newPick() routines to avoid code
-            # duplication
-            prefix = "/".join((ID_ROOT, "arrival"))
-            r = ResourceIdentifier(prefix=prefix)
-            arrival = Arrival(resource_id=r)
-            arrival.pick_id = pick.resource_id
-            o.arrivals.append(arrival)
+            arrival = Arrival(origin=o, pick=pick)
             # residual is defined as P-Psynth by NLLOC and 3dloc!
             # XXX does this also hold for hyp2000???
             arrival.time_residual = res
@@ -3440,7 +3427,7 @@ class ObsPyck(QtGui.QMainWindow):
         if pick in self.picks:
             self.picks.remove(pick)
 
-    def getPick(self, network=None, station=None, phase_hint=None, waveform_id=None, axes=None, setdefault=False, new_id=False):
+    def getPick(self, network=None, station=None, phase_hint=None, waveform_id=None, axes=None, setdefault=False, new_id=False, seed_string=None):
         """
         returns first matching pick, does NOT ensure there is only one!
         if setdefault is True then if no pick is found an empty one is returned and inserted into self.picks.
@@ -3464,9 +3451,11 @@ class ObsPyck(QtGui.QMainWindow):
                 if p.phase_hint != phase_hint:
                     continue
             if new_id:
-                prefix = "/".join((ID_ROOT, "pick"))
-                r = ResourceIdentifier(prefix=prefix)
-                p.resource_id = r
+                # XXX TODO setting a new resource identifier should be
+                # delegated to a method on the sublassed Pick class from
+                # event_helper
+                p.resource_id = ResourceIdentifier("pick")
+                #p.newID()
             return p
         if setdefault:
             # XXX TODO check if handling of picks/arrivals with regard to
@@ -3474,9 +3463,9 @@ class ObsPyck(QtGui.QMainWindow):
             # etc., association of picks/arrivals is ok)
             # also check if setup of resource id strings make sense in general
             # (make versioning of methods possible, etc)
-            prefix = "/".join((ID_ROOT, "pick"))
-            r = ResourceIdentifier(prefix=prefix)
-            p = Pick(resource_id=r)
+            if seed_string is None:
+                raise Exception("Pick setdefault needs seed_string and phase_hint kwargs")
+            p = Pick(seed_string=seed_string, phase_hint=phase_hint)
             self.picks.append(p)
             return p
         else:
