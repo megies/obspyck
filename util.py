@@ -212,7 +212,7 @@ WIDGET_NAMES = ("qToolButton_clearAll", "qToolButton_clearOrigMag",
         "qPlainTextEdit_stderr")
 #Estimating the maximum/minimum in a sample-window around click
 MAG_PICKWINDOW = 10
-MAG_MARKER = {'marker': "x", 'edgewidth': 1.8, 'size': 20}
+MAG_MARKER = {'marker': "+", 'edgewidth': 1.8, 'size': 20}
 AXVLINEWIDTH = 1.2
 # dictionary for key-bindings.
 KEYS = {'setPick': "a", 'setPickError': "s", 'delPick': "q",

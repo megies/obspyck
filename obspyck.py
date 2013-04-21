@@ -35,7 +35,8 @@ from lxml.etree import SubElement as Sub
 #sys.path.append('/baysoft/obspy/misc/symlink')
 #os.chdir("/baysoft/obspyck/")
 from obspy.core.util import NamedTemporaryFile, AttribDict
-from obspy import UTCDateTime, Stream, readEvents
+from obspy.core.util.geodetics import gps2DistAzimuth
+from obspy import UTCDateTime, Stream#, readEvents
 from obspy.signal.util import utlLonLat, utlGeoKm
 from obspy.signal.invsim import estimateMagnitude, paz2AmpValueOfFreqResp
 from obspy.signal import rotate_ZNE_LQT, rotate_NE_RT
@@ -48,7 +49,7 @@ from qt_designer import Ui_qMainWindow_obsPyck
 from util import *
 from event_helper import Catalog, Event, Origin, Pick, Arrival, \
     Magnitude, StationMagnitude, StationMagnitudeContribution, \
-    FocalMechanism, ResourceIdentifier, ID_ROOT
+    FocalMechanism, ResourceIdentifier, ID_ROOT, readEvents, Amplitude
 from obspy.core.event import CreationInfo, WaveformStreamID, \
     OriginUncertainty, OriginQuality
 
@@ -143,6 +144,7 @@ class ObsPyck(QtGui.QMainWindow):
                   "methods/functions are deactivated"
             warnings.warn(msg)
         self.picks = []
+        self.amplitudes = []
         self.origin = Origin()
         self.magnitude = Magnitude()
         self.focalMechanism = FocalMechanism() # currently selected focal mechanism
@@ -1053,45 +1055,6 @@ class ObsPyck(QtGui.QMainWindow):
             t.set_text(tr_id)
             t.set_color(textcolor)
 
-    def drawMagMarker(self, key):
-        """
-        Draw a magnitude marker for pick of given key in the current stream.
-        Stores the line in a dict to be able to remove the line later on.
-        See drawLine() for details.
-
-        Currently we expect either MagMin1, MagMax1, MagMin2 or MagMax2 so
-        we estimate the axes we plot into by the last character of the key.
-        Furthermore, we expect another key to exist that is key+"T" (e.g.
-        MagMin1T for MagMin1) with the time information.
-        """
-        if key in self.lines:
-            self.delLine(key)
-        d = self.dicts[self.stPt]
-        if key not in d: # or len(self.axs) < 2
-            return
-        ax_num = int(key[-1])
-        ax = self.axs[ax_num]
-        # we have to force the graph to the old axes limits because of the
-        # completely new line object creation
-        xlims = list(ax.get_xlim())
-        ylims = list(ax.get_ylim())
-        keyT = key + "T"
-        self.lines[key] = {}
-        line = ax.plot((d[keyT],), (d[key],), markersize=MAG_MARKER['size'],
-                markeredgewidth=MAG_MARKER['edgewidth'],
-                color=PHASE_COLORS['Mag'], marker=MAG_MARKER['marker'],
-                zorder=2000)[0]
-        self.lines[key][ax] = line
-        ax.set_xlim(xlims)
-        ax.set_ylim(ylims)
-
-    def delMagMarker(self, key):
-        self.delLine(key)
-    
-    def updateMagMarker(self, key):
-        self.delMagMarker(key)
-        self.drawMagMarker(key)
-    
     def delKey(self, key):
         dict = self.dicts[self.stPt]
         if key not in dict:
@@ -1100,8 +1063,7 @@ class ObsPyck(QtGui.QMainWindow):
         print "%s deleted." % KEY_FULLNAMES[key]
         # we have to take care of some special cases:
         if key == 'S':
-            if 'Saxind' in dict:
-                del dict['Saxind']
+            pass
         elif key in ['MagMin1', 'MagMax1', 'MagMin2', 'MagMax2']:
             key2 = key + 'T'
             del dict[key2]
@@ -1233,9 +1195,8 @@ class ObsPyck(QtGui.QMainWindow):
             return
         keys = self.keys
         phase_type = str(self.widgets.qComboBox_phaseType.currentText())
-        dict = self.dicts[self.stPt]
-        st = self.streams[self.stPt]
-        tr = st[self.axs.index(ev.inaxes)]
+        dict = self.getCurrentDict()
+        st = self.getCurrentStream()
         
         #######################################################################
         # Start of key events related to picking                              #
@@ -1249,6 +1210,7 @@ class ObsPyck(QtGui.QMainWindow):
                 return
             # get the correct sample times array for the click
             t = self.t[self.axs.index(ev.inaxes)]
+            tr = st[self.axs.index(ev.inaxes)]
             # We want to round from the picking location to
             # the time value of the nearest sample:
             samp_rate = st[0].stats.sampling_rate
@@ -1265,27 +1227,11 @@ class ObsPyck(QtGui.QMainWindow):
             print ev.inaxes.lines[0].get_ydata()[xpos]
 
         if ev.key == keys['setPick']:
-            # some keyPress events only make sense inside our matplotlib axes
-            if not ev.inaxes in self.axs:
-                return
             if phase_type in SEISMIC_PHASES:
-                pick = self.getPick(axes=ev.inaxes, phase_hint=phase_type, setdefault=True, new_id=True, seed_string=tr.id)
-                pick.time = self.time_rel2abs(pickSample)
-                if phase_type == "S":
-                    dict['Saxind'] = self.axs.index(ev.inaxes)
-                #depending_keys = (phase_type + k for k in ['', 'synth'])
-                #for key in depending_keys:
-                #    self.updateLine(key)
-                #    self.updateLabel(key)
-                ##check if the new P pick lies outside of the Error Picks
-                #key1 = phase_type + "Err1"
-                #key2 = phase_type + "Err2"
-                #if key1 in dict and dict[phase_type] < dict[key1]:
-                #    self.delLine(key1)
-                #    self.delKey(key1)
-                #if key2 in dict and dict[phase_type] > dict[key2]:
-                #    self.delLine(key2)
-                #    self.delKey(key2)
+                pick = self.getPick(axes=ev.inaxes, phase_hint=phase_type, setdefault=True, seed_string=tr.id)
+                print ev.inaxes, self.axs, phase_type, tr.id
+                print pick
+                pick.setTime(self.time_rel2abs(pickSample))
                 #self.updateAxes(ev.inaxes)
                 self.updateAllAxes()
                 self.redraw()
@@ -1351,9 +1297,6 @@ class ObsPyck(QtGui.QMainWindow):
                 return
 
         if ev.key == keys['delPick']:
-            # some keyPress events only make sense inside our matplotlib axes
-            if not ev.inaxes in self.axs:
-                return
             if phase_type in SEISMIC_PHASES:
                 pick = self.getPick(axes=ev.inaxes, phase_hint=phase_type)
                 self.delPick(pick)
@@ -1362,125 +1305,50 @@ class ObsPyck(QtGui.QMainWindow):
                 return
 
         if ev.key == keys['setPickError']:
-            # some keyPress events only make sense inside our matplotlib axes
-            if not ev.inaxes in self.axs:
-                return
             if phase_type in SEISMIC_PHASES:
-                pick = self.getPick(axes=ev.inaxes, phase_hint=phase_type, new_id=True)
-                if not pick or not pick.time:
+                pick = self.getPick(axes=ev.inaxes, phase_hint=phase_type)
+                if not pick:
                     return
-                reltime = self.time_abs2rel(pick.time)
-                # Determine if left or right Error Pick
-                if pickSample < reltime:
-                    pick.time_errors.lower_uncertainty = reltime - pickSample
-                elif pickSample > reltime:
-                    pick.time_errors.upper_uncertainty = pickSample - reltime
-                #self.updateLine(key)
-                #self.updateAxes(ev.inaxes)
+                pick.setErrorTime(self.time_rel2abs(pickSample))
                 self.updateAllAxes()
                 self.redraw()
                 print "Error %s set at %s" % (KEY_FULLNAMES[phase_type],
                                         self.time_rel2abs(pickSample).isoformat())
                 return
 
-        if ev.key == keys['setMagMin']:
+        if ev.key in (keys['setMagMin'], keys['setMagMax']):
             # some keyPress events only make sense inside our matplotlib axes
-            if not ev.inaxes in self.axs[1:3]:
+            if not ev.inaxes in self.axs:
                 return
             if phase_type == 'Mag':
-                if len(self.axs) < 2:
-                    err = "Error: Magnitude picking only supported with a " + \
-                          "minimum of 2 axes."
-                    print >> sys.stderr, err
-                    return
-                # determine which dict keys to work with
-                key = 'MagMin'
-                key_other = 'MagMax'
-                if ev.inaxes is self.axs[1]:
-                    key += '1'
-                    key_other += '1'
-                elif ev.inaxes is self.axs[2]:
-                    key += '2'
-                    key_other += '2'
-                keyT = key + 'T'
-                keyT_other = key_other + 'T'
+                ampl = self.getAmplitude(axes=ev.inaxes, setdefault=True, seed_string=tr.id)
                 # do the actual work
                 ydata = ev.inaxes.lines[0].get_ydata() #get the first line hoping that it is the seismogram!
                 cutoffSamples = xpos - MAG_PICKWINDOW #remember, how much samples there are before our small window! We have to add this number for our MagMinT estimation!
-                dict[key] = np.min(ydata[xpos-MAG_PICKWINDOW:xpos+MAG_PICKWINDOW])
-                # special handling for GSE2 data: apply calibration
+                if ev.key == keys['setMagMin']:
+                    val = np.min(ydata[xpos-MAG_PICKWINDOW:xpos+MAG_PICKWINDOW])
+                    tmp_magtime = cutoffSamples + np.argmin(ydata[xpos-MAG_PICKWINDOW:xpos+MAG_PICKWINDOW])
+                elif ev.key == keys['setMagMax']:
+                    val = np.max(ydata[xpos-MAG_PICKWINDOW:xpos+MAG_PICKWINDOW])
+                    tmp_magtime = cutoffSamples + np.argmax(ydata[xpos-MAG_PICKWINDOW:xpos+MAG_PICKWINDOW])
+                # XXX GSE calib handling! special handling for GSE2 data: apply calibration
                 if tr.stats._format == "GSE2":
-                    dict[key] = dict[key] / (tr.stats.calib * 2 * np.pi / tr.stats.gse2.calper)
+                    val = val / (tr.stats.calib * 2 * np.pi / tr.stats.gse2.calper)
                 # save time of magnitude minimum in seconds
-                tmp_magtime = cutoffSamples + np.argmin(ydata[xpos-MAG_PICKWINDOW:xpos+MAG_PICKWINDOW])
-                tmp_magtime = tmp_magtime / samp_rate
-                dict[keyT] = tmp_magtime
-                #delete old MagMax Pick, if new MagMin Pick is higher
-                if key_other in dict and dict[key] > dict[key_other]:
-                    self.delMagMarker(key_other)
-                    self.delKey(key_other)
-                    self.delKey(keyT_other)
-                self.updateMagMarker(key)
+                tmp_magtime = self.time_rel2abs(tmp_magtime / samp_rate)
+                if ev.key == keys['setMagMin']:
+                    ampl.setLow(tmp_magtime, val)
+                elif ev.key == keys['setMagMax']:
+                    ampl.setHigh(tmp_magtime, val)
+                self.updateAllAxes()
                 self.redraw()
-                print "%s set: %s at %.3f" % (KEY_FULLNAMES[key], dict[key],
-                                              dict[keyT])
-                return
-
-        if ev.key == keys['setMagMax']:
-            # some keyPress events only make sense inside our matplotlib axes
-            if not ev.inaxes in self.axs[1:3]:
-                return
-            if phase_type == 'Mag':
-                if len(self.axs) < 2:
-                    err = "Error: Magnitude picking only supported with a " + \
-                          "minimum of 2 axes."
-                    print >> sys.stderr, err
-                    return
-                # determine which dict keys to work with
-                key = 'MagMax'
-                key_other = 'MagMin'
-                if ev.inaxes is self.axs[1]:
-                    key += '1'
-                    key_other += '1'
-                elif ev.inaxes is self.axs[2]:
-                    key += '2'
-                    key_other += '2'
-                keyT = key + 'T'
-                keyT_other = key_other + 'T'
-                # do the actual work
-                ydata = ev.inaxes.lines[0].get_ydata() #get the first line hoping that it is the seismogram!
-                cutoffSamples = xpos - MAG_PICKWINDOW #remember, how much samples there are before our small window! We have to add this number for our MagMaxT estimation!
-                dict[key] = np.max(ydata[xpos-MAG_PICKWINDOW:xpos+MAG_PICKWINDOW])
-                # special handling for GSE2 data: apply calibration
-                if tr.stats._format == "GSE2":
-                    dict[key] = dict[key] / (tr.stats.calib * 2 * np.pi / tr.stats.gse2.calper)
-                # save time of magnitude maximum in seconds
-                tmp_magtime = cutoffSamples + np.argmax(ydata[xpos-MAG_PICKWINDOW:xpos+MAG_PICKWINDOW])
-                tmp_magtime = tmp_magtime / samp_rate
-                dict[keyT] = tmp_magtime
-                #delete old MagMin Pick, if new MagMax Pick is lower
-                if key_other in dict and dict[key] < dict[key_other]:
-                    self.delMagMarker(key_other)
-                    self.delKey(key_other)
-                    self.delKey(keyT_other)
-                self.updateMagMarker(key)
-                self.redraw()
-                print "%s set: %s at %.3f" % (KEY_FULLNAMES[key], dict[key],
-                                              dict[keyT])
                 return
 
         if ev.key == keys['delMagMinMax']:
             if phase_type == 'Mag':
-                if ev.inaxes is self.axs[1]:
-                    for key in ['MagMin1', 'MagMax1']:
-                        self.delMagMarker(key)
-                        self.delKey(key)
-                elif ev.inaxes is self.axs[2]:
-                    for key in ['MagMin2', 'MagMax2']:
-                        self.delMagMarker(key)
-                        self.delKey(key)
-                else:
-                    return
+                ampl = self.getAmplitude(axes=ev.inaxes)
+                self.delAmplitude(ampl)
+                self.updateAllAxes()
                 self.redraw()
                 return
         #######################################################################
@@ -2446,45 +2314,57 @@ class ObsPyck(QtGui.QMainWindow):
         o.quality.minimum_distance = min(epidists)
         o.quality.median_distance = np.median(epidists)
 
+    def hypoDist(self, coords):
+        o = self.origin
+        epi_dist, _, _ = gps2DistAzimuth(o.latitude, o.longitude,
+                                         coords['latitude'],
+                                         coords['longitude'])
+        # origin depth is in m positive down, station elevation is in m
+        # positive up
+        z_dist = o.depth + coords['elevation']
+        return np.sqrt(epi_dist ** 2 + z_dist ** 2) / 1e3
+
     def calculateStationMagnitudes(self):
+        o = self.origin
+        self.stationmagnitudes = []
         for st, dict in zip(self.streams, self.dicts):
             amplitudes = []
             timedeltas = []
             pazs = []
             channels = []
-            if 'MagMin1' in dict and 'MagMax1' in dict:
-                paz = dict['pazN']
-                pazs.append(paz)
-                amplitudes.append(dict['MagMax1'] - dict['MagMin1'])
-                td = abs(dict['MagMax1T'] - dict['MagMin1T'])
+            for tr in st:
+                amp = self.getAmplitude(seed_string=tr.id)
+                if not amp:
+                    continue
+                amplitudes.append(amp)
+                pazs.append(tr.stats.paz)
+                td = amp.time_window.begin + amp.time_window.end
                 timedeltas.append(td)
-                channels.append(st[1].stats.channel)
-                corr = paz2AmpValueOfFreqResp(paz, (1.0 / (2 * td))) * paz['sensitivity']
-                pgv = np.abs([dict['MagMax1'], dict['MagMin1']]).max() / corr 
-                dict['PGV1'] = pgv
-                dict['PGV1CHA'] = st[1].stats.channel
-            if 'MagMin2' in dict and 'MagMax2' in dict:
-                paz = dict['pazE']
-                pazs.append(paz)
-                amplitudes.append(dict['MagMax2'] - dict['MagMin2'])
-                td = abs(dict['MagMax2T'] - dict['MagMin2T'])
-                timedeltas.append(td)
-                channels.append(st[2].stats.channel)
-                corr = paz2AmpValueOfFreqResp(paz, (1.0 / (2 * td))) * paz['sensitivity']
-                pgv = np.abs([dict['MagMax2'], dict['MagMin2']]).max() / corr 
-                dict['PGV2'] = pgv
-                dict['PGV2CHA'] = st[2].stats.channel
+                channels.append(tr.stats.channel)
             
             if not amplitudes:
                 continue
 
             # XXX hyp_dist doesnt exist anymore
-            mag = estimateMagnitude(pazs, amplitudes, timedeltas,
-                                    dict['distHypo'])
-            dict['Mag'] = mag
-            dict['MagChannel'] = ','.join(channels)
+            dist = self.hypoDist(tr.stats.coordinates)
+            mag = estimateMagnitude(pazs,
+                                    [a.generic_amplitude for a in amplitudes],
+                                    timedeltas, dist)
+            sm = StationMagnitude()
+            self.stationmagnitudes.append(sm)
+            sm.origin_id = o.resource_id
+            sm.mag = mag
+            sm.type = "ML"
+            sm.method_id = "/".join([ID_ROOT, "station_magnitude_method", "obspy", "1"])
+            sm.waveform_id = WaveformStreamID()
+            stats = st[0].stats
+            sm.waveform_id.network_code = stats.network
+            sm.waveform_id.station_code = stats.station
+            sm.waveform_id.location_code = stats.location
             print 'calculated new magnitude for %s: %0.2f (channels: %s)' \
-                  % (dict['Station'], dict['Mag'], dict['MagChannel'])
+                  % (stats.station, mag, channels)
+            raise Exception("setting station magnitudes not yet implemented")
+            # XXX create new stationmagnitude
     
     #see http://www.scipy.org/Cookbook/LinearRegression for alternative routine
     #XXX replace with drawWadati()
@@ -3314,13 +3194,16 @@ class ObsPyck(QtGui.QMainWindow):
         self.magnitude.clear()
         self.clearFocmecDictionary()
         self.event.clear()
+        self.picks = []
+        self.arrivals = []
+        self.amplitudes = []
 
     def clearOriginMagnitudeDictionaries(self):
         print "Clearing previous origin and magnitude data."
         dont_delete = ['Station', 'StaLat', 'StaLon', 'StaEle', 'pazZ', 'pazN',
                        'pazE', 'P', 'PErr1', 'PErr2', 'POnset', 'PPol',
                        'PWeight', 'S', 'SErr1', 'SErr2', 'SOnset', 'SPol',
-                       'SWeight', 'Saxind',
+                       'SWeight',
                        #dont delete the manually picked maxima/minima
                        'MagMin1', 'MagMin1T', 'MagMax1', 'MagMax1T',
                        'MagMin2', 'MagMin2T', 'MagMax2', 'MagMax2T',]
@@ -3350,6 +3233,8 @@ class ObsPyck(QtGui.QMainWindow):
         st = self.getCurrentStream()
         ids = []
         sta = st[0].stats.station
+        xlims = [list(ax.get_xlim()) for ax in self.axs]
+        ylims = [list(ax.get_ylim()) for ax in self.axs]
         for _i, ax in enumerate(self.axs):
             # first line is waveform, leave it
             ax.lines = ax.lines[:1]
@@ -3384,6 +3269,14 @@ class ObsPyck(QtGui.QMainWindow):
                 else:
                     plot_kwargs['alpha'] = 0.2
                 self.drawArrival(ax, arrival, pick, plot_kwargs=plot_kwargs)
+        for amplitude in self.amplitudes:
+            for _id, ax in zip(ids, self.axs):
+                if amplitude.waveform_id.getSEEDString() != _id:
+                    continue
+                self.drawAmplitude(ax, amplitude)
+        for ax, xlims_, ylims_ in zip(self.axs, xlims, ylims):
+            ax.set_xlim(xlims_)
+            ax.set_ylim(ylims_)
 
     def drawPick(self, ax, pick, plot_kwargs={}):
         if not pick.time:
@@ -3423,15 +3316,32 @@ class ObsPyck(QtGui.QMainWindow):
                    linewidth=AXVLINEWIDTH,
                    ymin=0, ymax=1, **plot_kwargs)
 
+    def drawAmplitude(self, ax, amplitude, plot_kwargs={}):
+        x, y = [], []
+        if amplitude.low is not None:
+            x.append(self.time_abs2rel(amplitude.low_time))
+            y.append(amplitude.low)
+        if amplitude.high is not None:
+            x.append(self.time_abs2rel(amplitude.high_time))
+            y.append(amplitude.high)
+        if x:
+            ax.plot(x, y, markersize=MAG_MARKER['size'],
+                    markeredgewidth=MAG_MARKER['edgewidth'], drawstyle="steps",
+                    linewidth=AXVLINEWIDTH, color=PHASE_COLORS['Mag'],
+                    marker=MAG_MARKER['marker'], zorder=20)
+
     def delPick(self, pick):
         if pick in self.picks:
             self.picks.remove(pick)
 
-    def getPick(self, network=None, station=None, phase_hint=None, waveform_id=None, axes=None, setdefault=False, new_id=False, seed_string=None):
+    def delAmplitude(self, amplitude):
+        if amplitude in self.amplitudes:
+            self.amplitudes.remove(amplitude)
+
+    def getPick(self, network=None, station=None, phase_hint=None, waveform_id=None, axes=None, setdefault=False, seed_string=None):
         """
         returns first matching pick, does NOT ensure there is only one!
         if setdefault is True then if no pick is found an empty one is returned and inserted into self.picks.
-        if new_id is True then a new resource identifer is set to avoid obsolete links against arrivals.
         """
         for p in self.picks:
             if network is not None and network != p.waveform_id.network_code:
@@ -3442,6 +3352,8 @@ class ObsPyck(QtGui.QMainWindow):
                 continue
             if waveform_id is not None and waveform_id != p.waveform_id:
                 continue
+            if seed_string is not None and seed_string != p.waveform_id.getSEEDString():
+                continue
             if axes is not None:
                 _i = self.axs.index(axes)
                 _id = self.getCurrentStream()[_i].id
@@ -3450,12 +3362,6 @@ class ObsPyck(QtGui.QMainWindow):
                     continue
                 if p.phase_hint != phase_hint:
                     continue
-            if new_id:
-                # XXX TODO setting a new resource identifier should be
-                # delegated to a method on the sublassed Pick class from
-                # event_helper
-                p.resource_id = ResourceIdentifier("pick")
-                #p.newID()
             return p
         if setdefault:
             # XXX TODO check if handling of picks/arrivals with regard to
@@ -3468,6 +3374,41 @@ class ObsPyck(QtGui.QMainWindow):
             p = Pick(seed_string=seed_string, phase_hint=phase_hint)
             self.picks.append(p)
             return p
+        else:
+            return None
+
+    def getAmplitude(self, network=None, station=None, waveform_id=None, axes=None, setdefault=False, seed_string=None):
+        """
+        returns first matching amplitude, does NOT ensure there is only one!
+        if setdefault is True then if no arrival is found an empty one is returned and inserted into self.arrivals.
+        """
+        for a in self.amplitudes:
+            if network is not None and network != a.waveform_id.network_code:
+                continue
+            if station is not None and station != a.waveform_id.station_code:
+                continue
+            if waveform_id is not None and waveform_id != a.waveform_id:
+                continue
+            if seed_string is not None and seed_string != a.waveform_id.getSEEDString():
+                continue
+            if axes is not None:
+                _i = self.axs.index(axes)
+                _id = self.getCurrentStream()[_i].id
+                if a.waveform_id.getSEEDString() != _id:
+                    continue
+            return a
+        if setdefault:
+            # XXX TODO check if handling of picks/arrivals with regard to
+            # resource ids is safe (overwritten picks, arrivals get deleted
+            # etc., association of picks/arrivals is ok)
+            # also check if setup of resource id strings make sense in general
+            # (make versioning of methods possible, etc)
+            if seed_string is None:
+                raise Exception("Arrival setdefault needs seed_string kwarg")
+            print seed_string
+            a = Amplitude(seed_string=seed_string)
+            self.amplitudes.append(a)
+            return a
         else:
             return None
 
@@ -3498,21 +3439,6 @@ class ObsPyck(QtGui.QMainWindow):
         old = self.getPick(waveform_id=pick.waveform_id, phase_hint=pick.phase_hint)
         self.picks.remove(old)
         self.picks.append(pick)
-    
-    #def delAllItems(self):
-    #    #keys_line = (phase_type + suffix \
-    #    #             for phase_type in SEISMIC_PHASES \
-    #    #             for suffix in ('', 'Err1', 'Err2', 'synth'))
-    #    #keys_label = (phase_type + suffix \
-    #    #              for phase_type in SEISMIC_PHASES \
-    #    #              for suffix in ('', 'synth'))
-    #    self.delLines()
-    #    #for key in keys_line:
-    #    #    self.delLine(key)
-    #    #for key in keys_label:
-    #    #    self.delLabel(key)
-    #    for key in ('MagMin1', 'MagMax1', 'MagMin2', 'MagMax2'):
-    #        self.delMagMarker(key)
 
     def updateAllItems(self):
         #self.delAllItems()
