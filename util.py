@@ -352,7 +352,7 @@ def fetch_waveforms_with_metadata(options):
         for id in options.seishub_ids.split(","):
             net, sta_wildcard, loc, cha = id.split(".")
             stations_to_fetch = []
-            if "?" in sta_wildcard or "*" in sta_wildcard:
+            if any([char in sta_wildcard for char in "*?[]"]):
                 for sta in sorted(client.waveform.getStationIds(network=net)):
                     if fnmatch.fnmatch(sta, sta_wildcard):
                         stations_to_fetch.append(sta)
