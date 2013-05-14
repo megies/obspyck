@@ -322,29 +322,35 @@ def fetch_waveforms_with_metadata(options):
     clients = {}
     sta_fetched = set()
     # Local files:
-    if options.files and options.dataless:
-        from obspy.core import read
+    parsers = []
+    if options.dataless:
         from obspy.xseed import Parser
         print "=" * 80
-        print "Reading local files:"
+        print "Reading local dataless files:"
         print "-" * 80
-        parsers = []
         for file in options.dataless.split(","):
             print file
             parsers.append(Parser(file))
+    if options.files:
+        from obspy import read, Stream
+        stream_tmp = Stream()
+        print "=" * 80
+        print "Reading local waveform files:"
+        print "-" * 80
         for file in options.files.split(","):
             print file
             st = read(file, starttime=t1, endtime=t2, verify_chksum=options.verify_chksum)
             for tr in st:
-                for parser in parsers:
-                    try:
-                        tr.stats.paz = parser.getPAZ(tr.id, tr.stats.starttime)
-                        tr.stats.coordinates = parser.getCoordinates(tr.id, tr.stats.starttime)
-                        break
-                    except:
-                        continue
-                    print "found no metadata for %s!!!" % file
-                if tr.stats.format == 'GSE2':
+                if not options.nometadata:
+                    for parser in parsers:
+                        try:
+                            tr.stats.paz = parser.getPAZ(tr.id, tr.stats.starttime)
+                            tr.stats.coordinates = parser.getCoordinates(tr.id, tr.stats.starttime)
+                            break
+                        except:
+                            continue
+                        print "found no metadata for %s!!!" % file
+                if tr.stats._format == 'GSE2':
                     try:
                         calibration = 2.0 * np.pi * tr.stats.calib / tr.stats.gse2.calper
                         tr.stats.sensitivity = tr.stats.sensitivity / calibration
@@ -352,7 +358,10 @@ def fetch_waveforms_with_metadata(options):
                     except:
                         print "Warning: Failed to apply GSE2 calibration factor to overall sensitivity. Continuing anyway."
                         pass
-            streams.append(st)
+            stream_tmp += st
+        ids = set([(tr.stats.network, tr.stats.station, tr.stats.location) for tr in stream_tmp])
+        for net, sta, loc in ids:
+            streams.append(stream_tmp.select(network=net, station=sta, location=loc))
     # SeisHub
     if options.seishub_ids:
         from obspy.seishub import Client
