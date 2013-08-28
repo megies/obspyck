@@ -34,6 +34,9 @@ except:
     from obspy.signal import gps2DistAzimuth
 
 from obspy.core.util import getMatplotlibVersion
+from obspy.neries import Client
+from obspy.taup.taup import getTravelTimes
+from obspy.core.util import locations2degrees
 
 mpl.rc('figure.subplot', left=0.05, right=0.98, bottom=0.10, top=0.92,
        hspace=0.28)
@@ -982,3 +985,36 @@ class SplitWriter():
                 obj.appendPlainText(msg)
             else:
                 obj.write(msg)
+
+
+def get_neries_info(starttime, endtime, streams):
+    events = []
+    arrivals = {}
+    try:
+        client = Client()
+        events = client.getEvents(min_datetime=starttime - 20 * 60,
+                                  max_datetime=endtime,
+                                  format="list")
+        for ev in events[::-1]:
+            has_arrivals = False
+            origin_time = ev['datetime']
+            lon1 = ev['longitude']
+            lat1 = ev['latitude']
+            depth = abs(ev['depth'])
+            for st in streams:
+                sta = st[0].stats.station
+                lon2 = st[0].stats.coordinates['longitude']
+                lat2 = st[0].stats.coordinates['latitude']
+                dist = locations2degrees(lat1, lon1, lat2, lon2)
+                tts = getTravelTimes(dist, depth)
+                list_ = arrivals.setdefault(sta, [])
+                for tt in tts:
+                    tt['time'] = origin_time + tt['time']
+                    if starttime < tt['time'] < endtime:
+                        has_arrivals = True
+                        list_.append(tt)
+            if not has_arrivals:
+                events.remove(ev)
+    except:
+        return None, None
+    return events, arrivals

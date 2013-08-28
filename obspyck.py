@@ -132,6 +132,19 @@ class ObsPyck(QtGui.QMainWindow):
                   "(e.g. 'send Event')."
             print >> sys.stderr, msg
 
+        # fetch event data from neries, arrivals from taup
+        neries_events, taup_arrivals = get_neries_info(self.T0, self.T1,
+                                                       self.streams)
+        self.taup_arrivals = taup_arrivals
+        if neries_events is None:
+            self.taup_arrivals = []
+            print >> sys.stderr, "Could not determine possible arrivals using obspy.neries/taup."
+        else:
+            print "%i event(s) with possible arrivals found using obspy.neries/taup:" % len(neries_events)
+            for ev in neries_events:
+                print " ".join([str(ev['datetime']), ev['magnitude_type'],
+                                str(ev['magnitude']), ev['flynn_region']])
+
         self.fig = self.widgets.qMplCanvas.fig
         facecolor = self.qMain.palette().color(QtGui.QPalette.Window).getRgb()
         self.fig.set_facecolor([value / 255.0 for value in facecolor])
@@ -3791,6 +3804,12 @@ class ObsPyck(QtGui.QMainWindow):
             self.drawLabel(key)
         for key in ('MagMin1', 'MagMax1', 'MagMin2', 'MagMax2'):
             self.drawMagMarker(key)
+        station = self.streams[self.stPt][0].stats.station
+        for tt in self.taup_arrivals.get(station, []):
+            t = self.time_abs2rel(tt['time'])
+            for ax in self.axs:
+                ax.axvline(t, color="magenta", linewidth=AXVLINEWIDTH,
+                           linestyle=":")
     
     def delAllItems(self):
         keys_line = (phase_type + suffix \
