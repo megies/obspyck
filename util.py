@@ -18,6 +18,7 @@ import copy
 import tempfile
 import glob
 import fnmatch
+import warnings
 
 import PyQt4
 import numpy as np
@@ -355,13 +356,7 @@ def fetch_waveforms_with_metadata(options):
                             continue
                         print "found no metadata for %s!!!" % file
                 if tr.stats._format == 'GSE2':
-                    try:
-                        calibration = 2.0 * np.pi * tr.stats.calib / tr.stats.gse2.calper
-                        tr.stats.sensitivity = tr.stats.sensitivity / calibration
-                        print "Warning: Dividing overall sensitivity by GSE2 calibration but not using the 1e9 factor!!"
-                    except:
-                        print "Warning: Failed to apply GSE2 calibration factor to overall sensitivity. Continuing anyway."
-                        pass
+                    apply_gse2_calib(tr)
             stream_tmp += st
         ids = set([(tr.stats.network, tr.stats.station, tr.stats.location) for tr in stream_tmp])
         for net, sta, loc in ids:
@@ -405,6 +400,8 @@ def fetch_waveforms_with_metadata(options):
                     sys.stdout.flush()
                     continue
                 for tr in st:
+                    if tr.stats._format == 'GSE2':
+                        apply_gse2_calib(tr)
                     tr.stats['_format'] = "SeisHub"
                 streams.append(st)
         clients['SeisHub'] = client
@@ -1020,3 +1017,18 @@ def get_neries_info(starttime, endtime, streams):
                "neries/taup: %s: %s" % (e.__class__.__name__, str(e)))
         return None, None, msg
     return events, arrivals, None
+
+
+def apply_gse2_calib(tr):
+    """
+    Applies GSE2 specific calibration to overall sensitivity.
+    Not valid for accelerometer data!
+    """
+    try:
+        calibration = tr.stats.calib * ((2.0 * np.pi / tr.stats.gse2.calper) ** 1) * 1e-9
+        tr.stats.paz.sensitivity = tr.stats.paz.sensitivity / calibration
+    except Exception as e:
+        msg = ("Warning: Failed to apply GSE2 calibration factor to overall "
+               "sensitivity (%s, %s). Continuing anyway.")
+        msg = msg % (e.__class__.__name__, str(e))
+        print msg

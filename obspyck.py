@@ -2827,11 +2827,7 @@ class ObsPyck(QtGui.QMainWindow):
             # normalize with overall sensitivity and convert to nm/s
             # if not explicitly deactivated on command line
             if not self.options.nonormalization and not self.options.nometadata:
-                # special handling for GSE2 data: apply calibration
-                calib = 1.0
-                if tr.stats._format == "GSE2":
-                    calib = tr.stats.calib * 2 * np.pi / tr.stats.gse2.calper
-                plts.append(ax.plot(sampletimes, tr.data * 1e9 / tr.stats.paz.sensitivity / calib, color='k', zorder=1000)[0])
+                plts.append(ax.plot(sampletimes, tr.data * 1e9 / tr.stats.paz.sensitivity, color='k', zorder=1000)[0])
             else:
                 plts.append(ax.plot(sampletimes, tr.data, color='k', zorder=1000)[0])
         self.drawIds()
