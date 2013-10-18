@@ -34,7 +34,7 @@ except:
     from obspy.signal import gps2DistAzimuth
 
 from obspy.core.util import getMatplotlibVersion
-from obspy.neries import Client
+from obspy import neries
 from obspy.taup.taup import getTravelTimes
 from obspy.core.util import locations2degrees
 
@@ -991,7 +991,7 @@ def get_neries_info(starttime, endtime, streams):
     events = []
     arrivals = {}
     try:
-        client = Client()
+        client = neries.Client()
         events = client.getEvents(min_datetime=starttime - 20 * 60,
                                   max_datetime=endtime,
                                   format="list")
@@ -1015,6 +1015,8 @@ def get_neries_info(starttime, endtime, streams):
                         list_.append(tt)
             if not has_arrivals:
                 events.remove(ev)
-    except:
-        return None, None
-    return events, arrivals
+    except Exception as e:
+        msg = ("Problem while determining theoretical phases using "
+               "neries/taup: %s: %s" % (e.__class__.__name__, str(e)))
+        return None, None, msg
+    return events, arrivals, None

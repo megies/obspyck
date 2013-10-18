@@ -133,8 +133,10 @@ class ObsPyck(QtGui.QMainWindow):
             print >> sys.stderr, msg
 
         # fetch event data from neries, arrivals from taup
-        neries_events, taup_arrivals = get_neries_info(self.T0, self.T1,
-                                                       self.streams)
+        neries_events, taup_arrivals, msg = get_neries_info(self.T0, self.T1,
+                                                            self.streams)
+        if msg:
+            print >> sys.stderr, msg
         self.taup_arrivals = taup_arrivals
         if neries_events is None:
             self.taup_arrivals = []
@@ -3805,12 +3807,13 @@ class ObsPyck(QtGui.QMainWindow):
         for key in ('MagMin1', 'MagMax1', 'MagMin2', 'MagMax2'):
             self.drawMagMarker(key)
         station = self.streams[self.stPt][0].stats.station
-        for tt in self.taup_arrivals.get(station, []):
-            t = self.time_abs2rel(tt['time'])
-            for ax in self.axs:
-                ax.axvline(t, color="magenta", linewidth=AXVLINEWIDTH,
-                           linestyle=":")
-    
+        if self.taup_arrivals:
+            for tt in self.taup_arrivals.get(station, []):
+                t = self.time_abs2rel(tt['time'])
+                for ax in self.axs:
+                    ax.axvline(t, color="magenta", linewidth=AXVLINEWIDTH,
+                               linestyle=":")
+
     def delAllItems(self):
         keys_line = (phase_type + suffix \
                      for phase_type in SEISMIC_PHASES \
