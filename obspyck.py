@@ -133,14 +133,18 @@ class ObsPyck(QtGui.QMainWindow):
             print >> sys.stderr, msg
 
         # fetch event data from neries, arrivals from taup
-        neries_events, taup_arrivals, msg = get_neries_info(self.T0, self.T1,
-                                                            self.streams)
-        if msg:
-            print >> sys.stderr, msg
+        if self.options.noneries:
+            neries_events, taup_arrivals, msg = None, None, None
+        else:
+            neries_events, taup_arrivals, msg = \
+                get_neries_info(self.T0, self.T1, self.streams)
+            if neries_events is None:
+                print >> sys.stderr, "Could not determine possible arrivals using obspy.neries/taup."
+            if msg:
+                print >> sys.stderr, msg
         self.taup_arrivals = taup_arrivals
         if neries_events is None:
             self.taup_arrivals = []
-            print >> sys.stderr, "Could not determine possible arrivals using obspy.neries/taup."
         else:
             print "%i event(s) with possible arrivals found using obspy.neries/taup:" % len(neries_events)
             for ev in neries_events:

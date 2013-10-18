@@ -117,6 +117,9 @@ COMMANDLINE_OPTIONS = (
         (("--nometadata",), {'action': "store_true",
                 'dest': "nometadata", 'default': False,
                 'help': "Deactivate fetching/parsing metadata for waveforms"}),
+        (("--noneries",), {'action': "store_true",
+                'dest': "noneries", 'default': False,
+                'help': "Deactivate fetching event data from neries and plotting theoretical arrivals."}),
         (("--pluginpath",), {'dest': "pluginpath",
                 'default': "/baysoft/obspyck/",
                 'help': "Path to local directory containing the folders with "
