@@ -1702,8 +1702,6 @@ class ObsPyck(QtGui.QMainWindow):
     
     #lookup multicursor source: http://matplotlib.sourcearchive.com/documentation/0.98.1/widgets_8py-source.html
     def multicursorReinit(self):
-        self.canv.mpl_disconnect(self.multicursor.id1)
-        self.canv.mpl_disconnect(self.multicursor.id2)
         self.multicursor.__init__(self.canv, self.axs, useblit=True,
                                   color='black', linewidth=1, ls='dotted')
         self.updateMulticursorColor()

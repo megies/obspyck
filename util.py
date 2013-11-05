@@ -813,17 +813,40 @@ def setup_external_programs(options):
 #See source: http://matplotlib.sourcearchive.com/documentation/0.98.1/widgets_8py-source.html
 class MultiCursor(MplMultiCursor):
     def __init__(self, canvas, axes, useblit=True, **lineprops):
-        super(MultiCursor, self).__init__(canvas, axes, useblit=True, **lineprops)
+        if hasattr(self, "id1"):
+            self.canvas.mpl_disconnect(self.id1)
+            self.canvas.mpl_disconnect(self.id2)
+        self.canvas = canvas
+        self.axes = axes
         xmin, xmax = axes[-1].get_xlim()
         xmid = 0.5*(xmin+xmax)
+        self.hlines = []
+        self.vlines = []
+        self.horizOn = False
+        self.vertOn = True
+        self.lines = [ax.axvline(xmid, visible=False, **lineprops) for ax in axes]
+        self.visible = True
+        self.useblit = useblit
+        self.background = None
+        self.needclear = False
+        self.id1 = self.canvas.mpl_connect('motion_notify_event', self.onmove)
+        self.id2 = self.canvas.mpl_connect('draw_event', self.clear)
+
+    @property
+    def lines(self):
         if getMatplotlibVersion() < [1, 3, 0]:
-            self.lines = [ax.axvline(xmid, visible=False, **lineprops) for ax in axes]
+            return self.__dict__["lines"]
         else:
-            self.lines = self.vlines
-        self.id1=self.canvas.mpl_connect('motion_notify_event', self.onmove)
-        self.id2=self.canvas.mpl_connect('draw_event', self.clear)
-    
-   
+            return self.vlines
+
+    @lines.setter
+    def lines(self, value):
+        if getMatplotlibVersion() < [1, 3, 0]:
+            self.__dict__["lines"] = value
+        else:
+            self.vlines = value
+
+
 def gk2lonlat(x, y, m_to_km=True):
     """
     This function converts X/Y Gauss-Krueger coordinates (zone 4, central
