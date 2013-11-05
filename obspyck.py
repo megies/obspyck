@@ -129,6 +129,25 @@ class ObsPyck(QtGui.QMainWindow):
                   "(e.g. 'send Event')."
             print >> sys.stderr, msg
 
+        # fetch event data from neries, arrivals from taup
+        if self.options.noneries:
+            neries_events, taup_arrivals, msg = None, None, None
+        else:
+            neries_events, taup_arrivals, msg = \
+                get_neries_info(self.T0, self.T1, self.streams)
+            if neries_events is None:
+                print >> sys.stderr, "Could not determine possible arrivals using obspy.neries/taup."
+            if msg:
+                print >> sys.stderr, msg
+        self.taup_arrivals = taup_arrivals
+        if neries_events is None:
+            self.taup_arrivals = []
+        else:
+            print "%i event(s) with possible arrivals found using obspy.neries/taup:" % len(neries_events)
+            for ev in neries_events:
+                print " ".join([str(ev['datetime']), ev['magnitude_type'],
+                                str(ev['magnitude']), ev['flynn_region']])
+
         self.fig = self.widgets.qMplCanvas.fig
         facecolor = self.qMain.palette().color(QtGui.QPalette.Window).getRgb()
         self.fig.set_facecolor([value / 255.0 for value in facecolor])
@@ -434,6 +453,7 @@ class ObsPyck(QtGui.QMainWindow):
             link = "http://maps.google.de/maps?f=q&q=%.6f,%.6f" % \
                     (self.origin.latitude, self.origin.longitude)
             self.widgets.qPlainTextEdit_stdout.appendHtml("<a href='%s'>%s</a> &nbsp;" % (link, link))
+            print "%s %.2f %.6f %.6f %.4f %.6f %.6f %.4f %.6f" % (self.dictOrigin['Time'], self.dictMagnitude['Magnitude'], self.dictOrigin['Longitude'], self.dictOrigin['Latitude'], self.dictOrigin['Depth'], self.dictOrigin['Longitude Error'], self.dictOrigin['Latitude Error'], self.dictOrigin['Depth Error'], self.dictOrigin['Standarderror'])
         else:
             self.delEventMap()
             self.fig.clear()
@@ -2500,11 +2520,7 @@ class ObsPyck(QtGui.QMainWindow):
             # normalize with overall sensitivity and convert to nm/s
             # if not explicitly deactivated on command line
             if not self.options.nonormalization and not self.options.nometadata:
-                # special handling for GSE2 data: apply calibration
-                calib = 1.0
-                if tr.stats._format == "GSE2":
-                    calib = tr.stats.calib * 2 * np.pi / tr.stats.gse2.calper
-                plts.append(ax.plot(sampletimes, tr.data * 1e9 / tr.stats.paz.sensitivity / calib, color='k', zorder=1000)[0])
+                plts.append(ax.plot(sampletimes, tr.data * 1e9 / tr.stats.paz.sensitivity, color='k', zorder=1000)[0])
             else:
                 plts.append(ax.plot(sampletimes, tr.data, color='k', zorder=1000)[0])
         self.drawIds()

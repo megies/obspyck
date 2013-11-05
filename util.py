@@ -18,6 +18,7 @@ import copy
 import tempfile
 import glob
 import fnmatch
+import warnings
 
 import PyQt4
 import numpy as np
@@ -35,6 +36,10 @@ except:
     from obspy.signal import gps2DistAzimuth
 from obspy.core.event import Arrival, Pick
 
+from obspy.core.util import getMatplotlibVersion
+from obspy import neries
+from obspy.taup.taup import getTravelTimes
+from obspy.core.util import locations2degrees
 
 mpl.rc('figure.subplot', left=0.05, right=0.98, bottom=0.10, top=0.92,
        hspace=0.28)
@@ -114,6 +119,9 @@ COMMANDLINE_OPTIONS = (
         (("--nometadata",), {'action': "store_true",
                 'dest': "nometadata", 'default': False,
                 'help': "Deactivate fetching/parsing metadata for waveforms"}),
+        (("--noneries",), {'action': "store_true",
+                'dest': "noneries", 'default': False,
+                'help': "Deactivate fetching event data from neries and plotting theoretical arrivals."}),
         (("--pluginpath",), {'dest': "pluginpath",
                 'default': "/baysoft/obspyck/",
                 'help': "Path to local directory containing the folders with "
@@ -309,37 +317,40 @@ def fetch_waveforms_with_metadata(options):
     clients = {}
     sta_fetched = set()
     # Local files:
-    if options.files and options.dataless:
-        from obspy.core import read
+    parsers = []
+    if options.dataless:
         from obspy.xseed import Parser
         print "=" * 80
-        print "Reading local files:"
+        print "Reading local dataless files:"
         print "-" * 80
-        parsers = []
         for file in options.dataless.split(","):
             print file
             parsers.append(Parser(file))
+    if options.files:
+        from obspy import read, Stream
+        stream_tmp = Stream()
+        print "=" * 80
+        print "Reading local waveform files:"
+        print "-" * 80
         for file in options.files.split(","):
             print file
             st = read(file, starttime=t1, endtime=t2, verify_chksum=options.verify_chksum)
             for tr in st:
-                for parser in parsers:
-                    try:
-                        tr.stats.paz = parser.getPAZ(tr.id, tr.stats.starttime)
-                        tr.stats.coordinates = parser.getCoordinates(tr.id, tr.stats.starttime)
-                        break
-                    except:
-                        continue
-                    print "found no metadata for %s!!!" % file
-                if tr.stats.format == 'GSE2':
-                    try:
-                        calibration = 2.0 * np.pi * tr.stats.calib / tr.stats.gse2.calper
-                        tr.stats.sensitivity = tr.stats.sensitivity / calibration
-                        print "Warning: Dividing overall sensitivity by GSE2 calibration but not using the 1e9 factor!!"
-                    except:
-                        print "Warning: Failed to apply GSE2 calibration factor to overall sensitivity. Continuing anyway."
-                        pass
-            streams.append(st)
+                if not options.nometadata:
+                    for parser in parsers:
+                        try:
+                            tr.stats.paz = parser.getPAZ(tr.id, tr.stats.starttime)
+                            tr.stats.coordinates = parser.getCoordinates(tr.id, tr.stats.starttime)
+                            break
+                        except:
+                            continue
+                        print "found no metadata for %s!!!" % file
+                if tr.stats._format == 'GSE2':
+                    apply_gse2_calib(tr)
+            stream_tmp += st
+        ids = set([(tr.stats.network, tr.stats.station, tr.stats.location) for tr in stream_tmp])
+        for net, sta, loc in ids:
+            streams.append(stream_tmp.select(network=net, station=sta, location=loc))
     # SeisHub
     if options.seishub_ids:
         from obspy.seishub import Client
@@ -379,6 +390,8 @@ def fetch_waveforms_with_metadata(options):
                     sys.stdout.flush()
                     continue
                 for tr in st:
+                    if tr.stats._format == 'GSE2':
+                        apply_gse2_calib(tr)
                     tr.stats['_format'] = "SeisHub"
                 streams.append(st)
         clients['SeisHub'] = client
@@ -762,15 +775,13 @@ def setup_external_programs(options):
 #See source: http://matplotlib.sourcearchive.com/documentation/0.98.1/widgets_8py-source.html
 class MultiCursor(MplMultiCursor):
     def __init__(self, canvas, axes, useblit=True, **lineprops):
-        self.canvas = canvas
-        self.axes = axes
+        super(MultiCursor, self).__init__(canvas, axes, useblit=True, **lineprops)
         xmin, xmax = axes[-1].get_xlim()
         xmid = 0.5*(xmin+xmax)
-        self.lines = [ax.axvline(xmid, visible=False, **lineprops) for ax in axes]
-        self.visible = True
-        self.useblit = useblit
-        self.background = None
-        self.needclear = False
+        if getMatplotlibVersion() < [1, 3, 0]:
+            self.lines = [ax.axvline(xmid, visible=False, **lineprops) for ax in axes]
+        else:
+            self.lines = self.vlines
         self.id1=self.canvas.mpl_connect('motion_notify_event', self.onmove)
         self.id2=self.canvas.mpl_connect('draw_event', self.clear)
     
@@ -964,3 +975,53 @@ def getPickForArrival(picks, arrival):
             pick = p
             break
     return pick
+
+
+def get_neries_info(starttime, endtime, streams):
+    events = []
+    arrivals = {}
+    try:
+        client = neries.Client()
+        events = client.getEvents(min_datetime=starttime - 20 * 60,
+                                  max_datetime=endtime,
+                                  format="list")
+        for ev in events[::-1]:
+            has_arrivals = False
+            origin_time = ev['datetime']
+            lon1 = ev['longitude']
+            lat1 = ev['latitude']
+            depth = abs(ev['depth'])
+            for st in streams:
+                sta = st[0].stats.station
+                lon2 = st[0].stats.coordinates['longitude']
+                lat2 = st[0].stats.coordinates['latitude']
+                dist = locations2degrees(lat1, lon1, lat2, lon2)
+                tts = getTravelTimes(dist, depth)
+                list_ = arrivals.setdefault(sta, [])
+                for tt in tts:
+                    tt['time'] = origin_time + tt['time']
+                    if starttime < tt['time'] < endtime:
+                        has_arrivals = True
+                        list_.append(tt)
+            if not has_arrivals:
+                events.remove(ev)
+    except Exception as e:
+        msg = ("Problem while determining theoretical phases using "
+               "neries/taup: %s: %s" % (e.__class__.__name__, str(e)))
+        return None, None, msg
+    return events, arrivals, None
+
+
+def apply_gse2_calib(tr):
+    """
+    Applies GSE2 specific calibration to overall sensitivity.
+    Not valid for accelerometer data!
+    """
+    try:
+        calibration = tr.stats.calib * ((2.0 * np.pi / tr.stats.gse2.calper) ** 1) * 1e-9
+        tr.stats.paz.sensitivity = tr.stats.paz.sensitivity / calibration
+    except Exception as e:
+        msg = ("Warning: Failed to apply GSE2 calibration factor to overall "
+               "sensitivity (%s, %s). Continuing anyway.")
+        msg = msg % (e.__class__.__name__, str(e))
+        print msg
