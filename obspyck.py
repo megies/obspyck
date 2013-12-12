@@ -24,7 +24,7 @@ import matplotlib.cm
 import matplotlib.transforms
 from matplotlib.patches import Ellipse
 from matplotlib.ticker import FuncFormatter, FormatStrFormatter, MaxNLocator
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as QNavigationToolbar
+from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as QNavigationToolbar
 from matplotlib.backend_bases import MouseEvent as MplMouseEvent, KeyEvent as MplKeyEvent
 try:
     import lxml.etree
