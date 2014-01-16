@@ -867,7 +867,10 @@ class ObsPyck(QtGui.QMainWindow):
                     (type, options['zerophase'], options['freq'])
         try:
             stream.detrend("linear")
-            stream.taper()
+            try:
+                stream.taper(max_percentage=0.05, type='cosine')
+            except:
+                stream.taper()
             stream.filter(type, **options)
             print msg
         except:
