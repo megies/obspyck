@@ -1327,8 +1327,11 @@ class ObsPyck(QtGui.QMainWindow):
         phase_type = str(self.widgets.qComboBox_phaseType.currentText())
         dict = self.dicts[self.stPt]
         st = self.streams[self.stPt]
-        tr = st[self.axs.index(ev.inaxes)]
-        
+        if ev.inaxes:
+            tr = st[self.axs.index(ev.inaxes)]
+        else:
+            tr = None
+
         #######################################################################
         # Start of key events related to picking                              #
         #######################################################################
