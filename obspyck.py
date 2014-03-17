@@ -1346,7 +1346,7 @@ class ObsPyck(QtGui.QMainWindow):
             samp_rate = st[0].stats.sampling_rate
             pickSample = (ev.xdata - t[0]) * samp_rate
             print pickSample
-            pickSample = round(pickSample)
+            pickSample = int(round(pickSample))
             print pickSample
             # we need the position of the cursor location
             # in the seismogram array:
