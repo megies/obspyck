@@ -27,7 +27,7 @@ import matplotlib.cm
 import matplotlib.transforms
 from matplotlib.patches import Ellipse
 from matplotlib.ticker import FuncFormatter, FormatStrFormatter, MaxNLocator
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as QNavigationToolbar
+from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as QNavigationToolbar
 from matplotlib.backend_bases import MouseEvent as MplMouseEvent, KeyEvent as MplKeyEvent
 import lxml.etree
 from lxml.etree import SubElement as Sub
@@ -876,7 +876,10 @@ class ObsPyck(QtGui.QMainWindow):
                     (type, options['zerophase'], options['freq'])
         try:
             stream.detrend("linear")
-            stream.taper()
+            try:
+                stream.taper(max_percentage=0.05, type='cosine')
+            except:
+                stream.taper()
             stream.filter(type, **options)
             print msg
         except:
@@ -1217,6 +1220,10 @@ class ObsPyck(QtGui.QMainWindow):
         phase_type = str(self.widgets.qComboBox_phaseType.currentText())
         dict = self.getCurrentDict()
         st = self.getCurrentStream()
+        if ev.inaxes:
+            tr = st[self.axs.index(ev.inaxes)]
+        else:
+            tr = None
         
         #######################################################################
         # Start of key events related to picking                              #
@@ -1236,7 +1243,7 @@ class ObsPyck(QtGui.QMainWindow):
             samp_rate = st[0].stats.sampling_rate
             pickSample = (ev.xdata - t[0]) * samp_rate
             print pickSample
-            pickSample = round(pickSample)
+            pickSample = int(round(pickSample))
             print pickSample
             # we need the position of the cursor location
             # in the seismogram array:
@@ -1515,8 +1522,6 @@ class ObsPyck(QtGui.QMainWindow):
     
     #lookup multicursor source: http://matplotlib.sourcearchive.com/documentation/0.98.1/widgets_8py-source.html
     def multicursorReinit(self):
-        self.canv.mpl_disconnect(self.multicursor.id1)
-        self.canv.mpl_disconnect(self.multicursor.id2)
         self.multicursor.__init__(self.canv, self.axs, useblit=True,
                                   color='black', linewidth=1, ls='dotted')
         self.updateMulticursorColor()
