@@ -190,7 +190,7 @@ class Amplitude(obspy.core.event.Amplitude, CommonEventHelper):
 local = locals()
 
 
-def readEvents(*args, **kwargs):
+def readQuakeML(*args, **kwargs):
     """
     Patched readEvents function from obspy that creates instances of our
     subclassed event classes instead of the original obspy classes.
@@ -199,9 +199,10 @@ def readEvents(*args, **kwargs):
     # replace original event classes with subclasses
     for classname in CLASSES_TO_PATCH:
         bkp[classname] = obspy.core.event.__dict__[classname]
-        obspy.core.event.__dict__[classname] = local[classname]
-    ret = obspy.core.event.readEvents(*args, **kwargs)
+        obspy.core.quakeml.__dict__[classname] = local[classname]
+    from obspy.core.quakeml import readQuakeML
+    ret = obspy.core.quakeml.readQuakeML(*args, **kwargs)
     # reset original event classes
     for classname, class_ in bkp.iteritems():
-        obspy.core.event.__dict__[classname] = bkp[classname]
+        obspy.core.quakeml.__dict__[classname] = bkp[classname]
     return ret

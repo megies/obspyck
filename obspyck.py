@@ -49,7 +49,7 @@ from qt_designer import Ui_qMainWindow_obsPyck
 from util import *
 from event_helper import Catalog, Event, Origin, Pick, Arrival, \
     Magnitude, StationMagnitude, StationMagnitudeContribution, \
-    FocalMechanism, ResourceIdentifier, ID_ROOT, readEvents, Amplitude
+    FocalMechanism, ResourceIdentifier, ID_ROOT, readQuakeML, Amplitude
 from obspy.core.event import CreationInfo, WaveformStreamID, \
     OriginUncertainty, OriginQuality
 
@@ -3474,7 +3474,7 @@ class ObsPyck(QtGui.QMainWindow):
         resource_xml = client.event.getResource(resource_name)
 
         # parse quakeml
-        ev = readEvents(StringIO(resource_xml), format="quakeml")[0]
+        ev = readQuakeML(StringIO(resource_xml))[0]
 
         try:
             user = ev.creation_info.author
