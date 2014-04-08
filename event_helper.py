@@ -1,8 +1,12 @@
 import re
+from copy import deepcopy
 import obspy.core.event
-from obspy.core.event import WaveformStreamID, ResourceIdentifier, TimeWindow
+from obspy.core.event import WaveformStreamID, ResourceIdentifier, \
+    TimeWindow, CreationInfo
 
 ID_ROOT = "smi:de.erdbeben-in-bayern"
+AGENCY_ID = "Erdbebendienst Bayern"
+AGENCY_URI = "%s/agency" % ID_ROOT
 # these classes get subclassed and need to be patched in readEvents
 CLASSES_TO_PATCH = ['FocalMechanism',
     'StationMagnitudeContribution', 'StationMagnitude', 'Magnitude', 'Catalog',
@@ -50,6 +54,7 @@ class StationMagnitudeContribution(
 class StationMagnitude(obspy.core.event.StationMagnitude, CommonEventHelper):
     def __init__(self, *args, **kwargs):
         super(StationMagnitude, self).__init__()
+        self.used = True
         self.newID()
 
 
@@ -69,6 +74,13 @@ class Event(obspy.core.event.Event, CommonEventHelper):
     def __init__(self, *args, **kwargs):
         super(Event, self).__init__()
         self.newID()
+
+    def set_creation_info(self, username, agency_id=AGENCY_ID,
+                          agency_uri=AGENCY_URI):
+        self.creation_info = CreationInfo()
+        self.creation_info.author = username
+        self.creation_info.agency_id = agency_id
+        self.creation_info.agency_uri = agency_uri
 
 
 class Origin(obspy.core.event.Origin, CommonEventHelper):
@@ -156,20 +168,63 @@ class Amplitude(obspy.core.event.Amplitude, CommonEventHelper):
     def setLow(self, time, value):
         self.low = value
         self.low_time = time
-        self.updateValue()
-        self.updateTimeWindow()
+        self.update()
 
     def setHigh(self, time, value):
         self.high = value
         self.high_time = time
+        self.update()
+
+    def setFromTimeWindow(self, tr):
+        """
+        Set all values internally from time window.
+        :type tr: :class:`~obspy.core.trace.Trace`
+        """
+        tr = tr.copy()
+        t_min = self.time_window.reference
+        begin = self.time_window.begin
+        end = self.time_window.end
+        if begin == 0 and end > 0:
+            t_max = t_min + end
+            tr = tr.trim(t_min, t_max, nearest_sample=True)
+            self.low = tr.data[0]
+            self.high = tr.data[-1]
+        elif end == 0 and begin > 0:
+            t_max = t_min - begin
+            tr = tr.trim(t_max, t_min, nearest_sample=True)
+            self.low = tr.data[-1]
+            self.high = tr.data[0]
+        else:
+            raise NotImplementedError()
+        self.updateValue()
+        self.low_time = t_min
+        self.high_time = t_max
+        self.updatePeriod()
+        # XXX TODO "tw_bkp"-sanity check should be removed
+        tw_bkp = deepcopy(self.time_window)
+        self.updateTimeWindow()
+        if tw_bkp != self.time_window:
+            raise NotImplementedError()
+
+    def update(self):
         self.updateValue()
         self.updateTimeWindow()
+        self.updatePeriod()
 
     def updateValue(self):
         if self.low and self.high:
             self.generic_amplitude = self.high - self.low
         else:
             self.generic_amplitude = None
+
+    def updatePeriod(self):
+        if not (self.low_time and self.high_time):
+            return
+        period = abs(self.low_time - self.high_time)
+        if self.time_window.begin + self.time_window.end != period:
+            msg = "inconsistency in amplitude time handling!!!!"
+            raise Exception(msg)
+        self.period = period
 
     def updateTimeWindow(self):
         tw = self.time_window
@@ -185,6 +240,17 @@ class Amplitude(obspy.core.event.Amplitude, CommonEventHelper):
                 tw.end = 0.0
         else:
             tw.clear()
+
+    def get_p2p(self):
+        if self.low is None or self.high is None:
+            return None
+        return self.high - self.low
+
+    def get_timedelta(self):
+        tw = self.time_window
+        if self.low_time is None or self.high_time is None:
+            return None
+        return abs(self.low_time - self.high_time)
 
 
 local = locals()

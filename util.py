@@ -220,15 +220,15 @@ WIDGET_NAMES = ("qToolButton_clearAll", "qToolButton_clearOrigMag",
         "qPlainTextEdit_stderr")
 #Estimating the maximum/minimum in a sample-window around click
 MAG_PICKWINDOW = 10
-MAG_MARKER = {'marker': "+", 'edgewidth': 1.8, 'size': 20}
-AXVLINEWIDTH = 1.2
+MAG_MARKER = {'marker': (8, 2, 0), 'edgewidth': 1.8, 'size': 20}
+AXVLINEWIDTH = 1.5
 # dictionary for key-bindings.
 KEYS = {'setPick': "a", 'setPickError': "s", 'delPick': "q",
         'setMagMin': "a", 'setMagMax': "s", 'delMagMinMax': "q",
         'switchPhase': "control",
         'prevStream': "y", 'nextStream': "x", 'switchWheelZoomAxis': "shift",
         'setWeight': {'0': 0, '1': 1, '2': 2, '3': 3},
-        'setPol': {'u': "up", 'd': "down", '+': "poorup", '-': "poordown"},
+        'setPol': {'u': "positive", 'd': "negative"},
         'setOnset': {'i': "impulsive", 'e': "emergent"}}
 # XXX Qt:
 #KEYS = {'setPick': "Key_A", 'setPickError': "Key_S", 'delPick': "Key_Q",
@@ -250,9 +250,16 @@ POLARITY_2_FOCMEC = {'up': "U", 'poorup': "+", 'down': "D", 'poordown': "-",
                      'left': "L", 'right': "R", 'forward': "F", 'backward': "B"}
 
 # only strings involved, so shallow copy is fine
-POLARITY_CHARS = POLARITY_2_FOCMEC.copy()
-POLARITY_CHARS.update({None: "_"})
-ONSET_CHARS = {'impulsive': "I", 'emergent': "E", None: "_"}
+POLARITY_CHARS = {'positive': "+", 'negative': "-", 'undecidable': "?",
+                  None: "_"}
+ONSET_CHARS = {'impulsive': "I", 'emergent': "E", 'questionable': "?",
+               None: "_"}
+
+ONE_SIGMA = 68.3
+TWO_SIGMA = 95.4
+
+NOT_REIMPLEMENTED_MSG = ("Feature was not reimplemented after major "
+                         "change to QuakeML.")
 
 class QMplCanvas(QFigureCanvas):
     """
@@ -840,7 +847,6 @@ def readNLLocScatter(scat_filename, textviewStdErrImproved):
     floats per sample: x, y, z, pdf value) and converts X/Y Gauss-Krueger
     coordinates (zone 4, central meridian 12 deg) to Longitude/Latitude in
     WGS84 reference ellipsoid.
-    We do this using the Linux command line tool cs2cs.
     Messages on stderr are written to specified GUI textview.
     Returns an array of xy pairs.
     """
@@ -972,18 +978,16 @@ class SplitWriter():
                 obj.write(msg)
 
 
-# XXX TODO change from event input to list of arrivals
-def getArrivalForPick(event, pick):
+def getArrivalForPick(arrivals, pick):
     """
     searches first origin of event for an arrival that references the given
     pick and returns it (empty Arrival object otherwise).
     """
-    arrival = Arrival()
-    if event.origins:
-        for a in event.origins[0].arrivals:
-            if a.pick_id == pick.resource_id:
-                arrival = a
-                break
+    arrival = None
+    for a in arrivals:
+        if a.pick_id == pick.resource_id:
+            arrival = a
+            break
     return arrival
 
 
@@ -992,7 +996,7 @@ def getPickForArrival(picks, arrival):
     searches list of picks for a pick that matches the arrivals pick_id
     and returns it (empty Pick object otherwise).
     """
-    pick = Pick()
+    pick = None
     for p in picks:
         if arrival.pick_id == p.resource_id:
             pick = p
