@@ -361,27 +361,27 @@ class ObsPyck(QtGui.QMainWindow):
         #    twice
         if args:
             return
-        self.clearDictionaries()
+        self.clearEvent()
         self.updateAllItems()
         self.redraw()
 
     def on_qToolButton_clearOrigMag_clicked(self, *args):
         if args:
             return
-        self.clearOriginMagnitudeDictionaries()
+        self.clearOriginMagnitude()
         self.updateAllItems()
         self.redraw()
 
     def on_qToolButton_clearFocMec_clicked(self, *args):
         if args:
             return
-        self.clearFocmecDictionary()
+        self.clearFocmec()
 
     def on_qToolButton_doHyp2000_clicked(self, *args):
         if args:
             return
         #self.delAllItems()
-        self.clearOriginMagnitudeDictionaries()
+        self.clearOriginMagnitude()
         self.doHyp2000()
         self.loadHyp2000Data()
         self.calculateEpiHypoDists()
@@ -399,7 +399,7 @@ class ObsPyck(QtGui.QMainWindow):
         if args:
             return
         #self.delAllItems()
-        self.clearOriginMagnitudeDictionaries()
+        self.clearOriginMagnitude()
         self.doNLLoc()
         self.loadNLLocOutput()
         self.calculateEpiHypoDists()
@@ -419,7 +419,7 @@ class ObsPyck(QtGui.QMainWindow):
     def on_qToolButton_doFocMec_clicked(self, *args):
         if args:
             return
-        self.clearFocmecDictionary()
+        self.clearFocmec()
         self.doFocmec()
 
     def on_qToolButton_showMap_toggled(self):
@@ -532,7 +532,7 @@ class ObsPyck(QtGui.QMainWindow):
                                    self.seishubEventCount
         event = self.seishubEventList[self.seishubEventCurrent]
         resource_name = str(event.get('resource_name'))
-        self.clearDictionaries()
+        self.clearEvent()
         self.getEventFromSeisHub(resource_name)
         self.updateAllItems()
         self.redraw()
@@ -722,7 +722,7 @@ class ObsPyck(QtGui.QMainWindow):
         """
         if args:
             return
-        self.clearDictionaries()
+        self.clearEvent()
         self.updateAllItems()
         self._arpicker()
         self.updateAllItems()
@@ -3202,25 +3202,20 @@ class ObsPyck(QtGui.QMainWindow):
         msg += "\nResponse: %s %s" % (code, message)
         print msg
 
-    def clearDictionaries(self):
-        # XXX TODO refactor
-        print "Clearing previous data."
+    def clearEvent(self):
+        print "Clearing previous event data."
         self.catalog = Catalog()
         event = Event()
         event.set_creation_info(self.username)
         self.catalog.events = [event]
 
-    def clearOriginMagnitudeDictionaries(self):
-        # XXX TODO refactor
+    def clearOriginMagnitude(self):
         print "Clearing previous origin and magnitude data."
-        # we need to delete all station magnitude information from all dicts
         self.catalog[0].origins = [Origin()]
         self.catalog[0].magnitudes = []
-        # XXX TODO do we need to get rid of station magnitudes?
         self.catalog[0].station_magnitudes = []
 
-    def clearFocmecDictionary(self):
-        # XXX TODO refactor
+    def clearFocmec(self):
         print "Clearing previous focal mechanism data."
         self.catalog[0].focal_mechanisms = []
         self.focMechCurrent = None
