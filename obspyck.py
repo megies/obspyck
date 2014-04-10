@@ -618,6 +618,7 @@ class ObsPyck(QtGui.QMainWindow):
             self.on_qToolButton_updateEventList_clicked(event)
     
     def on_qCheckBox_sysop_toggled(self):
+        self.on_qLineEdit_sysopPassword_editingFinished()
         newstate = self.widgets.qCheckBox_sysop.isChecked()
         if not str(self.widgets.qLineEdit_sysopPassword.text()):
             self.widgets.qCheckBox_sysop.setChecked(False)
