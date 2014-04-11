@@ -393,10 +393,6 @@ class ObsPyck(QtGui.QMainWindow):
         self.redraw()
         self.widgets.qToolButton_showMap.setChecked(True)
 
-    def on_qToolButton_do3dloc_clicked(self, *args):
-        msg = "Not updated after massive QuakeML restructuring."
-        raise NotImplementedError(msg)
-
     def on_qToolButton_doNlloc_clicked(self, *args):
         if args:
             return
@@ -739,11 +735,15 @@ class ObsPyck(QtGui.QMainWindow):
         if self.widgets.qToolButton_filter.isChecked():
             self.updatePlot()
 
+    def on_qCheckBox_50Hz_toggled(self):
+        if self.widgets.qToolButton_filter.isChecked():
+            self.updatePlot()
+
     def on_qDoubleSpinBox_highpass_valueChanged(self, newvalue):
         widgets = self.widgets
         stats = self.streams[self.stPt][0].stats
         if not widgets.qToolButton_filter.isChecked() or \
-           str(widgets.qComboBox_filterType.currentText()) == "Lowpass":
+                str(widgets.qComboBox_filterType.currentText()) == "Lowpass":
             self.canv.setFocus() # XXX needed??
             return
         # if the filter flag is not set, we don't have to update the plot
@@ -757,6 +757,19 @@ class ObsPyck(QtGui.QMainWindow):
         if newvalue < minimum:
             err = "Warning: Lowpass frequency is not supported by length of trace!"
             print >> sys.stderr, err
+        self.updatePlot()
+        # XXX we could use this for the combobox too!
+        # reset focus to matplotlib figure
+        self.canv.setFocus() # XXX needed?? # XXX do we still need this focus grabbing with QT??? XXX XXX XXX XXX
+
+    def on_qDoubleSpinBox_corners_valueChanged(self, newvalue):
+        widgets = self.widgets
+        stats = self.streams[self.stPt][0].stats
+        if not widgets.qToolButton_filter.isChecked():
+            self.canv.setFocus() # XXX needed??
+            return
+        # if the filter flag is not set, we don't have to update the plot
+        # XXX if we have a lowpass, we dont need to update!! Not yet implemented!! XXX
         self.updatePlot()
         # XXX we could use this for the combobox too!
         # reset focus to matplotlib figure
@@ -809,6 +822,7 @@ class ObsPyck(QtGui.QMainWindow):
         state = self.widgets.qToolButton_spectrogram.isChecked()
         widgets_deactivate = ("qToolButton_filter", "qToolButton_overview",
                 "qComboBox_filterType", "qCheckBox_zerophase",
+                "qCheckBox_50Hz", "qDoubleSpinBox_corners",
                 "qLabel_highpass", "qLabel_lowpass", "qDoubleSpinBox_highpass",
                 "qDoubleSpinBox_lowpass", "qToolButton_rotateLQT",
                 "qToolButton_rotateZRT", "qToolButton_trigger")
@@ -854,7 +868,7 @@ class ObsPyck(QtGui.QMainWindow):
         w = self.widgets
         type = str(w.qComboBox_filterType.currentText()).lower()
         options = {}
-        options['corners'] = 1
+        options['corners'] = int(w.qDoubleSpinBox_corners.value())
         options['zerophase'] = w.qCheckBox_zerophase.isChecked()
         msg = ""
         if type in ("bandpass", "bandstop"):
@@ -877,6 +891,12 @@ class ObsPyck(QtGui.QMainWindow):
                 stream.taper(max_percentage=0.05, type='cosine')
             except:
                 stream.taper()
+            if w.qCheckBox_50Hz.isChecked():
+                for i_ in xrange(2):
+                    stream.filter("bandstop", freqmin=46, freqmax=54,
+                                  corners=2, zerophase=options['zerophase'])
+                msg2 = "50Hz Bandstop"
+                print msg2
             stream.filter(type, **options)
             print msg
         except:
@@ -1535,14 +1555,6 @@ class ObsPyck(QtGui.QMainWindow):
         self.updateStreamNumberLabel()
         self.updateStreamNameCombobox()
 
-    def load3dlocSyntheticPhases(self):
-        msg = "Not updated after massive QuakeML restructuring."
-        raise NotImplementedError(msg)
-
-    def do3dLoc(self):
-        msg = "Not updated after massive QuakeML restructuring."
-        raise NotImplementedError(msg)
-
     def doFocmec(self):
         prog_dict = PROGRAMS['focmec']
         files = prog_dict['files']
@@ -2085,7 +2097,6 @@ class ObsPyck(QtGui.QMainWindow):
 
     def loadHyp2000Data(self):
         files = PROGRAMS['hyp_2000']['files']
-        #self.load3dlocSyntheticPhases()
         lines = open(files['summary'], "rt").readlines()
         if lines == []:
             err = "Error: Hypo2000 output file (%s) does not exist!" % \
@@ -2235,10 +2246,6 @@ class ObsPyck(QtGui.QMainWindow):
             if dict['P'][1] is None and dict['S'][1] is None:
                 o.used_station_count -= 1
 
-    def load3dlocData(self):
-        msg = "Not updated after massive QuakeML restructuring."
-        raise NotImplementedError(msg)
-    
     def updateNetworkMag(self):
         print "updating network magnitude..."
         event = self.catalog[0]
@@ -3078,7 +3085,7 @@ class ObsPyck(QtGui.QMainWindow):
         extra = e.setdefault("extra", AttribDict())
         o = e.origins[0]
         event_id = str(e.resource_id).split("/")[-2] #XXX id of the file
-        public = self.widgets.qCheckBox_publishEvent.isChecked()
+        public = self.widgets.qCheckBox_sysop.isChecked()
 
         extra.evaluationMode = {'value': "manual", 'namespace': NAMESPACE}
         extra.public = {'value': public, 'namespace': NAMESPACE}
