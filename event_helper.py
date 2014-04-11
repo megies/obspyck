@@ -2,7 +2,7 @@ import re
 from copy import deepcopy
 import obspy.core.event
 from obspy.core.event import WaveformStreamID, ResourceIdentifier, \
-    TimeWindow, CreationInfo
+    TimeWindow, CreationInfo, Comment
 
 ID_ROOT = "smi:de.erdbeben-in-bayern"
 AGENCY_ID = "Erdbebendienst Bayern"
@@ -203,6 +203,7 @@ class Amplitude(obspy.core.event.Amplitude, CommonEventHelper):
         # XXX TODO "tw_bkp"-sanity check should be removed
         tw_bkp = deepcopy(self.time_window)
         self.updateTimeWindow()
+        self.set_general_info()
         if tw_bkp != self.time_window:
             raise NotImplementedError()
 
@@ -220,8 +221,8 @@ class Amplitude(obspy.core.event.Amplitude, CommonEventHelper):
     def updatePeriod(self):
         if not (self.low_time and self.high_time):
             return
-        period = abs(self.low_time - self.high_time)
-        if self.time_window.begin + self.time_window.end != period:
+        period = 2.0 * abs(self.low_time - self.high_time)
+        if 2.0 * (self.time_window.begin + self.time_window.end) != period:
             msg = "inconsistency in amplitude time handling!!!!"
             raise Exception(msg)
         self.period = period
@@ -251,6 +252,12 @@ class Amplitude(obspy.core.event.Amplitude, CommonEventHelper):
         if self.low_time is None or self.high_time is None:
             return None
         return abs(self.low_time - self.high_time)
+
+    def set_general_info(self):
+        self.method_id = "/".join(
+            [ID_ROOT, "amplitude_method", "obspyck", "2"])
+        self.unit = "dimensionless"
+        self.comments = [Comment(text="peak-to-peak amplitude in raw counts")]
 
 
 local = locals()

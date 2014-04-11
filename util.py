@@ -228,7 +228,8 @@ KEYS = {'setPick': "a", 'setPickError': "s", 'delPick': "q",
         'switchPhase': "control",
         'prevStream': "y", 'nextStream': "x", 'switchWheelZoomAxis': "shift",
         'setWeight': {'0': 0, '1': 1, '2': 2, '3': 3},
-        'setPol': {'u': "positive", 'd': "negative"},
+        'setPol': {'u': "positive", 'd': "negative", '-': "negative",
+                   '+': "positive"},
         'setOnset': {'i': "impulsive", 'e': "emergent"}}
 # XXX Qt:
 #KEYS = {'setPick': "Key_A", 'setPickError': "Key_S", 'delPick': "Key_Q",

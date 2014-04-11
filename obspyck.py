@@ -55,6 +55,7 @@ from obspy.core.event import CreationInfo, WaveformStreamID, \
     OriginUncertainty, OriginQuality, Comment, NodalPlane, NodalPlanes
 
 NAMESPACE = ("edb", "http://erdbeben-in-bayern.de/xmlns/0.1")
+NSMAP = {NAMESPACE[0]: NAMESPACE[1]}
 
 
 class ObsPyck(QtGui.QMainWindow):
@@ -132,9 +133,10 @@ class ObsPyck(QtGui.QMainWindow):
 
         # some SeisHub specific adjustments
         if 'SeisHub' in clients:
-            from obspy.seishub import Client
-            self.SClient = Client
+            from obspy.seishub import Client as SClient
         else:
+            global SClient
+            SClient = None
             msg = "Warning: SeisHub specific features will not work " + \
                   "(e.g. 'send Event')."
             print >> sys.stderr, msg
@@ -632,8 +634,8 @@ class ObsPyck(QtGui.QMainWindow):
     # the password
     def on_qLineEdit_sysopPassword_editingFinished(self):
         passwd = str(self.widgets.qLineEdit_sysopPassword.text())
-        tmp_client = self.SClient(base_url=self.server['BaseUrl'],
-                                  user="sysop", password=passwd)
+        tmp_client = SClient(base_url=self.server['BaseUrl'],
+                             user="sysop", password=passwd)
         if tmp_client.testAuth():
             self.clients['SeisHub-sysop'] = tmp_client
             self.widgets.qCheckBox_sysop.setChecked(True)
@@ -1332,12 +1334,7 @@ class ObsPyck(QtGui.QMainWindow):
                 return
             if phase_type == 'Mag':
                 ampl = self.getAmplitude(axes=ev.inaxes, setdefault=True, seed_string=tr.id)
-                ampl.method_id = "/".join(
-                    [ID_ROOT, "amplitude_method", "obspyck", "2"])
-                ampl.unit = "dimensionless"
-                comment = Comment(text="peak-to-peak amplitude in raw counts")
-                if not any([comment == c for c in ampl.comments]):
-                    ampl.comments.append(Comment(comment))
+                ampl.set_general_info()
                 # do the actual work
                 ydata = ev.inaxes.lines[0].get_ydata() #get the first line hoping that it is the seismogram!
                 cutoffSamples = xpos - MAG_PICKWINDOW #remember, how much samples there are before our small window! We have to add this number for our MagMinT estimation!
@@ -3096,7 +3093,7 @@ class ObsPyck(QtGui.QMainWindow):
 
         with NamedTemporaryFile() as tf:
             tmp = tf.name
-            cat.write(tmp, "QUAKEML")
+            cat.write(tmp, "QUAKEML", nsmap=NSMAP)
             with open(tmp) as fh:
                 xml = fh.read()
 
@@ -3108,6 +3105,7 @@ class ObsPyck(QtGui.QMainWindow):
         if event_id is None:
             event_id = UTCDateTime().strftime('%Y%m%d%H%M%S') 
         self.catalog[0].resource_id = "/".join([ID_ROOT, "event", event_id, "1"])
+        self.catalog.resource_id = "/".join([ID_ROOT, "catalog", event_id, "1"])
 
     def uploadSeisHub(self):
         """
@@ -3119,10 +3117,10 @@ class ObsPyck(QtGui.QMainWindow):
         # the correctness of the sysop password is tested when checking the
         # sysop box and entering the password immediately.
         if self.widgets.qCheckBox_sysop.isChecked():
-            userid = "sysop"
+            seishub_account = "sysop"
             client = self.clients['SeisHub-sysop']
         else:
-            userid = self.server['User']
+            seishub_account = "obspyck"
             client = self.clients['SeisHub']
 
         # if we did no location at all, and only picks would be saved the
@@ -3159,7 +3157,7 @@ class ObsPyck(QtGui.QMainWindow):
         # XXX TODO: Calculate real PGV?!
         code, message = client.event.putResource(name, xml_string=data,
                                                  headers=headers)
-        msg = "Account: %s" % userid
+        msg = "Seishub Account: %s" % seishub_account
         msg += "\nUser: %s" % self.username
         msg += "\nName: %s" % name
         msg += "\nServer: %s" % self.server['Server']
@@ -3179,10 +3177,10 @@ class ObsPyck(QtGui.QMainWindow):
         # the correctness of the sysop password is tested when checking the
         # sysop box and entering the password immediately.
         if self.widgets.qCheckBox_sysop.isChecked():
-            userid = "sysop"
+            seishub_account = "sysop"
             client = self.clients['SeisHub-sysop']
         else:
-            userid = self.server['User']
+            seishub_account = "obspyck"
             client = self.clients['SeisHub']
         
         headers = {}
@@ -3195,7 +3193,7 @@ class ObsPyck(QtGui.QMainWindow):
         code, message = client.event.deleteResource(str(resource_name),
                                                     headers=headers)
         msg = "Deleting Event!"
-        msg += "\nAccount: %s" % userid
+        msg += "\nSeishub Account: %s" % seishub_account
         msg += "\nUser: %s" % self.username
         msg += "\nName: %s" % resource_name
         msg += "\nServer: %s" % self.server['Server']
