@@ -1044,14 +1044,30 @@ class ObsPyck(QtGui.QMainWindow):
         draws the trace ids plotted as text into each axes.
         """
         # make a Stream with the traces that are plotted
+        x = 0.01
+        y = 0.95
+        kwargs = dict(va="top", ha="left", fontsize=18, family='monospace',
+                      zorder=10000)
         if self.widgets.qToolButton_overview.isChecked():
-            tmp_stream = Stream([st.select(component="Z")[0] for st in self.streams])
+            for ax, st in zip(self.axs, self.streams):
+                offset = len(st[0].id)
+                for i_, tr in enumerate(st):
+                    color = COMPONENT_COLORS.get(tr.id[-1], "gray")
+                    if i_ == 0:
+                        label = tr.id
+                    else:
+                        cha = tr.stats.channel
+                        if not cha:
+                            cha = "???"
+                        label = " " * (offset + 1) + cha
+                        offset = len(label)
+                    ax.text(x, y, label, color=color, transform=ax.transAxes,
+                            **kwargs)
         else:
             tmp_stream = self.streams[self.stPt]
-        for ax, tr in zip(self.axs, tmp_stream):
-            ax.text(0.01, 0.95, tr.id, va="top", ha="left", fontsize=18,
-                    family='monospace', color="blue", zorder=10000,
-                    transform=ax.transAxes)
+            for ax, tr in zip(self.axs, tmp_stream):
+                ax.text(x, y, tr.id, color="k", transform=ax.transAxes,
+                        **kwargs)
 
     def updateIds(self, textcolor):
         """
@@ -2489,6 +2505,7 @@ class ObsPyck(QtGui.QMainWindow):
             del self.axWadati
 
     def drawStreamOverview(self):
+        event = self.catalog[0]
         stNum = len(self.streams)
         fig = self.fig
         axs = []
@@ -2498,47 +2515,76 @@ class ObsPyck(QtGui.QMainWindow):
         trans = []
         self.trans = trans
         t = []
+        alphas = {'Z': 1.0, 'N': 0.4, 'E': 0.4}
         for i, st in enumerate(self.streams):
-            tr = st.select(component="Z")[0]
-            # make sure that the relative x-axis times start with 0 at the time
-            # specified as start time on command line
-            starttime_relative = self.time_abs2rel(tr.stats.starttime)
-            sampletimes = np.arange(starttime_relative,
-                    starttime_relative + (tr.stats.delta * tr.stats.npts),
-                    tr.stats.delta)
-            # sometimes our arange is one item too long (why??), so we just cut
-            # off the last item if this is the case
-            if len(sampletimes) == tr.stats.npts + 1:
-                sampletimes = sampletimes[:-1]
-            t.append(sampletimes)
-            if i == 0:
-                ax = fig.add_subplot(stNum, 1, i+1)
-            else:
-                ax = fig.add_subplot(stNum, 1, i+1, sharex=axs[0], sharey=axs[0])
-                ax.xaxis.set_ticks_position("top")
-            axs.append(ax)
-            trans.append(matplotlib.transforms.blended_transform_factory(ax.transData, ax.transAxes))
-            ax.xaxis.set_major_formatter(FuncFormatter(formatXTicklabels))
-            # we have to rotate first, because we have to copy the whole stream..
-            # ZRT rotation is not regarded because it doesn't change the Z component..
-            if self.widgets.qToolButton_rotateLQT.isChecked():
-                d = self.dicts[i]
-                tmp_st = self.streams[i].copy()
-                self._rotateLQT(tmp_st, self.origin)
-                tr = tmp_st.select(component="Z")[0]
-            else:
-                tr = tr.copy()
-            # rotation needs to be done first!
-            if self.widgets.qToolButton_filter.isChecked():
-                self._filter(tr)
-            if self.widgets.qToolButton_trigger.isChecked():
-                self._trigger(tr)
-            # normalize with overall sensitivity and convert to nm/s
-            # if not explicitly deactivated on command line
-            if not self.options.nonormalization and not self.options.nometadata:
-                plts.append(ax.plot(sampletimes, tr.data * 1e9 / tr.stats.paz.sensitivity, color='k', zorder=1000)[0])
-            else:
-                plts.append(ax.plot(sampletimes, tr.data, color='k', zorder=1000)[0])
+            for j, tr in enumerate(st):
+                net, sta, loc, cha = tr.id.split(".")
+                color = COMPONENT_COLORS.get(cha[-1], "gray")
+                alpha = alphas.get(cha[-1], 0.4)
+                # make sure that the relative x-axis times start with 0 at the time
+                # specified as start time on command line
+                starttime_relative = self.time_abs2rel(tr.stats.starttime)
+                sampletimes = np.arange(starttime_relative,
+                        starttime_relative + (tr.stats.delta * tr.stats.npts),
+                        tr.stats.delta)
+                # sometimes our arange is one item too long (why??), so we just cut
+                # off the last item if this is the case
+                if len(sampletimes) == tr.stats.npts + 1:
+                    sampletimes = sampletimes[:-1]
+                t.append(sampletimes)
+                if i == 0:
+                    ax = fig.add_subplot(stNum, 1, i+1)
+                else:
+                    ax = fig.add_subplot(stNum, 1, i+1, sharex=axs[0], sharey=axs[0])
+                    ax.xaxis.set_ticks_position("top")
+                if j == 0:
+                    axs.append(ax)
+                trans.append(matplotlib.transforms.blended_transform_factory(ax.transData, ax.transAxes))
+                ax.xaxis.set_major_formatter(FuncFormatter(formatXTicklabels))
+                # we have to rotate first, because we have to copy the whole stream..
+                # ZRT rotation is not regarded because it doesn't change the Z component..
+                if self.widgets.qToolButton_rotateLQT.isChecked():
+                    # XXX TODO: reimplement
+                    raise NotImplementedError("not reimplemented yet")
+                    d = self.dicts[i]
+                    tmp_st = self.streams[i].copy()
+                    self._rotateLQT(tmp_st, self.origin)
+                    tr = tmp_st.select(component="Z")[0]
+                else:
+                    tr = tr.copy()
+                # rotation needs to be done first!
+                if self.widgets.qToolButton_filter.isChecked():
+                    self._filter(tr)
+                if self.widgets.qToolButton_trigger.isChecked():
+                    self._trigger(tr)
+                # normalize with overall sensitivity and convert to nm/s
+                # if not explicitly deactivated on command line
+                if not self.options.nonormalization and not self.options.nometadata:
+                    scaling = 1e9 / tr.stats.paz.sensitivity
+                    data_ = tr.data * scaling
+                else:
+                    scaling = 1.0
+                    data_ = tr.data
+                plts.append(ax.plot(sampletimes, data_, color=color, alpha=alpha,
+                                    zorder=1000)[0])
+            # plot picks and arrivals
+            picks = self.getPicks(network=net, station=sta, location=loc)
+            try:
+                arrivals = event.origins[0].arrivals
+            except:
+                arrivals = []
+            for pick in picks:
+                if not pick.time:
+                    continue
+                arrival = getArrivalForPick(arrivals, pick)
+                self.drawPick(ax, pick, main_axes=True)
+                self.drawPickLabel(ax, pick)
+                if arrival is not None:
+                    self.drawArrival(ax, arrival, pick, main_axes=True)
+            # plot amplitudes
+            amplitudes = self.getAmplitudes(network=net, station=sta, location=loc)
+            for amplitude in amplitudes:
+                self.drawAmplitude(ax, amplitude, scaling=scaling)
         self.drawIds()
         axs[-1].xaxis.set_ticks_position("both")
         label = self.T0.isoformat().replace("T", "  ")
@@ -3337,7 +3383,7 @@ class ObsPyck(QtGui.QMainWindow):
         if main_axes:
             ax.axvspan(time, reltime, color=color, alpha=0.2)
 
-    def drawAmplitude(self, ax, amplitude):
+    def drawAmplitude(self, ax, amplitude, scaling=None):
         x, y = [], []
         if amplitude.low is not None:
             x.append(self.time_abs2rel(amplitude.low_time))
@@ -3345,6 +3391,8 @@ class ObsPyck(QtGui.QMainWindow):
         if amplitude.high is not None:
             x.append(self.time_abs2rel(amplitude.high_time))
             y.append(amplitude.high)
+        if scaling is not None:
+            y = [y_ * scaling for y_ in y]
         if x:
             ax.plot(x, y, linestyle="", markersize=MAG_MARKER['size'],
                     markeredgewidth=MAG_MARKER['edgewidth'],
