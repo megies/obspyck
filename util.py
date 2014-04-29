@@ -162,8 +162,14 @@ COMMANDLINE_OPTIONS = (
         (("--arclink-timeout",), {'dest': "arclink_timeout", 'type': "int",
                 'default': 20, 'help': "Timeout for arclink server"}),
         (("--ignore-chksum",), {'action': "store_false", 'dest': "verify_chksum",
-                'default': True,
-                'help': "Deactivate chksum check for local GSE2 files"}),
+                                'default': True,
+                                'help': "Deactivate chksum check for local GSE2 files"}),
+        (("--verbosity",), {'dest': "verbosity",
+                           'default': "normal",
+                           'help': ("Control verbosity of info window. "
+                                    "Possible values: "
+                                    "'normal' (default), 'verbose', "
+                                    "'debug', 'quiet'")}),
         (("--filter",), {'action': "store_true", 'dest': "filter",
                 'default': False,
                 'help': "Switch filter button on at startup."}))
@@ -257,6 +263,8 @@ POLARITY_CHARS = {'positive': "+", 'negative': "-", 'undecidable': "?",
                   None: "_"}
 ONSET_CHARS = {'impulsive': "I", 'emergent': "E", 'questionable': "?",
                None: "_"}
+LOGLEVELS = {'normal': "CRITICAL", 'verbose': "INFO", 'debug': "DEBUG",
+             'quiet': 100}
 
 ONE_SIGMA = 68.3
 TWO_SIGMA = 95.4
@@ -951,7 +959,11 @@ class SplitWriter():
             if isinstance(obj, PyQt4.QtGui.QPlainTextEdit):
                 if msg == '\n':
                     return
-                obj.appendPlainText(msg)
+                if msg.endswith('\n'):
+                    msg_ = msg[:-1]
+                else:
+                    msg_ = msg
+                obj.appendPlainText(msg_)
             else:
                 obj.write(msg)
 
