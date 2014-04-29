@@ -2543,9 +2543,11 @@ class ObsPyck(QtGui.QMainWindow):
                 else:
                     ax = fig.add_subplot(stNum, 1, i+1, sharex=axs[0], sharey=axs[0])
                     ax.xaxis.set_ticks_position("top")
+                # only add axes for first trace in each stream to avoid
+                # duplicates
                 if j == 0:
                     axs.append(ax)
-                trans.append(matplotlib.transforms.blended_transform_factory(ax.transData, ax.transAxes))
+                    trans.append(matplotlib.transforms.blended_transform_factory(ax.transData, ax.transAxes))
                 ax.xaxis.set_major_formatter(FuncFormatter(formatXTicklabels))
                 # we have to rotate first, because we have to copy the whole stream..
                 # ZRT rotation is not regarded because it doesn't change the Z component..
