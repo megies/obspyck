@@ -54,8 +54,8 @@ from event_helper import Catalog, Event, Origin, Pick, Arrival, \
 from obspy.core.event import CreationInfo, WaveformStreamID, \
     OriginUncertainty, OriginQuality, Comment, NodalPlane, NodalPlanes
 
-NAMESPACE = ("edb", "http://erdbeben-in-bayern.de/xmlns/0.1")
-NSMAP = {NAMESPACE[0]: NAMESPACE[1]}
+NAMESPACE = "http://erdbeben-in-bayern.de/xmlns/0.1"
+NSMAP = {"edb": NAMESPACE}
 
 
 class ObsPyck(QtGui.QMainWindow):
@@ -178,6 +178,7 @@ class ObsPyck(QtGui.QMainWindow):
         event = Event()
         event.set_creation_info(self.username)
         self.catalog.events = [event]
+        self.setXMLEventID()
         # indicates which of the available focal mechanisms is selected
         self.focMechCurrent = None 
         # indicates how many focal mechanisms are available from focmec
@@ -384,6 +385,7 @@ class ObsPyck(QtGui.QMainWindow):
             return
         #self.delAllItems()
         self.clearOriginMagnitude()
+        self.setXMLEventID()
         self.doHyp2000()
         self.loadHyp2000Data()
         self.calculateEpiHypoDists()
@@ -398,6 +400,7 @@ class ObsPyck(QtGui.QMainWindow):
             return
         #self.delAllItems()
         self.clearOriginMagnitude()
+        self.setXMLEventID()
         self.doNLLoc()
         self.loadNLLocOutput()
         self.calculateEpiHypoDists()
@@ -419,6 +422,7 @@ class ObsPyck(QtGui.QMainWindow):
             return
         self.clearFocmec()
         self.doFocmec()
+        self.setXMLEventID()
 
     def on_qToolButton_showMap_toggled(self):
         state = self.widgets.qToolButton_showMap.isChecked()
@@ -544,26 +548,31 @@ class ObsPyck(QtGui.QMainWindow):
         if args:
             return
         # if sysop event and information missing show error and abort upload
-        if self.widgets.qCheckBox_sysop.isChecked():
-            if not self.checkForCompleteEvent():
-                self.popupBadEventError()
+        if self.widgets.qCheckBox_public.isChecked():
+            if not self.widgets.qCheckBox_sysop.isChecked():
+                err = "Error: Enter password for \"sysop\"-account first."
+                print >> sys.stderr, err
                 return
-        self.setXMLEventID()
+            ok, msg = self.checkForCompleteEvent()
+            if not ok:
+                self.popupBadEventError(msg)
+                return
         self.uploadSeisHub()
         self.on_qToolButton_updateEventList_clicked()
         self.checkForSysopEventDuplicates(self.T0, self.T1)
-
-    def on_qCheckBox_publishEvent_toggled(self):
-        newstate = self.widgets.qCheckBox_publishEvent.isChecked()
-        print "Setting \"public\" flag of event to: %s" % newstate
 
     def on_qToolButton_replaceEvent_clicked(self, *args):
         if args:
             return
         # if sysop event and information missing show error and abort upload
-        if self.widgets.qCheckBox_sysop.isChecked():
-            if not self.checkForCompleteEvent():
-                self.popupBadEventError()
+        if self.widgets.qCheckBox_public.isChecked():
+            if not self.widgets.qCheckBox_sysop.isChecked():
+                err = "Error: Enter password for \"sysop\"-account first."
+                print >> sys.stderr, err
+                return
+            ok, msg = self.checkForCompleteEvent()
+            if not ok:
+                self.popupBadEventError(msg)
                 return
         event = self.seishubEventList[self.seishubEventCurrent]
         resource_name = event.get('resource_name')
@@ -573,7 +582,7 @@ class ObsPyck(QtGui.QMainWindow):
             return
         event_id = resource_name.split("_")[1]
         try:
-            user = ev.creation_info.author
+            user = event.creation_info.author
         except:
             user = None
         qMessageBox = QtGui.QMessageBox()
@@ -598,10 +607,16 @@ class ObsPyck(QtGui.QMainWindow):
     def on_qToolButton_deleteEvent_clicked(self, *args):
         if args:
             return
+        # if sysop event and information missing show error and abort upload
+        if self.widgets.qCheckBox_public.isChecked():
+            if not self.widgets.qCheckBox_sysop.isChecked():
+                err = "Error: Enter password for \"sysop\"-account first."
+                print >> sys.stderr, err
+                return
         event = self.seishubEventList[self.seishubEventCurrent]
         resource_name = event.get('resource_name')
         try:
-            user = ev.creation_info.author
+            user = event.creation_info.author
         except:
             user = None
         qMessageBox = QtGui.QMessageBox()
@@ -1254,7 +1269,18 @@ class ObsPyck(QtGui.QMainWindow):
         # For some key events (picking events) we need information on the x/y
         # position of the cursor:
         if ev.key in [keys['setPick'], keys['setPickError'],
-                      keys['setMagMin'], keys['setMagMax']]:
+                      keys['setMagMin'], keys['setMagMax'],
+                      keys['setWeight'], keys['setPol'], keys['setOnset'],
+                      keys['delPick'], keys['delMagMinMax']]:
+            # some keyPress events only make sense inside our matplotlib axes
+            if ev.inaxes not in self.axs:
+                return
+            self.setXMLEventID()
+
+        if ev.key in [keys['setPick'], keys['setPickError'],
+                      keys['setMagMin'], keys['setMagMax'],
+                      keys['setWeight'], keys['setPol'], keys['setOnset'],
+                      keys['delPick'], keys['delMagMinMax']]:
             # some keyPress events only make sense inside our matplotlib axes
             if ev.inaxes not in self.axs:
                 return
@@ -1763,7 +1789,6 @@ class ObsPyck(QtGui.QMainWindow):
         """
         prog_dict = PROGRAMS['hyp_2000']
         files = prog_dict['files']
-        #self.setXMLEventID()
         precall = prog_dict['PreCall']
         precall(prog_dict)
 
@@ -1800,7 +1825,6 @@ class ObsPyck(QtGui.QMainWindow):
         controlfilename = "locate_%s.nlloc" % \
                           str(self.widgets.qComboBox_nllocModel.currentText())
 
-        #self.setXMLEventID()
         precall = prog_dict['PreCall']
         precall(prog_dict)
 
@@ -3117,16 +3141,14 @@ class ObsPyck(QtGui.QMainWindow):
             nlloc_str += phase_str + "\n"
         return nlloc_str
 
-    def dicts2XML(self):
+    def get_QUAKEML_string(self):
         """
         Returns information of all dictionaries as xml file (type string)
         """
         cat = self.catalog
         e = cat[0]
         extra = e.setdefault("extra", AttribDict())
-        o = e.origins[0]
-        event_id = str(e.resource_id).split("/")[-2] #XXX id of the file
-        public = self.widgets.qCheckBox_sysop.isChecked()
+        public = self.widgets.qCheckBox_public.isChecked()
 
         extra.evaluationMode = {'value': "manual", 'namespace': NAMESPACE}
         extra.public = {'value': public, 'namespace': NAMESPACE}
@@ -3149,23 +3171,23 @@ class ObsPyck(QtGui.QMainWindow):
         return xml
     
     def setXMLEventID(self, event_id=None):
-        #XXX is problematic if two people make a location at the same second!
+        #XXX TODO: is problematic if two people create an event at exactly the same second!
         # then one event is overwritten with the other during submission.
         if event_id is None:
-            event_id = UTCDateTime().strftime('%Y%m%d%H%M%S') 
-        self.catalog[0].resource_id = "/".join([ID_ROOT, "event", event_id, "1"])
-        self.catalog.resource_id = "/".join([ID_ROOT, "catalog", event_id, "1"])
+            event_id = UTCDateTime().strftime('%Y%m%d%H%M%S')
+        self.catalog[0].resource_id = "/".join([ID_ROOT, "event", event_id])
+        self.catalog.resource_id = "/".join([ID_ROOT, "catalog", event_id])
 
     def uploadSeisHub(self):
         """
-        Upload xml file to SeisHub
+        Upload quakeml file to SeisHub
         """
         # check, if the event should be uploaded as sysop. in this case we use
         # the sysop client instance for the upload (and also set
         # user_account in the xml to "sysop").
         # the correctness of the sysop password is tested when checking the
         # sysop box and entering the password immediately.
-        if self.widgets.qCheckBox_sysop.isChecked():
+        if self.widgets.qCheckBox_public.isChecked():
             seishub_account = "sysop"
             client = self.clients['SeisHub-sysop']
         else:
@@ -3178,8 +3200,7 @@ class ObsPyck(QtGui.QMainWindow):
             err = "Error: Event resource_id not set."
             print >> sys.stderr, err
             return
-            #self.setXMLEventID()
-        name = str(self.catalog[0].resource_id).split("/")[-2] #XXX id of the file
+        name = str(self.catalog[0].resource_id).split("/")[-1] #XXX id of the file
         # create XML and also save in temporary directory for inspection purposes
         name = "obspyck_" + name
         if not name.endswith(".xml"):
@@ -3187,7 +3208,7 @@ class ObsPyck(QtGui.QMainWindow):
         tmpfile = os.path.join(self.tmp_dir, name)
         tmpfile2 = os.path.join(tempfile.gettempdir(), name)
         print "creating xml..."
-        data = self.dicts2XML()
+        data = self.get_QUAKEML_string()
         msg = "writing xml as %s and %s (for debugging purposes and in " + \
               "case of upload errors)"
         print msg % (tmpfile, tmpfile2)
@@ -3225,7 +3246,7 @@ class ObsPyck(QtGui.QMainWindow):
         # easily be resubmitted using the http interface).
         # the correctness of the sysop password is tested when checking the
         # sysop box and entering the password immediately.
-        if self.widgets.qCheckBox_sysop.isChecked():
+        if self.widgets.qCheckBox_public.isChecked():
             seishub_account = "sysop"
             client = self.clients['SeisHub-sysop']
         else:
@@ -3617,6 +3638,7 @@ class ObsPyck(QtGui.QMainWindow):
 
         user = ev.creation_info.author
         public = ev.extra['public']['value']
+        self.widgets.qCheckBox_public.setChecked(public)
 
         # parse quakeML event type and select right one or add a custom one
         index = 0
@@ -3691,7 +3713,7 @@ class ObsPyck(QtGui.QMainWindow):
 
     def checkForSysopEventDuplicates(self, starttime, endtime):
         """
-        checks if there is more than one sysop event with picks in between
+        checks if there is more than one public event with picks in between
         starttime and endtime. if that is the case, a warning is issued.
         the user should then resolve this conflict by deleting events until
         only one instance remains.
@@ -3711,7 +3733,7 @@ class ObsPyck(QtGui.QMainWindow):
         # if there is a possible duplicate, pop up a warning window and print a
         # warning in the GUI error textview:
         if len(sysop_events) > 1:
-            err = "ObsPyck found more than one sysop event with picks in " + \
+            err = "ObsPyck found more than one public event with picks in " + \
                   "the current time window! Please check if these are " + \
                   "duplicate events and delete old resources."
             errlist = "\n".join(sysop_events)
@@ -3720,7 +3742,7 @@ class ObsPyck(QtGui.QMainWindow):
             qMessageBox = QtGui.QMessageBox()
             qMessageBox.setWindowIcon(QtGui.QIcon(QtGui.QPixmap("obspyck.gif")))
             qMessageBox.setIcon(QtGui.QMessageBox.Critical)
-            qMessageBox.setWindowTitle("Possible Duplicate SysOp Event!")
+            qMessageBox.setWindowTitle("Possible Duplicate Public Event!")
             qMessageBox.setText(err)
             qMessageBox.setInformativeText(errlist)
             qMessageBox.setStandardButtons(QtGui.QMessageBox.Ok)
@@ -3738,33 +3760,35 @@ class ObsPyck(QtGui.QMainWindow):
         """
         # XXX TODO not checking for used-P and used-S-count
         # XXX causes problems for parsing in website?
+        event = self.catalog[0]
         try:
-            o = self.catalog[0].origin
-            assert(o.latitude is not None)
-            assert(o.longitude is not None)
-            assert(o.depth is not None)
-            assert(o.time is not None)
-            m = self.catalog[0].magnitude
-            assert(m.mag is not None)
-        except:
-            return False
-        return True
+            assert(len(event.origins) > 0), "event has no origin"
+            o = event.origins[0]
+            assert(o.latitude is not None), "origin has no latitude"
+            assert(o.longitude is not None), "origin has no longitude"
+            assert(o.depth is not None), "origin has no depth"
+            assert(o.time is not None), "origin has no origin time"
+            assert(len(event.magnitudes) > 0), "event has no magnitude"
+            m = self.catalog[0].magnitudes[0]
+            assert(m.mag is not None), "magnitude has no magnitude value"
+        except Exception as e:
+            return False, str(e)
+        return True, None
 
-    def popupBadEventError(self):
+    def popupBadEventError(self, msg):
         """
         pop up an error window indicating that event information is missing
         """
         # XXX TODO could show more detailed message, e.g. whats's missing
         # or resource name or link to resource in seihub.
-        err = ("The public event to submit misses some mandatory information "
-               "(Origin/Magnitude).")
+        err = ("The public event to submit misses some mandatory information:"
+               " %s." % msg)
         print >> sys.stderr, err
         qMessageBox = QtGui.QMessageBox()
         qMessageBox.setWindowIcon(QtGui.QIcon(QtGui.QPixmap("obspyck.gif")))
         qMessageBox.setIcon(QtGui.QMessageBox.Critical)
         qMessageBox.setWindowTitle("Public Event with Missing Information!")
         qMessageBox.setText(err)
-        qMessageBox.setInformativeText(err)
         qMessageBox.setStandardButtons(QtGui.QMessageBox.Abort)
         qMessageBox.exec_()
 
