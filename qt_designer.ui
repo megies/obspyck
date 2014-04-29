@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1024</width>
+    <width>1577</width>
     <height>778</height>
    </rect>
   </property>
@@ -237,11 +237,6 @@
                <item>
                 <property name="text">
                  <string>UH</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>KW</string>
                 </property>
                </item>
               </widget>
@@ -1528,7 +1523,7 @@ p, l  i { white-space: pre-wrap; }
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1024</width>
+     <width>1577</width>
      <height>25</height>
     </rect>
    </property>

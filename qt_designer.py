@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'qt_designer.ui'
 #
-# Created: Fri Apr 11 15:31:04 2014
+# Created: Tue Apr 29 13:50:42 2014
 #      by: PyQt4 UI code generator 4.9.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -17,7 +17,7 @@ except AttributeError:
 class Ui_qMainWindow_obsPyck(object):
     def setupUi(self, qMainWindow_obsPyck):
         qMainWindow_obsPyck.setObjectName(_fromUtf8("qMainWindow_obsPyck"))
-        qMainWindow_obsPyck.resize(1024, 778)
+        qMainWindow_obsPyck.resize(1577, 778)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -141,7 +141,6 @@ class Ui_qMainWindow_obsPyck(object):
         self.qComboBox_nllocModel.addItem(_fromUtf8(""))
         self.qComboBox_nllocModel.addItem(_fromUtf8(""))
         self.qComboBox_nllocModel.addItem(_fromUtf8(""))
-        self.qComboBox_nllocModel.addItem(_fromUtf8(""))
         self.horizontalLayout_3.addWidget(self.qComboBox_nllocModel)
         self.leftVerticalLayout.addLayout(self.horizontalLayout_3)
         self.qToolButton_doFocMec = QtGui.QToolButton(self.layoutWidgetxx)
@@ -244,13 +243,17 @@ class Ui_qMainWindow_obsPyck(object):
         self.horizontalLayout_4 = QtGui.QHBoxLayout()
         self.horizontalLayout_4.setSizeConstraint(QtGui.QLayout.SetMinimumSize)
         self.horizontalLayout_4.setObjectName(_fromUtf8("horizontalLayout_4"))
-        self.qCheckBox_sysop = QtGui.QCheckBox(self.layoutWidgetxx)
+        self.qCheckBox_public = QtGui.QCheckBox(self.layoutWidgetxx)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.qCheckBox_sysop.sizePolicy().hasHeightForWidth())
-        self.qCheckBox_sysop.setSizePolicy(sizePolicy)
-        self.qCheckBox_sysop.setFocusPolicy(QtCore.Qt.NoFocus)
+        sizePolicy.setHeightForWidth(self.qCheckBox_public.sizePolicy().hasHeightForWidth())
+        self.qCheckBox_public.setSizePolicy(sizePolicy)
+        self.qCheckBox_public.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.qCheckBox_public.setObjectName(_fromUtf8("qCheckBox_public"))
+        self.horizontalLayout_4.addWidget(self.qCheckBox_public)
+        self.qCheckBox_sysop = QtGui.QCheckBox(self.layoutWidgetxx)
+        self.qCheckBox_sysop.setText(_fromUtf8(""))
         self.qCheckBox_sysop.setObjectName(_fromUtf8("qCheckBox_sysop"))
         self.horizontalLayout_4.addWidget(self.qCheckBox_sysop)
         self.qLineEdit_sysopPassword = QtGui.QLineEdit(self.layoutWidgetxx)
@@ -724,7 +727,7 @@ class Ui_qMainWindow_obsPyck(object):
         self.verticalLayout_4.addLayout(self.verticalLayout)
         qMainWindow_obsPyck.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(qMainWindow_obsPyck)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1024, 25))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1577, 25))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         qMainWindow_obsPyck.setMenuBar(self.menubar)
         self.statusbar = QtGui.QStatusBar(qMainWindow_obsPyck)
@@ -751,7 +754,6 @@ class Ui_qMainWindow_obsPyck(object):
         self.qComboBox_nllocModel.setItemText(0, QtGui.QApplication.translate("qMainWindow_obsPyck", "BY", None, QtGui.QApplication.UnicodeUTF8))
         self.qComboBox_nllocModel.setItemText(1, QtGui.QApplication.translate("qMainWindow_obsPyck", "RH", None, QtGui.QApplication.UnicodeUTF8))
         self.qComboBox_nllocModel.setItemText(2, QtGui.QApplication.translate("qMainWindow_obsPyck", "UH", None, QtGui.QApplication.UnicodeUTF8))
-        self.qComboBox_nllocModel.setItemText(3, QtGui.QApplication.translate("qMainWindow_obsPyck", "KW", None, QtGui.QApplication.UnicodeUTF8))
         self.qToolButton_doFocMec.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "do focmec", None, QtGui.QApplication.UnicodeUTF8))
         self.qToolButton_showMap.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "show Map", None, QtGui.QApplication.UnicodeUTF8))
         self.qToolButton_showFocMec.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "show FocMec", None, QtGui.QApplication.UnicodeUTF8))
@@ -762,7 +764,7 @@ class Ui_qMainWindow_obsPyck(object):
         self.qToolButton_sendNewEvent.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "send New Event", None, QtGui.QApplication.UnicodeUTF8))
         self.qToolButton_replaceEvent.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "replace Event", None, QtGui.QApplication.UnicodeUTF8))
         self.qToolButton_deleteEvent.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "delete Event", None, QtGui.QApplication.UnicodeUTF8))
-        self.qCheckBox_sysop.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "public", None, QtGui.QApplication.UnicodeUTF8))
+        self.qCheckBox_public.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "public", None, QtGui.QApplication.UnicodeUTF8))
         self.qComboBox_eventType.setItemText(0, QtGui.QApplication.translate("qMainWindow_obsPyck", "<event type>", None, QtGui.QApplication.UnicodeUTF8))
         self.qComboBox_eventType.setItemText(1, QtGui.QApplication.translate("qMainWindow_obsPyck", "earthquake", None, QtGui.QApplication.UnicodeUTF8))
         self.qComboBox_eventType.setItemText(2, QtGui.QApplication.translate("qMainWindow_obsPyck", "induced earthquake", None, QtGui.QApplication.UnicodeUTF8))

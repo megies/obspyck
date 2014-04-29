@@ -389,8 +389,7 @@ class ObsPyck(QtGui.QMainWindow):
         self.doHyp2000()
         self.loadHyp2000Data()
         self.calculateEpiHypoDists()
-        self.calculateStationMagnitudes()
-        self.updateNetworkMag()
+        self.updateMagnitude()
         self.drawAllItems()
         self.redraw()
         self.widgets.qToolButton_showMap.setChecked(True)
@@ -404,18 +403,10 @@ class ObsPyck(QtGui.QMainWindow):
         self.doNLLoc()
         self.loadNLLocOutput()
         self.calculateEpiHypoDists()
-        self.calculateStationMagnitudes()
-        self.updateNetworkMag()
+        self.updateMagnitude()
         self.drawAllItems()
         self.redraw()
         self.widgets.qToolButton_showMap.setChecked(True)
-
-    def on_qToolButton_calcMag_clicked(self, *args):
-        if args:
-            return
-        self.calculateEpiHypoDists()
-        self.calculateStationMagnitudes()
-        self.updateNetworkMag()
 
     def on_qToolButton_doFocMec_clicked(self, *args):
         if args:
@@ -631,7 +622,7 @@ class ObsPyck(QtGui.QMainWindow):
         if qMessageBox.exec_() == QtGui.QMessageBox.Ok:
             self.deleteEventInSeisHub(resource_name)
             self.on_qToolButton_updateEventList_clicked()
-    
+
     def on_qCheckBox_sysop_toggled(self):
         self.on_qLineEdit_sysopPassword_editingFinished()
         newstate = self.widgets.qCheckBox_sysop.isChecked()
@@ -1418,6 +1409,7 @@ class ObsPyck(QtGui.QMainWindow):
                     ampl.setLow(tmp_magtime, val)
                 elif ev.key == keys['setMagMax']:
                     ampl.setHigh(tmp_magtime, val)
+                self.updateMagnitude()
                 self.updateAllAxes()
                 self.redraw()
                 return
@@ -1429,6 +1421,7 @@ class ObsPyck(QtGui.QMainWindow):
             if phase_type == 'Mag':
                 if amplitude is not None:
                     self.delAmplitude(amplitude)
+                    self.updateMagnitude()
                     self.updateAllAxes()
                     self.redraw()
                 return
@@ -2291,6 +2284,15 @@ class ObsPyck(QtGui.QMainWindow):
         for dict in self.dicts:
             if dict['P'][1] is None and dict['S'][1] is None:
                 o.used_station_count -= 1
+
+    def updateMagnitude(self):
+        if self.catalog[0].origins:
+            print "updating magnitude info..."
+            self.calculateStationMagnitudes()
+            self.updateNetworkMag()
+            self.setXMLEventID()
+        else:
+            print "can not update magnitude (no origin)..."
 
     def updateNetworkMag(self):
         print "updating network magnitude..."
