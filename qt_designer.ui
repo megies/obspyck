@@ -1175,7 +1175,7 @@ p, l  i { white-space: pre-wrap; }
                     </widget>
                    </item>
                    <item>
-                    <widget class="QDoubleSpinBox" name="qDoubleSpinBox_lowpass">
+                    <widget class="QDoubleSpinBox" name="qDoubleSpinBox_highpass">
                      <property name="focusPolicy">
                       <enum>Qt::NoFocus</enum>
                      </property>
@@ -1195,7 +1195,7 @@ p, l  i { white-space: pre-wrap; }
                     </widget>
                    </item>
                    <item>
-                    <widget class="QDoubleSpinBox" name="qDoubleSpinBox_highpass">
+                    <widget class="QDoubleSpinBox" name="qDoubleSpinBox_lowpass">
                      <property name="focusPolicy">
                       <enum>Qt::NoFocus</enum>
                      </property>

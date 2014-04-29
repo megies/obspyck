@@ -738,6 +738,13 @@ class ObsPyck(QtGui.QMainWindow):
         self.updatePlot()
 
     def on_qToolButton_trigger_toggled(self):
+        xmin, xmax = self.axs[0].get_xlim()
+        self.delAxes()
+        self.fig.clear()
+        self.drawAxes()
+        self.drawAllItems()
+        self.multicursorReinit()
+        self.axs[0].set_xlim(xmin, xmax)
         self.updatePlot()
         ymax = max([max(abs(p.get_ydata())) for p in self.plts])
         if self.widgets.qToolButton_trigger.isChecked():
@@ -3359,10 +3366,15 @@ class ObsPyck(QtGui.QMainWindow):
                 if arrival is not None:
                     self.drawArrival(ax, arrival, pick, main_axes=main_axes)
         # plot amplitudes
-        for _id, ax in zip(ids, self.axs):
-            amplitude = self.getAmplitude(seed_string=_id)
-            if amplitude is not None:
-                self.drawAmplitude(ax, amplitude)
+        if self.widgets.qToolButton_spectrogram.isChecked():
+            pass
+        elif self.widgets.qToolButton_trigger.isChecked():
+            pass
+        else:
+            for _id, ax in zip(ids, self.axs):
+                amplitude = self.getAmplitude(seed_string=_id)
+                if amplitude is not None:
+                    self.drawAmplitude(ax, amplitude)
         for ax, xlims_, ylims_ in zip(self.axs, xlims, ylims):
             ax.set_xlim(xlims_)
             ax.set_ylim(ylims_)

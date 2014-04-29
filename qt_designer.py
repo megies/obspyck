@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'qt_designer.ui'
 #
-# Created: Tue Apr 29 13:50:42 2014
+# Created: Tue Apr 29 18:08:58 2014
 #      by: PyQt4 UI code generator 4.9.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -573,21 +573,21 @@ class Ui_qMainWindow_obsPyck(object):
         self.qLabel_lowpass = QtGui.QLabel(self.qWidget_mpl)
         self.qLabel_lowpass.setObjectName(_fromUtf8("qLabel_lowpass"))
         self.horizontalLayout_10.addWidget(self.qLabel_lowpass)
-        self.qDoubleSpinBox_lowpass = QtGui.QDoubleSpinBox(self.qWidget_mpl)
-        self.qDoubleSpinBox_lowpass.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.qDoubleSpinBox_lowpass.setMinimum(0.01)
-        self.qDoubleSpinBox_lowpass.setProperty("value", 1.0)
-        self.qDoubleSpinBox_lowpass.setObjectName(_fromUtf8("qDoubleSpinBox_lowpass"))
-        self.horizontalLayout_10.addWidget(self.qDoubleSpinBox_lowpass)
-        self.qLabel_highpass = QtGui.QLabel(self.qWidget_mpl)
-        self.qLabel_highpass.setObjectName(_fromUtf8("qLabel_highpass"))
-        self.horizontalLayout_10.addWidget(self.qLabel_highpass)
         self.qDoubleSpinBox_highpass = QtGui.QDoubleSpinBox(self.qWidget_mpl)
         self.qDoubleSpinBox_highpass.setFocusPolicy(QtCore.Qt.NoFocus)
         self.qDoubleSpinBox_highpass.setMinimum(0.01)
-        self.qDoubleSpinBox_highpass.setProperty("value", 20.0)
+        self.qDoubleSpinBox_highpass.setProperty("value", 1.0)
         self.qDoubleSpinBox_highpass.setObjectName(_fromUtf8("qDoubleSpinBox_highpass"))
         self.horizontalLayout_10.addWidget(self.qDoubleSpinBox_highpass)
+        self.qLabel_highpass = QtGui.QLabel(self.qWidget_mpl)
+        self.qLabel_highpass.setObjectName(_fromUtf8("qLabel_highpass"))
+        self.horizontalLayout_10.addWidget(self.qLabel_highpass)
+        self.qDoubleSpinBox_lowpass = QtGui.QDoubleSpinBox(self.qWidget_mpl)
+        self.qDoubleSpinBox_lowpass.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.qDoubleSpinBox_lowpass.setMinimum(0.01)
+        self.qDoubleSpinBox_lowpass.setProperty("value", 20.0)
+        self.qDoubleSpinBox_lowpass.setObjectName(_fromUtf8("qDoubleSpinBox_lowpass"))
+        self.horizontalLayout_10.addWidget(self.qDoubleSpinBox_lowpass)
         self.verticalLayout_5.addLayout(self.horizontalLayout_10)
         self.horizontalLayout_12.addLayout(self.verticalLayout_5)
         spacerItem6 = QtGui.QSpacerItem(1, 10, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
