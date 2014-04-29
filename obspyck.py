@@ -1231,6 +1231,8 @@ class ObsPyck(QtGui.QMainWindow):
     def __mpl_keyPressEvent(self, ev):
         if self.widgets.qToolButton_showMap.isChecked():
             return
+        if self.widgets.qToolButton_overview.isChecked():
+            return
         keys = self.keys
         phase_type = str(self.widgets.qComboBox_phaseType.currentText())
         st = self.getCurrentStream()
@@ -1494,6 +1496,8 @@ class ObsPyck(QtGui.QMainWindow):
     def __mpl_mouseButtonPressEvent(self, ev):
         if self.widgets.qToolButton_showMap.isChecked():
             return
+        if self.widgets.qToolButton_overview.isChecked():
+            return
         # set widgetlock when pressing mouse buttons and dont show cursor
         # cursor should not be plotted when making a zoom selection etc.
         if ev.button in [1, 3]:
@@ -1526,6 +1530,8 @@ class ObsPyck(QtGui.QMainWindow):
     
     def __mpl_mouseButtonReleaseEvent(self, ev):
         if self.widgets.qToolButton_showMap.isChecked():
+            return
+        if self.widgets.qToolButton_overview.isChecked():
             return
         # release widgetlock when releasing mouse buttons
         if ev.button in [1, 3]:
