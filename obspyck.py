@@ -2096,7 +2096,7 @@ class ObsPyck(QtGui.QMainWindow):
                 raise NotImplementedError(msg)
             arrival = Arrival(origin=o, pick=pick)
             #dict['Psynth'] = res + dict['P']
-            # residual is defined as P-Psynth by NLLOC and 3dloc!
+            # residual is defined as P-Psynth by NLLOC!
             arrival.distance = epidist
             arrival.phase = type
             arrival.time_residual = res
@@ -2251,7 +2251,7 @@ class ObsPyck(QtGui.QMainWindow):
                 msg = "This should not happen! Location output was read and a corresponding pick is missing!"
                 warnings.warn(msg)
             arrival = Arrival(origin=o, pick=pick)
-            # residual is defined as P-Psynth by NLLOC and 3dloc!
+            # residual is defined as P-Psynth by NLLOC!
             # XXX does this also hold for hyp2000???
             arrival.time_residual = res
             arrival.azimuth = azimuth
@@ -2726,19 +2726,6 @@ class ObsPyck(QtGui.QMainWindow):
         timestr = time.strftime("%Y-%m-%d  %H:%M:%S")
         timestr += ".%02d" % (time.microsecond / 1e4 + 0.5)
         axEM.set_title(timestr)
-        #####XXX disabled because it plots the wrong info if the event was
-        ##### fetched from seishub
-        #####lines = open(PROGRAMS['3dloc']['files']['out']).readlines()
-        #####infoEvent = lines[0].rstrip()
-        #####infoPicks = ''
-        #####for line in lines[1:]:
-        #####    infoPicks += line
-        #####axEM.text(0.02, 0.95, infoEvent, transform = axEM.transAxes,
-        #####                  fontsize = 12, verticalalignment = 'top',
-        #####                  family = 'monospace')
-        #####axEM.text(0.02, 0.90, infoPicks, transform = axEM.transAxes,
-        #####                  fontsize = 10, verticalalignment = 'top',
-        #####                  family = 'monospace')
         # save id to disconnect when switching back to stream dislay
         self.eventMapPickEvent = self.canv.mpl_connect('pick_event',
                                                        self.selectMagnitudes)

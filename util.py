@@ -177,9 +177,7 @@ PROGRAMS = {
                                    'summary': "hypo.prt"}},
         'focmec': {'filenames': {'exe': "rfocmec", 'phases': "focmec.dat",
                                  'stdout': "focmec.stdout",
-                                 'summary': "focmec.out"}},
-        '3dloc': {'filenames': {'exe': "3dloc_pitsa", 'out': "3dloc-out",
-                                'in': "3dloc-in"}}}
+                                 'summary': "focmec.out"}}}
 SEISMIC_PHASES = ('P', 'S')
 PHASE_COLORS = {'P': "red", 'S': "blue", 'Mag': "green"}
 COMPONENT_COLORS = {'Z': "k", 'N': "b", 'E': "r"}
@@ -691,31 +689,6 @@ def setup_external_programs(options):
         prog_dict['env']['PATH'] = prog_dict['dir'] + os.pathsep + env['PATH']
         if 'SystemRoot' in env:
             prog_dict['env']['SystemRoot'] = env['SystemRoot']
-    # 3dloc ###############################################################
-    prog_dict = PROGRAMS['3dloc']
-    prog_dict['env']['D3_VELOCITY'] = \
-            os.path.join(prog_dict['dir'], 'D3_VELOCITY') + os.sep
-    prog_dict['env']['D3_VELOCITY_2'] = \
-            os.path.join(prog_dict['dir'], 'D3_VELOCITY_2') + os.sep
-    def tmp(prog_dict):
-        files = prog_dict['files']
-        for file in [files['out'], files['in']]:
-            if os.path.isfile(file):
-                os.remove(file)
-        return
-    prog_dict['PreCall'] = tmp
-    def tmp(prog_dict):
-        sub = subprocess.Popen(prog_dict['files']['exe'], shell=SHELL,
-                cwd=prog_dict['dir'], env=prog_dict['env'],
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        if system == "Darwin":
-            returncode = sub.returncode
-        else:
-            returncode = sub.wait()
-        msg = "".join(sub.stdout.readlines())
-        err = "".join(sub.stderr.readlines())
-        return (msg, err, returncode)
-    prog_dict['Call'] = tmp
     # Hyp2000 #############################################################
     prog_dict = PROGRAMS['hyp_2000']
     prog_dict['env']['HYP2000_DATA'] = prog_dict['dir'] + os.sep
