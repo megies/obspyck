@@ -896,9 +896,17 @@ class ObsPyck(QtGui.QMainWindow):
         if self.widgets.qToolButton_spectrogram.isChecked():
             self.on_qToolButton_spectrogram_toggled()
 
+    def on_qPushButton_qml_update_clicked(self):
+        self.update_qml_text()
+
     ###########################################################################
     ### signal handlers END ###### ############################################
     ###########################################################################
+
+    def update_qml_text(self, qml=None):
+        if qml is None:
+            qml = self.get_QUAKEML_string()
+        self.widgets.qTextEdit_qml.setText(qml)
 
     def _filter(self, stream):
         """
@@ -3245,6 +3253,7 @@ class ObsPyck(QtGui.QMainWindow):
         tmpfile2 = os.path.join(tempfile.gettempdir(), name)
         self.info("creating xml...")
         data = self.get_QUAKEML_string()
+        self.update_qml_text(data)
         msg = "writing xml as %s and %s (for debugging purposes and in " + \
               "case of upload errors)"
         self.critical(msg % (tmpfile, tmpfile2))
@@ -3675,6 +3684,7 @@ class ObsPyck(QtGui.QMainWindow):
 
         # parse quakeml
         self.catalog = readQuakeML(StringIO(resource_xml))
+        self.update_qml_text(resource_xml)
         ev = self.catalog[0]
 
         user = ev.creation_info.author

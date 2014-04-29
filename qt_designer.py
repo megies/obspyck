@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'qt_designer.ui'
 #
-# Created: Tue Apr 29 18:08:58 2014
+# Created: Tue Apr 29 18:42:18 2014
 #      by: PyQt4 UI code generator 4.9.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -678,10 +678,19 @@ class Ui_qMainWindow_obsPyck(object):
         sizePolicy.setHeightForWidth(self.qTextEdit_qml.sizePolicy().hasHeightForWidth())
         self.qTextEdit_qml.setSizePolicy(sizePolicy)
         self.qTextEdit_qml.setMaximumSize(QtCore.QSize(16777215, 16777215))
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Monospace"))
+        font.setPointSize(10)
+        self.qTextEdit_qml.setFont(font)
         self.qTextEdit_qml.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.qTextEdit_qml.setAcceptDrops(False)
+        self.qTextEdit_qml.setLineWrapMode(QtGui.QTextEdit.NoWrap)
         self.qTextEdit_qml.setReadOnly(True)
         self.qTextEdit_qml.setObjectName(_fromUtf8("qTextEdit_qml"))
         self.rightVerticalLayout.addWidget(self.qTextEdit_qml)
+        self.qPushButton_qml_update = QtGui.QPushButton(self.verticalLayoutWidget)
+        self.qPushButton_qml_update.setObjectName(_fromUtf8("qPushButton_qml_update"))
+        self.rightVerticalLayout.addWidget(self.qPushButton_qml_update)
         self.layoutWidget = QtGui.QWidget(self.qSplitter_vertical)
         self.layoutWidget.setObjectName(_fromUtf8("layoutWidget"))
         self.horizontalLayout = QtGui.QHBoxLayout(self.layoutWidget)
@@ -817,5 +826,6 @@ class Ui_qMainWindow_obsPyck(object):
         self.qCheckBox_spectrogramLog.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "log", None, QtGui.QApplication.UnicodeUTF8))
         self.qLabel_wlen.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "wlen", None, QtGui.QApplication.UnicodeUTF8))
         self.qLabel_perlap.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "%lap", None, QtGui.QApplication.UnicodeUTF8))
+        self.qPushButton_qml_update.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "update QuakeML text", None, QtGui.QApplication.UnicodeUTF8))
 
 from util import QMplCanvas

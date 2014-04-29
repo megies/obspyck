@@ -1402,7 +1402,7 @@ p, l  i { white-space: pre-wrap; }
           </layout>
          </widget>
          <widget class="QWidget" name="verticalLayoutWidget">
-          <layout class="QVBoxLayout" name="rightVerticalLayout" stretch="0">
+          <layout class="QVBoxLayout" name="rightVerticalLayout" stretch="0,0">
            <property name="spacing">
             <number>0</number>
            </property>
@@ -1423,11 +1423,30 @@ p, l  i { white-space: pre-wrap; }
                <height>16777215</height>
               </size>
              </property>
+             <property name="font">
+              <font>
+               <family>Monospace</family>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
              <property name="focusPolicy">
               <enum>Qt::NoFocus</enum>
              </property>
+             <property name="acceptDrops">
+              <bool>false</bool>
+             </property>
+             <property name="lineWrapMode">
+              <enum>QTextEdit::NoWrap</enum>
+             </property>
              <property name="readOnly">
               <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="qPushButton_qml_update">
+             <property name="text">
+              <string>update QuakeML text</string>
              </property>
             </widget>
            </item>
