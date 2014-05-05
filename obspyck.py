@@ -1241,8 +1241,9 @@ class ObsPyck(QtGui.QMainWindow):
         # check if rotation should be performed
         if self.widgets.qToolButton_rotateLQT.isChecked():
             try:
-                # XXX TODO needs fixing:
-                self._rotateLQT(st, self.dictOrigin)
+                assert(len(self.catalog[0].origins) > 0), "No origin data"
+                origin = self.catalog[0].origins[0]
+                self._rotateLQT(st, origin)
             except Exception, e:
                 self.widgets.qToolButton_rotateLQT.setChecked(False)
                 err = str(e)
@@ -1250,8 +1251,9 @@ class ObsPyck(QtGui.QMainWindow):
                 self.error(err)
         elif self.widgets.qToolButton_rotateZRT.isChecked():
             try:
-                # XXX TODO needs fixing:
-                self._rotateZRT(st, self.dictOrigin)
+                assert(len(self.catalog[0].origins) > 0), "No origin data"
+                origin = self.catalog[0].origins[0]
+                self._rotateZRT(st, origin)
             except Exception, e:
                 self.widgets.qToolButton_rotateZRT.setChecked(False)
                 err = str(e)

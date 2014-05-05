@@ -936,8 +936,9 @@ def coords2azbazinc(stream, origin):
     """
     sta_coords = stream[0].stats.coordinates
     dist, bazim, azim = gps2DistAzimuth(sta_coords.latitude,
-            sta_coords.longitude, origin['Latitude'], origin['Longitude'])
-    elev_diff = sta_coords.elevation - origin['Depth'] * 1000
+            sta_coords.longitude, float(origin.latitude),
+            float(origin.longitude))
+    elev_diff = sta_coords.elevation - float(origin.depth)
     inci = math.atan2(dist, elev_diff) * 180.0 / math.pi
     return azim, bazim, inci
 
