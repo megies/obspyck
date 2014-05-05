@@ -2693,7 +2693,12 @@ class ObsPyck(QtGui.QMainWindow):
 
         ypos = 0.97
         xpos = 0.03
-        info = str(o).replace("\t", " ")
+        info = "\n".join([
+            "Origin:",
+            " Time: %s" % o.time,
+            " Longitude: %.5f" % o.longitude,
+            " Latitude: %.5f" % o.latitude,
+            " Depth: %.3f km" % (o.depth / 1e3)])
         axEM.text(xpos, ypos, info, va='top', ha='left', family='monospace',
                   transform=axEM.transAxes)
         #if o.quality and o.quality.standard_error:
