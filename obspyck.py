@@ -37,7 +37,7 @@ from lxml.etree import SubElement as Sub
 #sys.path.append('/baysoft/obspy/misc/symlink')
 #os.chdir("/baysoft/obspyck/")
 from obspy.core.util import NamedTemporaryFile, AttribDict
-from obspy.core.util.geodetics import gps2DistAzimuth
+from obspy.core.util.geodetics import gps2DistAzimuth, kilometer2degrees
 from obspy import UTCDateTime, Stream#, readEvents
 from obspy.signal.util import utlLonLat, utlGeoKm
 from obspy.signal.invsim import estimateMagnitude, paz2AmpValueOfFreqResp
@@ -2162,7 +2162,7 @@ class ObsPyck(QtGui.QMainWindow):
             arrival = Arrival(origin=o, pick=pick)
             #dict['Psynth'] = res + dict['P']
             # residual is defined as P-Psynth by NLLOC!
-            arrival.distance = epidist
+            arrival.distance = kilometer2degrees(epidist)
             arrival.phase = type
             arrival.time_residual = res
             arrival.azimuth = azimuth
