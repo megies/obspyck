@@ -1060,21 +1060,24 @@ class ObsPyck(QtGui.QMainWindow):
         """
         Draws Labels at pick axvlines.
         """
-        label = '  ' + pick.get("phase_hint", "_") + ":"
-        label += ONSET_CHARS.get(pick.onset, "?")
-        label += POLARITY_CHARS.get(pick.polarity, "?")
         # XXX TODO check handling of custom int weights
         if "extra" in pick:
             weight = pick.extra.get("weight", {"value": "_"})
-            label += str(weight["value"])
+            weight = str(weight["value"])
         else:
-            label += "_"
+            weight = "_"
+        label = '%s (%s) %s%s%s' % (
+            pick.get("phase_hint", "_"), pick.waveform_id.channel_code,
+            ONSET_CHARS.get(pick.onset, "?"),
+            POLARITY_CHARS.get(pick.polarity, "?"), weight)
         x = self.time_abs2rel(pick.time)
-        y = 1 - 0.01 * len(self.axs)
+        y = 0.96 - 0.01 * len(self.axs)
         i = self.axs.index(ax)
         color = PHASE_COLORS[pick.phase_hint]
+        bbox = dict(boxstyle="round,pad=0.4", fc="w", ec="k", lw=1, alpha=1.0)
         ax.text(x, y, label, transform=self.trans[i], color=color,
-                family='monospace', va="top")
+                family='monospace', va="top", bbox=bbox, size="large",
+                zorder=5000)
 
     def drawArrivalLabel(self, ax, arrival, pick):
         """
@@ -1093,9 +1096,10 @@ class ObsPyck(QtGui.QMainWindow):
         """
         # make a Stream with the traces that are plotted
         x = 0.01
-        y = 0.95
+        y = 0.92
+        bbox = dict(boxstyle="round,pad=0.4", fc="w", ec="k", lw=1.5, alpha=1.0)
         kwargs = dict(va="top", ha="left", fontsize=18, family='monospace',
-                      zorder=10000)
+                      zorder=10000, bbox=bbox)
         if self.widgets.qToolButton_overview.isChecked():
             for ax, st in zip(self.axs, self.streams):
                 offset = len(st[0].id)
