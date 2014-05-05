@@ -2131,14 +2131,14 @@ class ObsPyck(QtGui.QMainWindow):
             station = line[0]
             epidist = float(line[22])
             azimuth = float(line[23])
-            incident = float(line[24])
+            ray_dip = float(line[24])
             # if we do the location on traveltime-grids without angle-grids we
             # do not get ray azimuth/incidence. but we can at least use the
             # station to hypocenter azimuth which is very close (~2 deg) to the
             # ray azimuth
-            if azimuth == 0.0 and incident == 0.0:
+            if azimuth == 0.0 and ray_dip == 0.0:
                 azimuth = float(line[22])
-                incident = np.nan
+                ray_dip = np.nan
             if line[3] == "I":
                 onset = "impulsive"
             elif line[3] == "E":
@@ -2166,7 +2166,7 @@ class ObsPyck(QtGui.QMainWindow):
             arrival.phase = type
             arrival.time_residual = res
             arrival.azimuth = azimuth
-            arrival.takeoff_angle = incident
+            arrival.takeoff_angle = ray_dip
             if onset and not pick.onset:
                 pick.onset = onset
             if polarity and not pick.polarity:
@@ -2289,11 +2289,11 @@ class ObsPyck(QtGui.QMainWindow):
             if station == "":
                 station = lines[i-1][0:6].strip()
                 azimuth = int(lines[i-1][23:26])
-                #XXX check, if incident is correct!!
+                #XXX TODO check, if incident is correct!!
                 incident = int(lines[i-1][27:30])
             else:
                 azimuth = int(lines[i][23:26])
-                #XXX check, if incident is correct!!
+                #XXX TODO check, if incident is correct!!
                 incident = int(lines[i][27:30])
             if lines[i][31] == "I":
                 onset = "impulsive"
