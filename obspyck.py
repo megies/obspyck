@@ -2176,6 +2176,7 @@ class ObsPyck(QtGui.QMainWindow):
             o.quality.used_phase_count += 1
             used_stations.add(station)
         o.used_station_count = len(used_stations)
+        self.update_origin_azimuthal_gap()
 
         # read NLLOC scatter file
         data = readNLLocScatter(PROGRAMS['nlloc']['files']['scatter'],
@@ -3648,6 +3649,49 @@ class ObsPyck(QtGui.QMainWindow):
                 continue
             return stamag
         return None
+
+    def update_origin_azimuthal_gap(self):
+        origin = self.catalog[0].origins[0]
+        arrivals = origin.arrivals
+        picks = self.catalog[0].picks
+        azims = {}
+        for a in arrivals:
+            p = getPickForArrival(picks, a)
+            if p is None:
+                msg = ("Could not find pick for arrival. Aborting calculation "
+                       "of azimuthal gap.")
+                self.error(msg)
+                return
+            netsta = ".".join([p.waveform_id.network_code, p.waveform_id.station_code])
+            azim = a.azimuth
+            if azim is None:
+                msg = ("Arrival's azimuth is 'None'. "
+                       "Calculated azimuthal gap might be wrong")
+                self.error(msg)
+            else:
+                azims.setdefault(netsta, []).append(azim)
+        self.debug("Arrival azimuths: %s" % azims)
+        azim_list = []
+        for netsta in azims:
+            tmp_list = azims.get(netsta, [])
+            if not tmp_list:
+                msg = ("No azimuth information for station %s. "
+                       "Aborting calculation of azimuthal gap.")
+                self.error(msg)
+                return
+            azim_list.append((np.median(tmp_list), netsta))
+        azim_list = sorted(azim_list)
+        azims = np.array([azim for azim, netsta in azim_list])
+        azims.sort()
+        gaps = azims - np.roll(azims, 1)
+        gaps[0] += 360.0
+        gap = gaps.max()
+        i_ = gaps.argmax()
+        netstas = (azim_list[i_][1], azim_list[i_-1][1])
+        if origin.quality is None:
+            origin.quality = OriginQuality()
+        origin.quality.azimuthal_gap = gap
+        self.info("Azimuthal gap of %s between stations %s" % (gap, netstas))
 
     def removeDuplicatePicks(self):
         """

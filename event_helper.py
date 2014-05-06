@@ -1,8 +1,10 @@
 import re
+import warnings
 from copy import deepcopy
+import numpy as np
 import obspy.core.event
 from obspy.core.event import WaveformStreamID, ResourceIdentifier, \
-    TimeWindow, CreationInfo, Comment
+    TimeWindow, CreationInfo, Comment, OriginQuality
 
 ID_ROOT = "smi:de.erdbeben-in-bayern"
 AGENCY_ID = "Erdbebendienst Bayern"
