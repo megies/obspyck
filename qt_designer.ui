@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1577</width>
+    <width>1601</width>
     <height>778</height>
    </rect>
   </property>
@@ -1445,6 +1445,9 @@ p, l  i { white-space: pre-wrap; }
            </item>
            <item>
             <widget class="QPushButton" name="qPushButton_qml_update">
+             <property name="focusPolicy">
+              <enum>Qt::NoFocus</enum>
+             </property>
              <property name="text">
               <string>update QuakeML text</string>
              </property>
@@ -1542,7 +1545,7 @@ p, l  i { white-space: pre-wrap; }
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1577</width>
+     <width>1601</width>
      <height>25</height>
     </rect>
    </property>

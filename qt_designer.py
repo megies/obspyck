@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'qt_designer.ui'
 #
-# Created: Tue Apr 29 18:42:18 2014
+# Created: Tue May  6 15:12:28 2014
 #      by: PyQt4 UI code generator 4.9.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -17,7 +17,7 @@ except AttributeError:
 class Ui_qMainWindow_obsPyck(object):
     def setupUi(self, qMainWindow_obsPyck):
         qMainWindow_obsPyck.setObjectName(_fromUtf8("qMainWindow_obsPyck"))
-        qMainWindow_obsPyck.resize(1577, 778)
+        qMainWindow_obsPyck.resize(1601, 778)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -689,6 +689,7 @@ class Ui_qMainWindow_obsPyck(object):
         self.qTextEdit_qml.setObjectName(_fromUtf8("qTextEdit_qml"))
         self.rightVerticalLayout.addWidget(self.qTextEdit_qml)
         self.qPushButton_qml_update = QtGui.QPushButton(self.verticalLayoutWidget)
+        self.qPushButton_qml_update.setFocusPolicy(QtCore.Qt.NoFocus)
         self.qPushButton_qml_update.setObjectName(_fromUtf8("qPushButton_qml_update"))
         self.rightVerticalLayout.addWidget(self.qPushButton_qml_update)
         self.layoutWidget = QtGui.QWidget(self.qSplitter_vertical)
@@ -736,7 +737,7 @@ class Ui_qMainWindow_obsPyck(object):
         self.verticalLayout_4.addLayout(self.verticalLayout)
         qMainWindow_obsPyck.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(qMainWindow_obsPyck)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1577, 25))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1601, 25))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         qMainWindow_obsPyck.setMenuBar(self.menubar)
         self.statusbar = QtGui.QStatusBar(qMainWindow_obsPyck)
