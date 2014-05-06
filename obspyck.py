@@ -2052,6 +2052,9 @@ class ObsPyck(QtGui.QMainWindow):
             return
         
         o.quality.used_phase_count = 0
+        o.quality.extra = AttribDict()
+        o.quality.extra.usedPhaseCountP = {'value': 0, 'namespace': NAMESPACE}
+        o.quality.extra.usedPhaseCountS = {'value': 0, 'namespace': NAMESPACE}
 
         # go through all phase info lines
         """
@@ -2126,6 +2129,9 @@ class ObsPyck(QtGui.QMainWindow):
             elif line[4] == "S":
                 type = "S"
             else:
+                self.error("Encountered a phase that is not P and not S!! "
+                           "This case is not handled yet in reading NLLOC "
+                           "output...")
                 continue
             # get values from line
             station = line[0]
@@ -2174,6 +2180,13 @@ class ObsPyck(QtGui.QMainWindow):
             # we use weights 0,1,2,3 but NLLoc outputs floats...
             arrival.time_weight = weight
             o.quality.used_phase_count += 1
+            if type == "P":
+                o.quality.extra.usedPhaseCountP['value'] += 1
+            elif type == "S":
+                o.quality.extra.usedPhaseCountS['value'] += 1
+            else:
+                self.error("Phase '%s' not recognized as P or S. " % type +
+                           "Not incrementing P nor S phase count.")
             used_stations.add(station)
         o.used_station_count = len(used_stations)
         self.update_origin_azimuthal_gap()
