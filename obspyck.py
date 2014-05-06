@@ -3683,6 +3683,7 @@ class ObsPyck(QtGui.QMainWindow):
         azim_list = sorted(azim_list)
         azims = np.array([azim for azim, netsta in azim_list])
         azims.sort()
+        # calculate azimuthal gap
         gaps = azims - np.roll(azims, 1)
         gaps[0] += 360.0
         gap = gaps.max()
@@ -3692,6 +3693,16 @@ class ObsPyck(QtGui.QMainWindow):
             origin.quality = OriginQuality()
         origin.quality.azimuthal_gap = gap
         self.info("Azimuthal gap of %s between stations %s" % (gap, netstas))
+        # calculate secondary azimuthal gap
+        gaps = azims - np.roll(azims, 2)
+        gaps[0] += 360.0
+        gaps[1] += 360.0
+        gap = gaps.max()
+        i_ = gaps.argmax()
+        netstas = (azim_list[i_][1], azim_list[i_-2][1])
+        origin.quality.secondary_azimuthal_gap = gap
+        self.info(("Secondary azimuthal gap of "
+                   "%s between stations %s" % (gap, netstas)))
 
     def removeDuplicatePicks(self):
         """
