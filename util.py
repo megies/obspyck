@@ -165,11 +165,11 @@ COMMANDLINE_OPTIONS = (
                                 'default': True,
                                 'help': "Deactivate chksum check for local GSE2 files"}),
         (("--verbosity",), {'dest': "verbosity",
-                           'default': "normal",
-                           'help': ("Control verbosity of info window. "
-                                    "Possible values: "
-                                    "'normal' (default), 'verbose', "
-                                    "'debug', 'quiet'")}),
+                            'default': "normal",
+                            'help': ("Control verbosity of info window. "
+                                     "Possible values: "
+                                     "'normal' (default), 'verbose', "
+                                     "'debug', 'quiet'")}),
         (("--filter",), {'action': "store_true", 'dest': "filter",
                 'default': False,
                 'help': "Switch filter button on at startup."}))
@@ -1043,3 +1043,26 @@ def apply_gse2_calib(tr):
                "sensitivity (%s, %s). Continuing anyway.")
         msg = msg % (e.__class__.__name__, str(e))
         print msg
+
+
+def map_rotated_channel_code(channel, rotation):
+    """
+    Modifies a channel code according to given rotation (e.g. EHN -> EHR)
+
+    :type channel: str
+    :type rotation: str
+    """
+    if rotation in ("LQT", "ZRT"):
+        while len(channel) < 3:
+            msg = ("Channel code ('%s') does not have three characters. "
+                   "Filling with leading spaces.")
+            warnings.warn(msg % channel)
+            channel = " " + channel
+        if rotation == "LQT":
+            mapping = ROTATE_LQT_COMP_MAP
+        elif rotation == "ZRT":
+            mapping = ROTATE_ZRT_COMP_MAP
+        channel = channel[0:2] + mapping[channel[2]]
+    elif rotation is None:
+        pass
+    return channel

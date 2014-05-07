@@ -68,7 +68,8 @@ class ObsPyck(QtGui.QMainWindow):
         Standard init.
         """
         self.clients = clients
-        self.streams = streams
+        self.streams_bkp = streams
+        self.streams = [st.copy() for st in self.streams_bkp]
         self.options = options
         self.keys = keys
 
@@ -246,7 +247,7 @@ class ObsPyck(QtGui.QMainWindow):
         #Define a pointer to navigate through the streams
         self.stNum = len(streams)
         self.stPt = 0
-        
+
         self.drawAxes()
         self.multicursor = MultiCursor(self.canv, self.axs, useblit=True,
                                        color='k', linewidth=1, ls='dotted')
@@ -254,7 +255,7 @@ class ObsPyck(QtGui.QMainWindow):
         # Initialize the stream related widgets with the right values:
         self.widgets.qComboBox_streamName.clear()
         labels = ["%s.%s" % (st[0].stats.network, st[0].stats.station) \
-                  for st in self.streams]
+                  for st in self.streams_bkp]
         self.widgets.qComboBox_streamName.addItems(labels)
 
         # set the filter/trigger default values according to command line
@@ -291,6 +292,7 @@ class ObsPyck(QtGui.QMainWindow):
         #print self.canv.hasFocus()
         if 'SeisHub' in self.clients:
             self.updateEventListFromSeisHub(self.T0, self.T1)
+        self.setFocusToMatplotlib()
 
     def getCurrentStream(self):
         """
@@ -376,7 +378,7 @@ class ObsPyck(QtGui.QMainWindow):
             self.delAxes()
             self.fig.clear()
             self.drawAxes()
-            self.drawAllItems()
+            self.updateAllItems()
             self.multicursorReinit()
             self.updatePlot()
             self.updateStreamLabels()
@@ -417,7 +419,7 @@ class ObsPyck(QtGui.QMainWindow):
         self.loadHyp2000Data()
         self.calculateEpiHypoDists()
         self.updateMagnitude()
-        self.drawAllItems()
+        self.updateAllItems()
         self.redraw()
         self.widgets.qToolButton_showMap.setChecked(True)
 
@@ -431,7 +433,7 @@ class ObsPyck(QtGui.QMainWindow):
         self.loadNLLocOutput()
         self.calculateEpiHypoDists()
         self.updateMagnitude()
-        self.drawAllItems()
+        self.updateAllItems()
         self.redraw()
         self.widgets.qToolButton_showMap.setChecked(True)
 
@@ -471,7 +473,7 @@ class ObsPyck(QtGui.QMainWindow):
             self.delEventMap()
             self.fig.clear()
             self.drawAxes()
-            self.drawAllItems()
+            self.updateAllItems()
             self.multicursorReinit()
             self.updatePlot()
             self.updateStreamLabels()
@@ -497,7 +499,7 @@ class ObsPyck(QtGui.QMainWindow):
             self.delFocMec()
             self.fig.clear()
             self.drawAxes()
-            self.drawAllItems()
+            self.updateAllItems()
             self.multicursorReinit()
             self.updatePlot()
             self.updateStreamLabels()
@@ -532,8 +534,9 @@ class ObsPyck(QtGui.QMainWindow):
             self.delWadati()
             self.fig.clear()
             self.drawAxes()
-            self.drawAllItems()
+            self.updateAllItems()
             self.multicursorReinit()
+            self.updateCurrentStream()
             self.updatePlot()
             self.updateStreamLabels()
             self.canv.draw()
@@ -695,18 +698,15 @@ class ObsPyck(QtGui.QMainWindow):
         self.widgets.qComboBox_streamName.setCurrentIndex(self.stPt)
 
     def on_qComboBox_streamName_currentIndexChanged(self, newvalue):
+        # signal gets emitted twice, once with the index of the new field,
+        # once with it's value
+        if not isinstance(newvalue, int):
+            return
         self.stPt = self.widgets.qComboBox_streamName.currentIndex()
-        xmin, xmax = self.axs[0].get_xlim()
-        #self.delAllItems()
-        self.delAxes()
-        self.fig.clear()
-        self.drawAxes()
-        self.drawAllItems()
-        self.multicursorReinit()
-        self.axs[0].set_xlim(xmin, xmax)
-        self.updatePlot()
+        self.streams[self.stPt] = self.streams_bkp[self.stPt].copy()
         stats = self.streams[self.stPt][0].stats
         self.info("Going to stream: %s.%s" % (stats.network, stats.station))
+        self.drawStream()
         self.updateStreamNumberLabel()
 
     def on_qToolButton_nextStream_clicked(self, *args):
@@ -725,35 +725,21 @@ class ObsPyck(QtGui.QMainWindow):
             pass
 
     def on_qToolButton_filter_toggled(self):
+        self.updateCurrentStream()
         self.updatePlot()
 
     def on_qToolButton_rotateLQT_toggled(self):
         if self.widgets.qToolButton_rotateLQT.isChecked():
             self.widgets.qToolButton_rotateZRT.setChecked(False)
-        self.updatePlot()
+        self.drawStream()
 
     def on_qToolButton_rotateZRT_toggled(self):
         if self.widgets.qToolButton_rotateZRT.isChecked():
             self.widgets.qToolButton_rotateLQT.setChecked(False)
-        self.updatePlot()
+        self.drawStream()
 
     def on_qToolButton_trigger_toggled(self):
-        xmin, xmax = self.axs[0].get_xlim()
-        self.delAxes()
-        self.fig.clear()
-        self.drawAxes()
-        self.drawAllItems()
-        self.multicursorReinit()
-        self.axs[0].set_xlim(xmin, xmax)
-        self.updatePlot()
-        ymax = max([max(abs(p.get_ydata())) for p in self.plts])
-        if self.widgets.qToolButton_trigger.isChecked():
-            ymin = 0
-        else:
-            ymin = -ymax
-        for ax in self.axs:
-            ax.set_ybound(upper=ymax, lower=ymin)
-        self.redraw()
+        self.drawStream()
 
     def on_qToolButton_arpicker_clicked(self, *args):
         """
@@ -768,16 +754,22 @@ class ObsPyck(QtGui.QMainWindow):
         self.redraw()
         
     def on_qComboBox_filterType_currentIndexChanged(self, newvalue):
-        if self.widgets.qToolButton_filter.isChecked():
-            self.updatePlot()
+        if not self.widgets.qToolButton_filter.isChecked():
+            return
+        self.updateCurrentStream()
+        self.updatePlot()
 
     def on_qCheckBox_zerophase_toggled(self):
-        if self.widgets.qToolButton_filter.isChecked():
-            self.updatePlot()
+        if not self.widgets.qToolButton_filter.isChecked():
+            return
+        self.updateCurrentStream()
+        self.updatePlot()
 
     def on_qCheckBox_50Hz_toggled(self):
-        if self.widgets.qToolButton_filter.isChecked():
-            self.updatePlot()
+        if not self.widgets.qToolButton_filter.isChecked():
+            return
+        self.updateCurrentStream()
+        self.updatePlot()
 
     def on_qDoubleSpinBox_highpass_valueChanged(self, newvalue):
         widgets = self.widgets
@@ -797,6 +789,7 @@ class ObsPyck(QtGui.QMainWindow):
         if newvalue < minimum:
             err = "Warning: Lowpass frequency is not supported by length of trace!"
             self.error(err)
+        self.updateCurrentStream()
         self.updatePlot()
         # XXX we could use this for the combobox too!
         # reset focus to matplotlib figure
@@ -804,12 +797,12 @@ class ObsPyck(QtGui.QMainWindow):
 
     def on_qDoubleSpinBox_corners_valueChanged(self, newvalue):
         widgets = self.widgets
-        stats = self.streams[self.stPt][0].stats
         if not widgets.qToolButton_filter.isChecked():
             self.canv.setFocus() # XXX needed??
             return
         # if the filter flag is not set, we don't have to update the plot
         # XXX if we have a lowpass, we dont need to update!! Not yet implemented!! XXX
+        self.updateCurrentStream()
         self.updatePlot()
         # XXX we could use this for the combobox too!
         # reset focus to matplotlib figure
@@ -833,6 +826,7 @@ class ObsPyck(QtGui.QMainWindow):
         if newvalue > maximum:
             err = "Warning: Highpass frequency is lower than Nyquist!"
             self.error(err)
+        self.updateCurrentStream()
         self.updatePlot()
         # XXX we could use this for the combobox too!
         # reset focus to matplotlib figure
@@ -844,6 +838,7 @@ class ObsPyck(QtGui.QMainWindow):
         if not widgets.qToolButton_trigger.isChecked():
             self.canv.setFocus() # XXX needed??
             return
+        self.updateCurrentStream()
         self.updatePlot()
         # reset focus to matplotlib figure
         self.canv.setFocus() # XXX needed?? # XXX do we still need this focus grabbing with QT??? XXX XXX XXX XXX
@@ -854,6 +849,7 @@ class ObsPyck(QtGui.QMainWindow):
         if not widgets.qToolButton_trigger.isChecked():
             self.canv.setFocus() # XXX needed??
             return
+        self.updateCurrentStream()
         self.updatePlot()
         # reset focus to matplotlib figure
         self.canv.setFocus() # XXX needed?? # XXX do we still need this focus grabbing with QT??? XXX XXX XXX XXX
@@ -879,9 +875,10 @@ class ObsPyck(QtGui.QMainWindow):
         self.delAxes()
         self.fig.clear()
         self.drawAxes()
-        self.drawAllItems()
+        self.updateAllItems()
         self.multicursorReinit()
         self.axs[0].set_xlim(xmin, xmax)
+        self.updateCurrentStream()
         self.updatePlot()
 
     def on_qCheckBox_spectrogramLog_toggled(self):
@@ -964,11 +961,13 @@ class ObsPyck(QtGui.QMainWindow):
         z = stream.select(component="Z")[0].data
         n = stream.select(component="N")[0].data
         e = stream.select(component="E")[0].data
-        self.info("using baz, inci:", bazim, inci)
+        self.info("using baz, takeoff: %s, %s" % (bazim, inci))
         l, q, t = rotate_ZNE_LQT(z, n, e, bazim, inci)
-        stream.select(component="Z")[0].data = l
-        stream.select(component="N")[0].data = q
-        stream.select(component="E")[0].data = t
+        for comp, data in zip("ZNE", (l, q, t)):
+            tr = stream.select(component=comp)[0]
+            tr.data = data
+            tr.stats.channel = map_rotated_channel_code(tr.stats.channel,
+                                                        "LQT")
         self.info("Showing traces rotated to LQT.")
 
     def _rotateZRT(self, stream, origin):
@@ -983,10 +982,15 @@ class ObsPyck(QtGui.QMainWindow):
         # replace NE data with rotated data
         n = stream.select(component="N")[0].data
         e = stream.select(component="E")[0].data
-        self.info("using baz:", bazim)
+        self.info("using baz: %s" % bazim)
         r, t = rotate_NE_RT(n, e, bazim)
         stream.select(component="N")[0].data = r
         stream.select(component="E")[0].data = t
+        for comp, data in zip("NE", (r, t)):
+            tr = stream.select(component=comp)[0]
+            tr.data = data
+            tr.stats.channel = map_rotated_channel_code(tr.stats.channel,
+                                                        "ZRT")
         self.info("Showing traces rotated to ZRT.")
 
     def _trigger(self, stream):
@@ -1031,7 +1035,7 @@ class ObsPyck(QtGui.QMainWindow):
             d = self.dicts[i]
             d['P'] = p
             d['S'] = s
-        self.updateAllAxes()
+        self.updateAllItems()
         self.redraw()
         return
 
@@ -1054,9 +1058,14 @@ class ObsPyck(QtGui.QMainWindow):
         sys.stderr = SplitWriter(sys.stderr, self.widgets.qPlainTextEdit_stderr)
 
     def setFocusToMatplotlib(self):
-        self.canv.setFocus() # XXX needed??
+        """
+        Sometimes needed to restore Qt focus to matplotlib canvas.
+        Otherwise key/mouse events do not end up in our signal handling
+        routine.
+        """
+        self.canv.setFocus()
 
-    def drawPickLabel(self, ax, pick):
+    def drawPickLabel(self, ax, pick, main_axes=True):
         """
         Draws Labels at pick axvlines.
         """
@@ -1071,12 +1080,19 @@ class ObsPyck(QtGui.QMainWindow):
             ONSET_CHARS.get(pick.onset, "?"),
             POLARITY_CHARS.get(pick.polarity, "?"), weight)
         x = self.time_abs2rel(pick.time)
-        y = 0.96 - 0.01 * len(self.axs)
+        if main_axes:
+            y = 0.96 - 0.01 * len(self.axs)
+            va = "top"
+            bbox_fc = "white"
+        else:
+            y = 0.04 + 0.01 * len(self.axs)
+            va = "bottom"
+            bbox_fc = "lightgray"
         i = self.axs.index(ax)
         color = PHASE_COLORS[pick.phase_hint]
-        bbox = dict(boxstyle="round,pad=0.4", fc="w", ec="k", lw=1, alpha=1.0)
+        bbox = dict(boxstyle="round,pad=0.4", fc=bbox_fc, ec="k", lw=1, alpha=1.0)
         ax.text(x, y, label, transform=self.trans[i], color=color,
-                family='monospace', va="top", bbox=bbox, size="large",
+                family='monospace', va=va, bbox=bbox, size="large",
                 zorder=5000)
 
     def drawArrivalLabel(self, ax, arrival, pick):
@@ -1116,8 +1132,7 @@ class ObsPyck(QtGui.QMainWindow):
                     ax.text(x, y, label, color=color, transform=ax.transAxes,
                             **kwargs)
         else:
-            tmp_stream = self.streams[self.stPt]
-            for ax, tr in zip(self.axs, tmp_stream):
+            for ax, tr in zip(self.axs, self.streams[self.stPt]):
                 ax.text(x, y, tr.id, color="k", transform=ax.transAxes,
                         **kwargs)
 
@@ -1138,26 +1153,33 @@ class ObsPyck(QtGui.QMainWindow):
             tmp_stream = self.streams[self.stPt]
         for ax, tr in zip(self.axs, tmp_stream):
             tr_id = tr.id
-            # if a rotate button is on: change trace id's component character
-            if self.widgets.qToolButton_rotateLQT.isChecked() or \
-                    self.widgets.qToolButton_rotateZRT.isChecked():
-                # which mapping of component keys to use?
-                if self.widgets.qToolButton_rotateLQT.isChecked():
-                    comp_map = ROTATE_LQT_COMP_MAP
-                elif self.widgets.qToolButton_rotateZRT.isChecked():
-                    comp_map = ROTATE_ZRT_COMP_MAP
-                # do the component key mapping
-                if tr_id[-1].isalpha():
-                    tr_id = tr_id[:-1] + comp_map[tr_id[-1]]
-                else:
-                    tr_id += comp_map[tr_id[-1]]
-            # if trigger button is on: add to trace ids
-            if self.widgets.qToolButton_trigger.isChecked():
-                tr_id += " (recSTALTA)"
             # trace ids are first text-plot so its at position 0
             t = ax.texts[0]
             t.set_text(tr_id)
             t.set_color(textcolor)
+
+    def drawStream(self):
+        """
+        Calls all subroutines to draw the normal stream view.
+        """
+        xmin, xmax = self.axs[0].get_xlim()
+        #self.delAllItems()
+        self.delAxes()
+        self.fig.clear()
+        self.drawAxes()
+        self.updateCurrentStream()
+        self.updateAllItems()
+        self.multicursorReinit()
+        self.axs[0].set_xlim(xmin, xmax)
+        self.updatePlot()
+        ymax = max([max(abs(p.get_ydata())) for p in self.plts])
+        if self.widgets.qToolButton_trigger.isChecked():
+            ymin = 0
+        else:
+            ymin = -ymax
+        for ax in self.axs:
+            ax.set_ybound(upper=ymax, lower=ymin)
+        self.redraw()
 
     def drawAxes(self):
         st = self.getCurrentStream()
@@ -1226,16 +1248,16 @@ class ObsPyck(QtGui.QMainWindow):
         for line in self.multicursor.lines:
             line.set_visible(False)
         self.canv.draw()
-    
-    def updatePlot(self):
+
+    def updateCurrentStream(self):
         """
-        Update plot either with raw data or filter data and use filtered data.
-        Depending on status of "Filter" Button. Also check "Rotate" buttons if
-        data should be rotated to LQT or ZRT coordinates.
+        Update current stream either with raw/rotated/filtered data
+        according to current button settings in GUI.
         """
         # XXX copying is only necessary if "Filter" or "Rotate" is selected
         # XXX it is simpler for the code to just copy in any case..
-        st = self.streams[self.stPt].copy()
+        self.streams[self.stPt] = self.streams_bkp[self.stPt].copy()
+        st = self.streams[self.stPt]
         # To display filtered data we overwrite our alias to current stream
         # and replace it with the filtered data.
         if self.widgets.qToolButton_filter.isChecked():
@@ -1271,13 +1293,19 @@ class ObsPyck(QtGui.QMainWindow):
                 self.widgets.qToolButton_trigger.setChecked(False)
                 err = "Error during triggering. Showing waveform data."
                 self.error(err)
-                
+
+    def updatePlot(self, keep_ylims=True):
+        """
+        Update plot with current streams data.
+        """
+        ylims = [list(ax.get_ylim()) for ax in self.axs]
         self.updateIds("blue")
-        self.redraw()
-            
         # Update all plots' y data
-        for tr, plot in zip(st, self.plts):
+        for tr, plot in zip(self.getCurrentStream(), self.plts):
             plot.set_ydata(tr.data)
+        if keep_ylims:
+            for ax, ylims_ in zip(self.axs, ylims):
+                ax.set_ylim(ylims_)
         self.redraw()
 
     # Define the event that handles the setting of P- and S-wave picks
@@ -1292,7 +1320,8 @@ class ObsPyck(QtGui.QMainWindow):
         st = self.getCurrentStream()
         if ev.inaxes:
             tr = st[self.axs.index(ev.inaxes)]
-            pick = self.getPick(phase_hint=phase_type, seed_string=tr.id, axes=ev.inaxes)
+            pick = self.getPick(phase_hint=phase_type, seed_string=tr.id,
+                                axes=ev.inaxes)
             if pick is not None:
                 extra = pick.setdefault("extra", AttribDict())
             amplitude = self.getAmplitude(seed_string=tr.id, axes=ev.inaxes)
@@ -1301,7 +1330,7 @@ class ObsPyck(QtGui.QMainWindow):
             pick = None
             extra = None
             amplitude = None
-        
+
         #######################################################################
         # Start of key events related to picking                              #
         #######################################################################
@@ -1343,23 +1372,20 @@ class ObsPyck(QtGui.QMainWindow):
 
         if ev.key == keys['setPick']:
             if phase_type in SEISMIC_PHASES:
-                pick = self.getPick(axes=ev.inaxes, phase_hint=phase_type, setdefault=True, seed_string=tr.id)
+                pick = self.getPick(axes=ev.inaxes, phase_hint=phase_type,
+                                    setdefault=True, seed_string=tr.id)
                 self.debug(map(str, [ev.inaxes, self.axs, phase_type, tr.id]))
                 self.info(str(pick))
                 pick.setTime(self.time_rel2abs(pickSample))
                 #self.updateAxes(ev.inaxes)
-                self.updateAllAxes()
+                self.updateAllItems()
                 self.redraw()
                 self.info("%s set at %.3f (%s)" % (KEY_FULLNAMES[phase_type],
                                                    self.time_abs2rel(pick.time),
                                                    pick.time.isoformat()))
                 net = pick.waveform_id.network_code
                 sta = pick.waveform_id.station_code
-                phase_hint2 = None
-                if pick.phase_hint == "P":
-                    phase_hint2 = "S"
-                elif pick.phase_hint == "S":
-                    phase_hint2 = "P"
+                phase_hint2 = {'P': 'S', 'S': 'P'}.get(pick.phase_hint, None)
                 if phase_hint2:
                     pick2 = self.getPick(network=net, station=sta,
                                          phase_hint=phase_hint2)
@@ -1375,7 +1401,7 @@ class ObsPyck(QtGui.QMainWindow):
                 value = keys['setWeight'][ev.key]
                 extra.weight = {'value': value,
                                 'namespace': NAMESPACE}
-                self.updateAllAxes()
+                self.updateAllItems()
                 self.redraw()
                 self.info("%s set to %i" % (KEY_FULLNAMES[key], value))
                 return
@@ -1398,7 +1424,7 @@ class ObsPyck(QtGui.QMainWindow):
                 #              "over R or T axes."
                 #        self.error(err)
                 pick.polarity = value
-                self.updateAllAxes()
+                self.updateAllItems()
                 self.redraw()
                 self.info("%s set to %s" % (KEY_FULLNAMES[key], value))
                 return
@@ -1409,7 +1435,7 @@ class ObsPyck(QtGui.QMainWindow):
                     return
                 key = phase_type + "Onset"
                 pick.onset = keys['setOnset'][ev.key]
-                self.updateAllAxes()
+                self.updateAllItems()
                 self.redraw()
                 self.info("%s set to %s" % (KEY_FULLNAMES[key], pick.onset))
                 return
@@ -1417,7 +1443,7 @@ class ObsPyck(QtGui.QMainWindow):
         if ev.key == keys['delPick']:
             if phase_type in SEISMIC_PHASES:
                 self.delPick(pick)
-                self.updateAllAxes()
+                self.updateAllItems()
                 self.redraw()
                 return
 
@@ -1426,7 +1452,7 @@ class ObsPyck(QtGui.QMainWindow):
                 if pick is None or not pick.time:
                     return
                 pick.setErrorTime(self.time_rel2abs(pickSample))
-                self.updateAllAxes()
+                self.updateAllItems()
                 self.redraw()
                 self.info("Error %s set at %s" % (KEY_FULLNAMES[phase_type],
                                                   self.time_rel2abs(pickSample).isoformat()))
@@ -1458,7 +1484,7 @@ class ObsPyck(QtGui.QMainWindow):
                 elif ev.key == keys['setMagMax']:
                     ampl.setHigh(tmp_magtime, val)
                 self.updateMagnitude()
-                self.updateAllAxes()
+                self.updateAllItems()
                 self.redraw()
                 return
 
@@ -1470,7 +1496,7 @@ class ObsPyck(QtGui.QMainWindow):
                 if amplitude is not None:
                     self.delAmplitude(amplitude)
                     self.updateMagnitude()
-                    self.updateAllAxes()
+                    self.updateAllItems()
                     self.redraw()
                 return
         #######################################################################
@@ -1479,6 +1505,7 @@ class ObsPyck(QtGui.QMainWindow):
         
         if ev.key == keys['switchWheelZoomAxis']:
             self.flagWheelZoomAmplitude = True
+            return
 
         # iterate the phase type combobox
         if ev.key == keys['switchPhase']:
@@ -1653,12 +1680,25 @@ class ObsPyck(QtGui.QMainWindow):
         #fmt = "ONTN  349.00   96.00C"
         fmt = "%4s  %6.2f  %6.2f%1s\n"
         count = 0
-        for pick in self.picks:
-            arrival = getArrivalForPick(self.catalog[0], pick)
+        for pick in self.catalog[0].picks:
+            arrival = getArrivalForPick(self.catalog[0].origins[0].arrivals,
+                                        pick)
             if arrival is None:
+                self.critical("focmec: No arrival for pick. "
+                              "Skipping:\n%s" % pick)
                 continue
             pt = pick.phase_hint
-            if pick.polarity is None or arrival.azimuth is None or arrival.takeoff_angle is None:
+            if pick.polarity is None:
+                self.critical("focmec: Pick missing polarity. "
+                              "Skipping:\n%s" % pick)
+                continue
+            if arrival.azimuth is None:
+                self.critical("focmec: Arrival missing azimuth. "
+                              "Skipping:\n%s" % arrival)
+                continue
+            if arrival.takeoff_angle is None:
+                self.critical("focmec: Arrival missing takeoff angle. "
+                              "Skipping:\n%s" % arrival)
                 continue
             sta = pick.waveform_id.station_code[:4] #focmec has only 4 chars
             # XXX commenting the following out again
@@ -2609,7 +2649,8 @@ class ObsPyck(QtGui.QMainWindow):
         trans = []
         self.trans = trans
         t = []
-        alphas = {'Z': 1.0, 'N': 0.4, 'E': 0.4}
+        alphas = {'Z': 1.0, 'L': 1.0,
+                  'N': 0.4, 'Q': 0.4, 'R': 0.4, 'E': 0.4, 'T': 0.4}
         for i, st in enumerate(self.streams):
             for j, tr in enumerate(st):
                 net, sta, loc, cha = tr.id.split(".")
@@ -2637,22 +2678,6 @@ class ObsPyck(QtGui.QMainWindow):
                     axs.append(ax)
                     trans.append(matplotlib.transforms.blended_transform_factory(ax.transData, ax.transAxes))
                 ax.xaxis.set_major_formatter(FuncFormatter(formatXTicklabels))
-                # we have to rotate first, because we have to copy the whole stream..
-                # ZRT rotation is not regarded because it doesn't change the Z component..
-                if self.widgets.qToolButton_rotateLQT.isChecked():
-                    # XXX TODO: reimplement
-                    raise NotImplementedError("not reimplemented yet")
-                    d = self.dicts[i]
-                    tmp_st = self.streams[i].copy()
-                    self._rotateLQT(tmp_st, self.origin)
-                    tr = tmp_st.select(component="Z")[0]
-                else:
-                    tr = tr.copy()
-                # rotation needs to be done first!
-                if self.widgets.qToolButton_filter.isChecked():
-                    self._filter(tr)
-                if self.widgets.qToolButton_trigger.isChecked():
-                    self._trigger(tr)
                 # normalize with overall sensitivity and convert to nm/s
                 # if not explicitly deactivated on command line
                 if not self.options.nonormalization and not self.options.nometadata:
@@ -3359,10 +3384,7 @@ class ObsPyck(QtGui.QMainWindow):
         self.focMechCurrent = None
         self.focMechCount = None
 
-    def drawAllItems(self):
-        self.updateAllAxes()
-
-    def updateAllAxes(self):
+    def updateAllItems(self):
         st = self.getCurrentStream()
         event = self.catalog[0]
         ids = []
@@ -3391,6 +3413,8 @@ class ObsPyck(QtGui.QMainWindow):
             arrival = getArrivalForPick(arrivals, pick)
             # do drawing in all axes
             for _id, ax in zip(ids, self.axs):
+                self.debug(str(pick))
+                self.debug(str(_id))
                 if pick.waveform_id.getSEEDString() == _id:
                     main_axes = True
                     self.drawPickLabel(ax, pick)
@@ -3399,16 +3423,30 @@ class ObsPyck(QtGui.QMainWindow):
                 self.drawPick(ax, pick, main_axes=main_axes)
                 if arrival is not None:
                     self.drawArrival(ax, arrival, pick, main_axes=main_axes)
+            # if no pick label was drawn yet.. draw it
+            for _id, ax in zip(ids, self.axs):
+                if pick.waveform_id.getSEEDString() == _id:
+                    break
+            else:
+                self.drawPickLabel(self.axs[-1], pick, main_axes=False)
         # plot amplitudes
         if self.widgets.qToolButton_spectrogram.isChecked():
             pass
         elif self.widgets.qToolButton_trigger.isChecked():
             pass
         else:
-            for _id, ax in zip(ids, self.axs):
-                amplitude = self.getAmplitude(seed_string=_id)
-                if amplitude is not None:
-                    self.drawAmplitude(ax, amplitude)
+            amplitudes = self.getAmplitudes(network=net, station=sta,
+                                            location=loc)
+            for amplitude in amplitudes:
+                if amplitude is None:
+                    continue
+                for _id, ax in zip(ids, self.axs):
+                    if amplitude.waveform_id.getSEEDString() == _id:
+                        self.drawAmplitude(ax, amplitude, main_axes=True)
+                        break
+                else:
+                    for ax in self.axs[1:]:
+                        self.drawAmplitude(ax, amplitude, main_axes=False)
         for ax, xlims_, ylims_ in zip(self.axs, xlims, ylims):
             ax.set_xlim(xlims_)
             ax.set_ylim(ylims_)
@@ -3474,7 +3512,12 @@ class ObsPyck(QtGui.QMainWindow):
         if main_axes:
             ax.axvspan(time, reltime, color=color, alpha=0.2)
 
-    def drawAmplitude(self, ax, amplitude, scaling=None):
+    def drawAmplitude(self, ax, amplitude, scaling=None, main_axes=True):
+        if main_axes:
+            color = PHASE_COLORS['Mag']
+        else:
+            color = "gray"
+
         x, y = [], []
         if amplitude.low is not None:
             x.append(self.time_abs2rel(amplitude.low_time))
@@ -3487,11 +3530,11 @@ class ObsPyck(QtGui.QMainWindow):
         if x:
             ax.plot(x, y, linestyle="", markersize=MAG_MARKER['size'],
                     markeredgewidth=MAG_MARKER['edgewidth'],
-                    color=PHASE_COLORS['Mag'],
+                    color=color,
                     marker=MAG_MARKER['marker'], zorder=20)
         if len(x) == 2:
-            ax.axvspan(x[0], x[1], color=PHASE_COLORS['Mag'], alpha=0.2)
-            ax.axhspan(y[0], y[1], color=PHASE_COLORS['Mag'], alpha=0.1)
+            ax.axvspan(x[0], x[1], color=color, alpha=0.2)
+            ax.axhspan(y[0], y[1], color=color, alpha=0.1)
 
     def delPick(self, pick):
         event = self.catalog[0]
@@ -3749,11 +3792,6 @@ class ObsPyck(QtGui.QMainWindow):
         picks.remove(old)
         picks.append(pick)
 
-    def updateAllItems(self):
-        #self.delAllItems()
-        #self.drawAllItems()
-        self.updateAllAxes()
-
     def getEventFromSeisHub(self, resource_name):
         """
         Fetch a Resource XML from SeisHub
@@ -3789,9 +3827,6 @@ class ObsPyck(QtGui.QMainWindow):
             tr = self.getTrace(ampl.waveform_id.getSEEDString())
             if tr is None:
                 continue
-            tr = tr.copy()
-            if self.widgets.qToolButton_filter.isChecked():
-                self._filter(tr)
             ampl.setFromTimeWindow(tr)
 
         # XXX TODO: set station_magnitudes' "used" attribute depending if
