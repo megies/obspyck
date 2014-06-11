@@ -653,6 +653,11 @@ class ObsPyck(QtGui.QMainWindow):
             self.deleteEventInSeisHub(resource_name)
             self.on_qToolButton_updateEventList_clicked()
 
+    def on_qToolButton_saveEventLocally_clicked(self, *args):
+        if args:
+            return
+        self.save_event_locally()
+
     def on_qCheckBox_sysop_toggled(self):
         self.on_qLineEdit_sysopPassword_editingFinished()
         newstate = self.widgets.qCheckBox_sysop.isChecked()
@@ -3271,6 +3276,27 @@ class ObsPyck(QtGui.QMainWindow):
             event_id = UTCDateTime().strftime('%Y%m%d%H%M%S')
         self.catalog[0].resource_id = "/".join([ID_ROOT, "event", event_id])
         self.catalog.resource_id = "/".join([ID_ROOT, "catalog", event_id])
+
+    def save_event_locally(self):
+        """
+        Save event locally as QuakeML file
+        """
+        # if we did no location at all, and only picks would be saved the
+        # EventID ist still not set, so we have to do this now.
+        if not self.catalog[0].get("resource_id"):
+            err = "Error: Event resource_id not set."
+            self.error(err)
+            return
+        name = str(self.catalog[0].resource_id).split("/")[-1] #XXX id of the file
+        # create XML and also save in temporary directory for inspection purposes
+        name = "obspyck_" + name
+        if not name.endswith(".xml"):
+            name += ".xml"
+        self.info("creating xml...")
+        data = self.get_QUAKEML_string()
+        msg = "writing xml as %s"
+        self.critical(msg % name)
+        open(name, "wt").write(data)
 
     def uploadSeisHub(self):
         """

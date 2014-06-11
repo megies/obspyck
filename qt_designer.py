@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'qt_designer.ui'
 #
-# Created: Tue May  6 15:12:28 2014
+# Created: Wed Jun 11 11:38:09 2014
 #      by: PyQt4 UI code generator 4.9.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -240,6 +240,15 @@ class Ui_qMainWindow_obsPyck(object):
         self.qToolButton_deleteEvent.setFocusPolicy(QtCore.Qt.NoFocus)
         self.qToolButton_deleteEvent.setObjectName(_fromUtf8("qToolButton_deleteEvent"))
         self.leftVerticalLayout.addWidget(self.qToolButton_deleteEvent)
+        self.qToolButton_saveEventLocally = QtGui.QToolButton(self.layoutWidgetxx)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.qToolButton_saveEventLocally.sizePolicy().hasHeightForWidth())
+        self.qToolButton_saveEventLocally.setSizePolicy(sizePolicy)
+        self.qToolButton_saveEventLocally.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.qToolButton_saveEventLocally.setObjectName(_fromUtf8("qToolButton_saveEventLocally"))
+        self.leftVerticalLayout.addWidget(self.qToolButton_saveEventLocally)
         self.horizontalLayout_4 = QtGui.QHBoxLayout()
         self.horizontalLayout_4.setSizeConstraint(QtGui.QLayout.SetMinimumSize)
         self.horizontalLayout_4.setObjectName(_fromUtf8("horizontalLayout_4"))
@@ -774,6 +783,7 @@ class Ui_qMainWindow_obsPyck(object):
         self.qToolButton_sendNewEvent.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "send New Event", None, QtGui.QApplication.UnicodeUTF8))
         self.qToolButton_replaceEvent.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "replace Event", None, QtGui.QApplication.UnicodeUTF8))
         self.qToolButton_deleteEvent.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "delete Event", None, QtGui.QApplication.UnicodeUTF8))
+        self.qToolButton_saveEventLocally.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "save Event locally", None, QtGui.QApplication.UnicodeUTF8))
         self.qCheckBox_public.setText(QtGui.QApplication.translate("qMainWindow_obsPyck", "public", None, QtGui.QApplication.UnicodeUTF8))
         self.qComboBox_eventType.setItemText(0, QtGui.QApplication.translate("qMainWindow_obsPyck", "<event type>", None, QtGui.QApplication.UnicodeUTF8))
         self.qComboBox_eventType.setItemText(1, QtGui.QApplication.translate("qMainWindow_obsPyck", "earthquake", None, QtGui.QApplication.UnicodeUTF8))
