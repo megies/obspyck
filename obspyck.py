@@ -2318,8 +2318,8 @@ class ObsPyck(QtGui.QMainWindow):
         ou.horizontal_uncertainty = errXY
         ou.preferred_description = "horizontal uncertainty"
         o.depth_errors.uncertainty = errZ * 1e3
-        oq.quality.standard_error = rms #XXX stimmt diese Zuordnung!!!?!
-        oq.quality.azimuthal_gap = gap
+        oq.standard_error = rms #XXX stimmt diese Zuordnung!!!?!
+        oq.azimuthal_gap = gap
         o.depth_type = "from location"
         o.earth_model_id = "%s/earth_model/%s" % (ID_ROOT, model)
         o.time = time
@@ -2334,6 +2334,7 @@ class ObsPyck(QtGui.QMainWindow):
                 break
         
         o.quality.used_phase_count = 0
+        used_stations = set()
         #XXX caution: we sometimes access the prior element!
         for i in range(len(lines)):
             # check which type of phase
@@ -2347,13 +2348,16 @@ class ObsPyck(QtGui.QMainWindow):
             station = lines[i][0:6].strip()
             if station == "":
                 station = lines[i-1][0:6].strip()
+                distance = float(lines[i-1][18:23])
                 azimuth = int(lines[i-1][23:26])
                 #XXX TODO check, if incident is correct!!
                 incident = int(lines[i-1][27:30])
             else:
+                distance = float(lines[i][18:23])
                 azimuth = int(lines[i][23:26])
                 #XXX TODO check, if incident is correct!!
                 incident = int(lines[i][27:30])
+            used_stations.add(station)
             if lines[i][31] == "I":
                 onset = "impulsive"
             elif lines[i][31] == "E":
@@ -2379,6 +2383,7 @@ class ObsPyck(QtGui.QMainWindow):
             # XXX does this also hold for hyp2000???
             arrival.time_residual = res
             arrival.azimuth = azimuth
+            arrival.distance = kilometer2degrees(distance)
             arrival.takeoff_angle = incident
             if onset and not pick.onset:
                 pick.onset = onset
@@ -2387,10 +2392,7 @@ class ObsPyck(QtGui.QMainWindow):
             # we use weights 0,1,2,3 but hypo2000 outputs floats...
             arrival.time_weight = weight
             o.quality.used_phase_count += 1
-        o.used_station_count = len(self.dicts)
-        for dict in self.dicts:
-            if dict['P'][1] is None and dict['S'][1] is None:
-                o.used_station_count -= 1
+        o.used_station_count = len(used_stations)
 
     def updateMagnitude(self):
         if self.catalog[0].origins:
@@ -2723,7 +2725,6 @@ class ObsPyck(QtGui.QMainWindow):
     def drawEventMap(self):
         event = self.catalog[0]
         try:
-            m = event.magnitudes[0]
             o = event.origins[0]
         except IndexError:
             err = "Error: No hypocenter data!"
@@ -2770,25 +2771,34 @@ class ObsPyck(QtGui.QMainWindow):
                 errX, errY = (ou.max_horizontal_uncertainty,
                               ou.min_horizontal_uncertainty)
             else:
+                errX, errY = None, None
+                # XXX TODO: support any error ellipses
                 msg = ("Error ellipses with azimuth not equal to 0 or 90 "
                        "degrees from North are not supported yet..")
-                raise NotImplementedError(msg)
-            errLon, errLat = utlLonLat(o.longitude, o.latitude,
-                                       errX / 1e3, errY / 1e3)
-            errLon -= o.longitude
-            errLat -= o.latitude
-            if ou.preferred_description == "uncertainty ellipse":
-                errorell = Ellipse(xy=[o.longitude, o.latitude],
-                                   width=errLon,
-                                   height=errLat,
-                                   # we account for angle by setting errX/Y
-                                   #angle=ou.azimuth_max_horizontal_uncertainty,
-                                   fill=False)
-                axEM.add_artist(errorell)
-            self.critical("%s %.2f %.6f %.6f %.3f %.3f %.3f %.4f %.6f" % (
-                o.time, m.mag, o.longitude, o.latitude, o.depth / 1e3,
-                errX / 1e3, errY / 1e3,
-                o.depth_errors.uncertainty / 1e3, o.quality.standard_error))
+                self.error(msg)
+            if errX and errY:
+                errLon, errLat = utlLonLat(o.longitude, o.latitude,
+                                           errX / 1e3, errY / 1e3)
+                errLon -= o.longitude
+                errLat -= o.latitude
+                if ou.preferred_description == "uncertainty ellipse":
+                    errorell = Ellipse(xy=[o.longitude, o.latitude],
+                                       width=errLon,
+                                       height=errLat,
+                                       # we account for angle by setting errX/Y
+                                       #angle=ou.azimuth_max_horizontal_uncertainty,
+                                       fill=False)
+                    axEM.add_artist(errorell)
+                if event.magnitudes:
+                    try:
+                        m = event.magnitudes[0]
+                    except:
+                        pass
+                    else:
+                        self.critical("%s %.2f %.6f %.6f %.3f %.3f %.3f %.4f %.6f" % (
+                            o.time, m.mag, o.longitude, o.latitude, o.depth / 1e3,
+                            errX / 1e3, errY / 1e3,
+                            o.depth_errors.uncertainty / 1e3, o.quality.standard_error))
         self.scatterMagIndices = []
         self.scatterMagLon = []
         self.scatterMagLat = []
@@ -3042,7 +3052,7 @@ class ObsPyck(QtGui.QMainWindow):
         fmtS = "%12s%1sS%1s%1i\n"
         hypo71_string = ""
 
-        for st, dict in zip(self.streams, self.dicts):
+        for st in self.streams:
             net = st[0].stats.network
             sta = st[0].stats.station
             pick_p = self.getPick(network=net, station=sta, phase_hint='P')
