@@ -224,12 +224,7 @@
                </property>
                <item>
                 <property name="text">
-                 <string>BY162</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>BY168</string>
+                 <string>BY</string>
                 </property>
                </item>
                <item>
