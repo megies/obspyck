@@ -35,7 +35,7 @@ except:
     from obspy.signal import gps2DistAzimuth
 
 from obspy.core.util import getMatplotlibVersion
-from obspy import neries
+from obspy import fdsn
 from obspy.taup.taup import getTravelTimes
 from obspy.core.util import locations2degrees
 
@@ -117,9 +117,9 @@ COMMANDLINE_OPTIONS = (
         (("--nometadata",), {'action': "store_true",
                 'dest': "nometadata", 'default': False,
                 'help': "Deactivate fetching/parsing metadata for waveforms"}),
-        (("--noneries",), {'action': "store_true",
-                'dest': "noneries", 'default': False,
-                'help': "Deactivate fetching event data from neries and plotting theoretical arrivals."}),
+        (("--noevents",), {'action': "store_true",
+                'dest': "noevents", 'default': False,
+                'help': "Deactivate fetching event data using FDSNWS and plotting theoretical arrivals."}),
         (("--pluginpath",), {'dest': "pluginpath",
                 'default': "/baysoft/obspyck/",
                 'help': "Path to local directory containing the folders with "
@@ -1010,20 +1010,20 @@ class SplitWriter():
                 obj.write(msg)
 
 
-def get_neries_info(starttime, endtime, streams):
+def get_event_info(starttime, endtime, streams):
     events = []
     arrivals = {}
     try:
-        client = neries.Client()
-        events = client.getEvents(min_datetime=starttime - 20 * 60,
-                                  max_datetime=endtime,
-                                  format="list")
+        client = fdsn.Client("NERIES")
+        events = client.get_events(starttime=starttime - 20 * 60,
+                                   endtime=endtime)
         for ev in events[::-1]:
             has_arrivals = False
-            origin_time = ev['datetime']
-            lon1 = ev['longitude']
-            lat1 = ev['latitude']
-            depth = abs(ev['depth'])
+            origin = ev.origins[0]
+            origin_time = origin.time
+            lon1 = origin.longitude
+            lat1 = origin.latitude
+            depth = abs(origin.depth / 1e3)
             for st in streams:
                 sta = st[0].stats.station
                 lon2 = st[0].stats.coordinates['longitude']
@@ -1037,10 +1037,10 @@ def get_neries_info(starttime, endtime, streams):
                         has_arrivals = True
                         list_.append(tt)
             if not has_arrivals:
-                events.remove(ev)
+                events[:] = events[:-1]
     except Exception as e:
-        msg = ("Problem while determining theoretical phases using "
-               "neries/taup: %s: %s" % (e.__class__.__name__, str(e)))
+        msg = ("Problem while fetching events or determining theoretical "
+               "phases: %s: %s" % (e.__class__.__name__, str(e)))
         return None, None, msg
     return events, arrivals, None
 

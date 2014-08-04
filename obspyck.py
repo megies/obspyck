@@ -132,22 +132,22 @@ class ObsPyck(QtGui.QMainWindow):
                   "(e.g. 'send Event')."
             print >> sys.stderr, msg
 
-        # fetch event data from neries, arrivals from taup
-        if self.options.noneries:
-            neries_events, taup_arrivals, msg = None, None, None
+        # fetch event data via fdsn, arrivals from taup
+        if self.options.noevents:
+            fdsn_events, taup_arrivals, msg = None, None, None
         else:
-            neries_events, taup_arrivals, msg = \
-                get_neries_info(self.T0, self.T1, self.streams)
-            if neries_events is None:
-                print >> sys.stderr, "Could not determine possible arrivals using obspy.neries/taup."
+            fdsn_events, taup_arrivals, msg = \
+                get_event_info(self.T0, self.T1, self.streams)
+            if fdsn_events is None:
+                print >> sys.stderr, "Could not determine possible arrivals using obspy.fdsn/taup."
             if msg:
                 print >> sys.stderr, msg
         self.taup_arrivals = taup_arrivals
-        if neries_events is None:
+        if fdsn_events is None:
             self.taup_arrivals = []
         else:
-            print "%i event(s) with possible arrivals found using obspy.neries/taup:" % len(neries_events)
-            for ev in neries_events:
+            print "%i event(s) with possible arrivals found using obspy.fdsn/taup:" % len(fdsn_events)
+            for ev in fdsn_events:
                 print " ".join([str(ev['datetime']), ev['magnitude_type'],
                                 str(ev['magnitude']), ev['flynn_region']])
 
