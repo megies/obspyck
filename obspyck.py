@@ -148,8 +148,10 @@ class ObsPyck(QtGui.QMainWindow):
         else:
             print "%i event(s) with possible arrivals found using obspy.fdsn/taup:" % len(fdsn_events)
             for ev in fdsn_events:
-                print " ".join([str(ev['datetime']), ev['magnitude_type'],
-                                str(ev['magnitude']), ev['flynn_region']])
+                o = ev.origins[0]
+                m = ev.magnitudes[0]
+                print " ".join([str(o.time), str(m.magnitude_type),
+                                str(m.mag), str(o.region)])
 
         self.fig = self.widgets.qMplCanvas.fig
         facecolor = self.qMain.palette().color(QtGui.QPalette.Window).getRgb()
