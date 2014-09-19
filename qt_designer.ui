@@ -6,15 +6,27 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1325</width>
-    <height>756</height>
+    <width>1601</width>
+    <height>778</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>2000</width>
+    <height>2000</height>
+   </size>
+  </property>
+  <property name="baseSize">
+   <size>
+    <width>1024</width>
+    <height>768</height>
+   </size>
   </property>
   <property name="font">
    <font>
@@ -31,6 +43,12 @@
     <normaloff>obspyck.gif</normaloff>obspyck.gif</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
    <property name="mouseTracking">
     <bool>true</bool>
    </property>
@@ -67,13 +85,13 @@
          <widget class="QWidget" name="layoutWidgetxx">
           <layout class="QVBoxLayout" name="leftVerticalLayout">
            <property name="spacing">
-            <number>1</number>
+            <number>0</number>
            </property>
            <property name="sizeConstraint">
-            <enum>QLayout::SetDefaultConstraint</enum>
+            <enum>QLayout::SetMaximumSize</enum>
            </property>
            <property name="margin">
-            <number>1</number>
+            <number>0</number>
            </property>
            <item>
             <widget class="QToolButton" name="qToolButton_clearAll">
@@ -141,8 +159,8 @@
              </property>
              <property name="sizeHint" stdset="0">
               <size>
-               <width>20</width>
-               <height>40</height>
+               <width>201</width>
+               <height>13</height>
               </size>
              </property>
             </spacer>
@@ -160,22 +178,6 @@
              </property>
              <property name="text">
               <string>do hyp2000</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QToolButton" name="qToolButton_do3dloc">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="focusPolicy">
-              <enum>Qt::NoFocus</enum>
-             </property>
-             <property name="text">
-              <string>do 3dloc</string>
              </property>
             </widget>
            </item>
@@ -237,30 +239,9 @@
                  <string>UH</string>
                 </property>
                </item>
-               <item>
-                <property name="text">
-                 <string>KW</string>
-                </property>
-               </item>
               </widget>
              </item>
             </layout>
-           </item>
-           <item>
-            <widget class="QToolButton" name="qToolButton_calcMag">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="focusPolicy">
-              <enum>Qt::NoFocus</enum>
-             </property>
-             <property name="text">
-              <string>calc Mag</string>
-             </property>
-            </widget>
            </item>
            <item>
             <widget class="QToolButton" name="qToolButton_doFocMec">
@@ -285,8 +266,8 @@
              </property>
              <property name="sizeHint" stdset="0">
               <size>
-               <width>20</width>
-               <height>40</height>
+               <width>201</width>
+               <height>13</height>
               </size>
              </property>
             </spacer>
@@ -371,8 +352,8 @@
              </property>
              <property name="sizeHint" stdset="0">
               <size>
-               <width>20</width>
-               <height>40</height>
+               <width>201</width>
+               <height>13</height>
               </size>
              </property>
             </spacer>
@@ -426,22 +407,6 @@
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="qCheckBox_publishEvent">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="focusPolicy">
-              <enum>Qt::NoFocus</enum>
-             </property>
-             <property name="text">
-              <string>publish Event</string>
-             </property>
-            </widget>
-           </item>
-           <item>
             <widget class="QToolButton" name="qToolButton_replaceEvent">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
@@ -474,12 +439,28 @@
             </widget>
            </item>
            <item>
+            <widget class="QToolButton" name="qToolButton_saveEventLocally">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="focusPolicy">
+              <enum>Qt::NoFocus</enum>
+             </property>
+             <property name="text">
+              <string>save Event locally</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <layout class="QHBoxLayout" name="horizontalLayout_4">
              <property name="sizeConstraint">
               <enum>QLayout::SetMinimumSize</enum>
              </property>
              <item>
-              <widget class="QCheckBox" name="qCheckBox_sysop">
+              <widget class="QCheckBox" name="qCheckBox_public">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
                  <horstretch>0</horstretch>
@@ -490,7 +471,14 @@
                 <enum>Qt::NoFocus</enum>
                </property>
                <property name="text">
-                <string>sysop</string>
+                <string>public</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="qCheckBox_sysop">
+               <property name="text">
+                <string/>
                </property>
               </widget>
              </item>
@@ -638,8 +626,8 @@
              </property>
              <property name="sizeHint" stdset="0">
               <size>
-               <width>20</width>
-               <height>40</height>
+               <width>201</width>
+               <height>13</height>
               </size>
              </property>
             </spacer>
@@ -649,23 +637,142 @@
              <property name="sizeConstraint">
               <enum>QLayout::SetMinimumSize</enum>
              </property>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_2">
+             <property name="sizeConstraint">
+              <enum>QLayout::SetDefaultConstraint</enum>
+             </property>
              <item>
-              <widget class="QToolButton" name="qToolButton_debug">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
+              <layout class="QHBoxLayout" name="horizontalLayout_9">
+               <property name="sizeConstraint">
+                <enum>QLayout::SetDefaultConstraint</enum>
                </property>
-               <property name="focusPolicy">
-                <enum>Qt::NoFocus</enum>
-               </property>
-               <property name="text">
-                <string>debug</string>
-               </property>
-              </widget>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_8">
+                 <property name="sizeConstraint">
+                  <enum>QLayout::SetDefaultConstraint</enum>
+                 </property>
+                 <item>
+                  <widget class="QLabel" name="qLabel_x_rel">
+                   <property name="text">
+                    <string>x (rel):</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="qLabel_xdata_rel">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                     <horstretch>200</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>50</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="baseSize">
+                    <size>
+                     <width>40</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="autoFillBackground">
+                    <bool>false</bool>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_7">
+                 <property name="sizeConstraint">
+                  <enum>QLayout::SetDefaultConstraint</enum>
+                 </property>
+                 <item>
+                  <widget class="QLabel" name="qLabel_y">
+                   <property name="text">
+                    <string>y:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="qLabel_ydata">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>25</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="baseSize">
+                    <size>
+                     <width>40</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_8b">
+               <item>
+                <widget class="QLabel" name="qLabel_x_abs">
+                 <property name="text">
+                  <string>x:</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="qLabel_xdata_abs">
+                 <property name="minimumSize">
+                  <size>
+                   <width>160</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </item>
             </layout>
+           </item>
+           <item>
+            <widget class="QToolButton" name="qToolButton_debug">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="focusPolicy">
+              <enum>Qt::NoFocus</enum>
+             </property>
+             <property name="text">
+              <string>debug</string>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>
@@ -678,6 +785,12 @@
                <horstretch>99</horstretch>
                <verstretch>99</verstretch>
               </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>16777215</height>
+              </size>
              </property>
              <property name="cursor">
               <cursorShape>CrossCursor</cursorShape>
@@ -692,6 +805,12 @@
            </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_2">
+             <property name="spacing">
+              <number>6</number>
+             </property>
+             <property name="sizeConstraint">
+              <enum>QLayout::SetDefaultConstraint</enum>
+             </property>
              <item>
               <layout class="QHBoxLayout" name="horizontalLayout_6">
                <property name="sizeConstraint">
@@ -844,9 +963,12 @@ p, l  i { white-space: pre-wrap; }
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
                </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+               </property>
                <property name="sizeHint" stdset="0">
                 <size>
-                 <width>2</width>
+                 <width>1</width>
                  <height>10</height>
                 </size>
                </property>
@@ -969,9 +1091,12 @@ p, l  i { white-space: pre-wrap; }
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
+                 <property name="sizeType">
+                  <enum>QSizePolicy::Expanding</enum>
+                 </property>
                  <property name="sizeHint" stdset="0">
                   <size>
-                   <width>2</width>
+                   <width>1</width>
                    <height>20</height>
                   </size>
                  </property>
@@ -1009,14 +1134,64 @@ p, l  i { white-space: pre-wrap; }
                     </widget>
                    </item>
                    <item>
-                    <widget class="QLabel" name="qLabel_lowpass">
+                    <widget class="QCheckBox" name="qCheckBox_zerophase">
+                     <property name="focusPolicy">
+                      <enum>Qt::NoFocus</enum>
+                     </property>
                      <property name="text">
-                      <string>Low</string>
+                      <string>Zero-Ph.</string>
                      </property>
                     </widget>
                    </item>
                    <item>
-                    <widget class="QDoubleSpinBox" name="qDoubleSpinBox_lowpass">
+                    <widget class="QCheckBox" name="qCheckBox_50Hz">
+                     <property name="focusPolicy">
+                      <enum>Qt::NoFocus</enum>
+                     </property>
+                     <property name="text">
+                      <string>50Hz</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_10">
+                   <item>
+                    <widget class="QLabel" name="qLabel_corners">
+                     <property name="text">
+                      <string>Corn.</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QDoubleSpinBox" name="qDoubleSpinBox_corners">
+                     <property name="focusPolicy">
+                      <enum>Qt::NoFocus</enum>
+                     </property>
+                     <property name="decimals">
+                      <number>0</number>
+                     </property>
+                     <property name="minimum">
+                      <double>1.000000000000000</double>
+                     </property>
+                     <property name="maximum">
+                      <double>8.000000000000000</double>
+                     </property>
+                     <property name="value">
+                      <double>1.000000000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="qLabel_lowpass">
+                     <property name="text">
+                      <string>Low C.</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QDoubleSpinBox" name="qDoubleSpinBox_highpass">
                      <property name="focusPolicy">
                       <enum>Qt::NoFocus</enum>
                      </property>
@@ -1028,29 +1203,15 @@ p, l  i { white-space: pre-wrap; }
                      </property>
                     </widget>
                    </item>
-                  </layout>
-                 </item>
-                 <item>
-                  <layout class="QHBoxLayout" name="horizontalLayout_10">
-                   <item>
-                    <widget class="QCheckBox" name="qCheckBox_zerophase">
-                     <property name="focusPolicy">
-                      <enum>Qt::NoFocus</enum>
-                     </property>
-                     <property name="text">
-                      <string>Zero Ph.</string>
-                     </property>
-                    </widget>
-                   </item>
                    <item>
                     <widget class="QLabel" name="qLabel_highpass">
                      <property name="text">
-                      <string>High</string>
+                      <string>High C.</string>
                      </property>
                     </widget>
                    </item>
                    <item>
-                    <widget class="QDoubleSpinBox" name="qDoubleSpinBox_highpass">
+                    <widget class="QDoubleSpinBox" name="qDoubleSpinBox_lowpass">
                      <property name="focusPolicy">
                       <enum>Qt::NoFocus</enum>
                      </property>
@@ -1071,9 +1232,12 @@ p, l  i { white-space: pre-wrap; }
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
+                 <property name="sizeType">
+                  <enum>QSizePolicy::Expanding</enum>
+                 </property>
                  <property name="sizeHint" stdset="0">
                   <size>
-                   <width>2</width>
+                   <width>1</width>
                    <height>10</height>
                   </size>
                  </property>
@@ -1135,9 +1299,12 @@ p, l  i { white-space: pre-wrap; }
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
                </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+               </property>
                <property name="sizeHint" stdset="0">
                 <size>
-                 <width>2</width>
+                 <width>1</width>
                  <height>10</height>
                 </size>
                </property>
@@ -1235,134 +1402,72 @@ p, l  i { white-space: pre-wrap; }
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
                </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+               </property>
                <property name="sizeHint" stdset="0">
                 <size>
-                 <width>2</width>
+                 <width>1</width>
                  <height>10</height>
                 </size>
                </property>
               </spacer>
              </item>
-             <item>
-              <layout class="QVBoxLayout" name="verticalLayout_2">
-               <property name="sizeConstraint">
-                <enum>QLayout::SetDefaultConstraint</enum>
-               </property>
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_9">
-                 <property name="sizeConstraint">
-                  <enum>QLayout::SetDefaultConstraint</enum>
-                 </property>
-                 <item>
-                  <layout class="QHBoxLayout" name="horizontalLayout_8">
-                   <property name="sizeConstraint">
-                    <enum>QLayout::SetDefaultConstraint</enum>
-                   </property>
-                   <item>
-                    <widget class="QLabel" name="qLabel_x_rel">
-                     <property name="text">
-                      <string>x (rel):</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QLabel" name="qLabel_xdata_rel">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                       <horstretch>200</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="minimumSize">
-                      <size>
-                       <width>50</width>
-                       <height>0</height>
-                      </size>
-                     </property>
-                     <property name="baseSize">
-                      <size>
-                       <width>40</width>
-                       <height>0</height>
-                      </size>
-                     </property>
-                     <property name="autoFillBackground">
-                      <bool>false</bool>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </item>
-                 <item>
-                  <layout class="QHBoxLayout" name="horizontalLayout_7">
-                   <property name="sizeConstraint">
-                    <enum>QLayout::SetDefaultConstraint</enum>
-                   </property>
-                   <item>
-                    <widget class="QLabel" name="qLabel_y">
-                     <property name="text">
-                      <string>y:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QLabel" name="qLabel_ydata">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="minimumSize">
-                      <size>
-                       <width>25</width>
-                       <height>0</height>
-                      </size>
-                     </property>
-                     <property name="baseSize">
-                      <size>
-                       <width>40</width>
-                       <height>0</height>
-                      </size>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </item>
-                </layout>
-               </item>
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_8b">
-                 <item>
-                  <widget class="QLabel" name="qLabel_x_abs">
-                   <property name="text">
-                    <string>x:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLabel" name="qLabel_xdata_abs">
-                   <property name="minimumSize">
-                    <size>
-                     <width>160</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <property name="text">
-                    <string/>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-              </layout>
-             </item>
             </layout>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="verticalLayoutWidget">
+          <layout class="QVBoxLayout" name="rightVerticalLayout" stretch="0,0">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QTextEdit" name="qTextEdit_qml">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <family>Monospace</family>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+             <property name="focusPolicy">
+              <enum>Qt::NoFocus</enum>
+             </property>
+             <property name="acceptDrops">
+              <bool>false</bool>
+             </property>
+             <property name="lineWrapMode">
+              <enum>QTextEdit::NoWrap</enum>
+             </property>
+             <property name="readOnly">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="qPushButton_qml_update">
+             <property name="focusPolicy">
+              <enum>Qt::NoFocus</enum>
+             </property>
+             <property name="text">
+              <string>update QuakeML text</string>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>
@@ -1456,8 +1561,8 @@ p, l  i { white-space: pre-wrap; }
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1325</width>
-     <height>23</height>
+     <width>1601</width>
+     <height>25</height>
     </rect>
    </property>
   </widget>

@@ -29,10 +29,12 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as QFigureCanva
 from matplotlib.widgets import MultiCursor as MplMultiCursor
 
 from obspy.core import UTCDateTime
+from obspy.core.event import StationMagnitude, StationMagnitudeContribution
 try:
     from obspy.core.util import gps2DistAzimuth
 except:
     from obspy.signal import gps2DistAzimuth
+from obspy.core.event import Arrival, Pick
 
 from obspy.core.util import getMatplotlibVersion
 from obspy import fdsn
@@ -159,21 +161,15 @@ COMMANDLINE_OPTIONS = (
                 'help': "Password for arclink server"}),
         (("--arclink-timeout",), {'dest': "arclink_timeout", 'type': "int",
                 'default': 20, 'help': "Timeout for arclink server"}),
-        (("--fissures-ids",), {'dest': "fissures_ids", 'default': '',
-                'help': "Ids to retrieve via Fissures, star for component "
-                "is allowed, e.g. 'GE.APE..BH*,GR.GRA1..BH*'"}),
-        (("--fissures-network_dc",), {'dest': "fissures_network_dc",
-                'default': ("/edu/iris/dmc", "IRIS_NetworkDC"),
-                'help': "Tuple containing Fissures dns and NetworkDC name."}),
-        (("--fissures-seismogram_dc",), {'dest': "fissures_seismogram_dc",
-                'default': ("/edu/iris/dmc", "IRIS_DataCenter"),
-                'help': "Tuple containing Fissures dns and DataCenter name."}),
-        (("--fissures-name_service",), {'dest': "fissures_name_service",
-                'default': "dmc.iris.washington.edu:6371/NameService",
-                'help': "String containing the Fissures name service."}),
         (("--ignore-chksum",), {'action': "store_false", 'dest': "verify_chksum",
-                'default': True,
-                'help': "Deactivate chksum check for local GSE2 files"}),
+                                'default': True,
+                                'help': "Deactivate chksum check for local GSE2 files"}),
+        (("--verbosity",), {'dest': "verbosity",
+                            'default': "normal",
+                            'help': ("Control verbosity of info window. "
+                                     "Possible values: "
+                                     "'normal' (default), 'verbose', "
+                                     "'debug', 'quiet'")}),
         (("--filter",), {'action': "store_true", 'dest': "filter",
                 'default': False,
                 'help': "Switch filter button on at startup."}))
@@ -187,13 +183,10 @@ PROGRAMS = {
                                    'summary': "hypo.prt"}},
         'focmec': {'filenames': {'exe': "rfocmec", 'phases': "focmec.dat",
                                  'stdout': "focmec.stdout",
-                                 'summary': "focmec.out"}},
-        '3dloc': {'filenames': {'exe': "3dloc_pitsa", 'out': "3dloc-out",
-                                'in': "3dloc-in"}}}
+                                 'summary': "focmec.out"}}}
 SEISMIC_PHASES = ('P', 'S')
-PHASE_COLORS = {'P': "red", 'S': "blue", 'Psynth': "black", 'Ssynth': "black",
-        'Mag': "green", 'PErr1': "red", 'PErr2': "red", 'SErr1': "blue",
-        'SErr2': "blue"}
+PHASE_COLORS = {'P': "red", 'S': "blue", 'Mag': "green"}
+COMPONENT_COLORS = {'Z': "k", 'N': "b", 'E': "r"}
 PHASE_LINESTYLES = {'P': "-", 'S': "-", 'Psynth': "--", 'Ssynth': "--",
         'PErr1': "-", 'PErr2': "-", 'SErr1': "-", 'SErr2': "-"}
 PHASE_LINEHEIGHT_PERC = {'P': 1, 'S': 1, 'Psynth': 1, 'Ssynth': 1,
@@ -211,36 +204,40 @@ KEY_FULLNAMES = {'P': "P pick", 'Psynth': "synthetic P pick",
         'MagMax2': "Magnitude maximum estimation pick"}
 WIDGET_NAMES = ("qToolButton_clearAll", "qToolButton_clearOrigMag",
         "qToolButton_clearFocMec", "qToolButton_doHyp2000",
-        "qToolButton_do3dloc", "qToolButton_doNlloc", "qComboBox_nllocModel",
-        "qToolButton_calcMag", "qToolButton_doFocMec", "qToolButton_showMap",
+        "qToolButton_doNlloc", "qComboBox_nllocModel",
+        "qToolButton_doFocMec", "qToolButton_showMap",
         "qToolButton_showFocMec", "qToolButton_nextFocMec",
         "qToolButton_showWadati", "qToolButton_getNextEvent",
         "qToolButton_updateEventList", "qToolButton_sendNewEvent",
-        "qToolButton_replaceEvent", "qCheckBox_publishEvent",
-        "qToolButton_deleteEvent", "qCheckBox_sysop",
-        "qLineEdit_sysopPassword", "qComboBox_eventType",
+        "qToolButton_replaceEvent",
+        "qToolButton_deleteEvent", "qCheckBox_public",
+        "qCheckBox_sysop", "qLineEdit_sysopPassword", "qComboBox_eventType",
         "qToolButton_previousStream", "qLabel_streamNumber",
         "qComboBox_streamName", "qToolButton_nextStream",
         "qToolButton_overview", "qComboBox_phaseType", "qToolButton_rotateLQT",
         "qToolButton_rotateZRT", "qToolButton_filter", "qToolButton_trigger",
         "qToolButton_arpicker", "qComboBox_filterType", "qCheckBox_zerophase",
         "qLabel_highpass", "qDoubleSpinBox_highpass", "qLabel_lowpass",
-        "qDoubleSpinBox_lowpass", "qLabel_sta", "qDoubleSpinBox_sta",
+        "qDoubleSpinBox_lowpass",
+        "qDoubleSpinBox_corners", "qLabel_corners", "qCheckBox_50Hz",
+        "qTextEdit_qml", "qPushButton_qml_update",
+        "qLabel_sta", "qDoubleSpinBox_sta",
         "qLabel_lta", "qDoubleSpinBox_lta", "qToolButton_spectrogram",
         "qCheckBox_spectrogramLog", "qLabel_wlen", "qDoubleSpinBox_wlen",
         "qLabel_perlap", "qDoubleSpinBox_perlap", "qPlainTextEdit_stdout",
         "qPlainTextEdit_stderr")
 #Estimating the maximum/minimum in a sample-window around click
 MAG_PICKWINDOW = 10
-MAG_MARKER = {'marker': "x", 'edgewidth': 1.8, 'size': 20}
-AXVLINEWIDTH = 1.2
+MAG_MARKER = {'marker': (8, 2, 0), 'edgewidth': 1.8, 'size': 20}
+AXVLINEWIDTH = 1.5
 # dictionary for key-bindings.
 KEYS = {'setPick': "a", 'setPickError': "s", 'delPick': "q",
         'setMagMin': "a", 'setMagMax': "s", 'delMagMinMax': "q",
         'switchPhase': "control",
         'prevStream': "y", 'nextStream': "x", 'switchWheelZoomAxis': "shift",
         'setWeight': {'0': 0, '1': 1, '2': 2, '3': 3},
-        'setPol': {'u': "up", 'd': "down", '+': "poorup", '-': "poordown"},
+        'setPol': {'u': "positive", 'd': "negative", '-': "negative",
+                   '+': "positive"},
         'setOnset': {'i': "impulsive", 'e': "emergent"}}
 # XXX Qt:
 #KEYS = {'setPick': "Key_A", 'setPickError': "Key_S", 'delPick': "Key_Q",
@@ -261,10 +258,19 @@ S_POL_PHASE_TYPE = {'R': "SV", 'T': "SH"}
 POLARITY_2_FOCMEC = {'up': "U", 'poorup': "+", 'down': "D", 'poordown': "-",
                      'left': "L", 'right': "R", 'forward': "F", 'backward': "B"}
 
-# the following dicts' keys should be all lower case, we use "".lower() later
-POLARITY_CHARS = POLARITY_2_FOCMEC
-ONSET_CHARS = {'impulsive': "I", 'emergent': "E",
-               'implusive': "I"} # XXX some old events have a typo there... =)
+# only strings involved, so shallow copy is fine
+POLARITY_CHARS = {'positive': "+", 'negative': "-", 'undecidable': "?",
+                  None: "_"}
+ONSET_CHARS = {'impulsive': "I", 'emergent': "E", 'questionable': "?",
+               None: "_"}
+LOGLEVELS = {'normal': "CRITICAL", 'verbose': "INFO", 'debug': "DEBUG",
+             'quiet': 100}
+
+ONE_SIGMA = 68.3
+TWO_SIGMA = 95.4
+
+NOT_REIMPLEMENTED_MSG = ("Feature was not reimplemented after major "
+                         "change to QuakeML.")
 
 class QMplCanvas(QFigureCanvas):
     """
@@ -312,8 +318,7 @@ def fetch_waveforms_with_metadata(options):
     """
     Sets up obspy clients and fetches waveforms and metadata according to command
     line options.
-    Now also fetches data via arclink (fissures) if --arclink-ids
-    (--fissures-ids) is used.
+    Now also fetches data via arclink if --arclink-ids is used.
     XXX Notes: XXX
      - there is a problem in the arclink client with duplicate traces in
        fetched streams. therefore at the moment it might be necessary to use
@@ -444,39 +449,6 @@ def fetch_waveforms_with_metadata(options):
                 tr.stats['_format'] = "ArcLink"
             streams.append(st)
         clients['ArcLink'] = client
-    # Fissures
-    if options.fissures_ids:
-        from obspy.fissures import Client
-        print "=" * 80
-        print "Fetching waveforms and metadata via Fissures:"
-        print "-" * 80
-        client = Client(network_dc=options.fissures_network_dc,
-                        seismogram_dc=options.fissures_seismogram_dc,
-                        name_service=options.fissures_name_service)
-        for id in options.fissures_ids.split(","):
-            net, sta, loc, cha = id.split(".")
-            net_sta = "%s.%s" % (net, sta)
-            if net_sta in sta_fetched:
-                print "%s skipped! (Was already retrieved)" % net_sta.ljust(8)
-                continue
-            try:
-                sys.stdout.write("\r%s ..." % net_sta.ljust(8))
-                sys.stdout.flush()
-                st = client.getWaveform(network=net, station=sta,
-                                        location=loc, channel=cha,
-                                        starttime=t1, endtime=t2,
-                                        getPAZ=getPAZ, getCoordinates=getCoordinates)
-                sta_fetched.add(net_sta)
-                sys.stdout.write("\r%s fetched.\n" % net_sta.ljust(8))
-                sys.stdout.flush()
-            except Exception, e:
-                sys.stdout.write("\r%s skipped! (Server replied: %s)\n" % (net_sta.ljust(8), e))
-                sys.stdout.flush()
-                continue
-            for tr in st:
-                tr.stats['_format'] = "Fissures"
-            streams.append(st)
-        clients['Fissures'] = client
     print "=" * 80
     return (clients, streams)
 
@@ -647,13 +619,21 @@ def setup_dicts(streams, options):
     for i in range(len(streams))[::-1]:
         dict = dicts[i]
         st = streams[i]
+        dict['picks'] = {}
+        dict['arrivals'] = {}
+        dict['station_magnitude'] = StationMagnitude()
+        dict['station_magnitude_contribution'] = StationMagnitudeContribution()
         trZ = st.select(component="Z")[0]
         if len(st) == 3:
             trN = st.select(component="N")[0]
             trE = st.select(component="E")[0]
         dict['MagUse'] = True
         sta = trZ.stats.station.strip()
+        net = trZ.stats.network.strip()
+        loc = trZ.stats.location.strip()
         dict['Station'] = sta
+        dict['Network'] = net
+        dict['Location'] = loc
         #XXX not used: dictsMap[sta] = dict
         # XXX should not be necessary
         #if net == '':
@@ -717,31 +697,6 @@ def setup_external_programs(options):
         prog_dict['env']['PATH'] = prog_dict['dir'] + os.pathsep + env['PATH']
         if 'SystemRoot' in env:
             prog_dict['env']['SystemRoot'] = env['SystemRoot']
-    # 3dloc ###############################################################
-    prog_dict = PROGRAMS['3dloc']
-    prog_dict['env']['D3_VELOCITY'] = \
-            os.path.join(prog_dict['dir'], 'D3_VELOCITY') + os.sep
-    prog_dict['env']['D3_VELOCITY_2'] = \
-            os.path.join(prog_dict['dir'], 'D3_VELOCITY_2') + os.sep
-    def tmp(prog_dict):
-        files = prog_dict['files']
-        for file in [files['out'], files['in']]:
-            if os.path.isfile(file):
-                os.remove(file)
-        return
-    prog_dict['PreCall'] = tmp
-    def tmp(prog_dict):
-        sub = subprocess.Popen(prog_dict['files']['exe'], shell=SHELL,
-                cwd=prog_dict['dir'], env=prog_dict['env'],
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        if system == "Darwin":
-            returncode = sub.returncode
-        else:
-            returncode = sub.wait()
-        msg = "".join(sub.stdout.readlines())
-        err = "".join(sub.stderr.readlines())
-        return (msg, err, returncode)
-    prog_dict['Call'] = tmp
     # Hyp2000 #############################################################
     prog_dict = PROGRAMS['hyp_2000']
     prog_dict['env']['HYP2000_DATA'] = prog_dict['dir'] + os.sep
@@ -878,7 +833,6 @@ def readNLLocScatter(scat_filename, textviewStdErrImproved):
     floats per sample: x, y, z, pdf value) and converts X/Y Gauss-Krueger
     coordinates (zone 4, central meridian 12 deg) to Longitude/Latitude in
     WGS84 reference ellipsoid.
-    We do this using the Linux command line tool cs2cs.
     Messages on stderr are written to specified GUI textview.
     Returns an array of xy pairs.
     """
@@ -982,8 +936,9 @@ def coords2azbazinc(stream, origin):
     """
     sta_coords = stream[0].stats.coordinates
     dist, bazim, azim = gps2DistAzimuth(sta_coords.latitude,
-            sta_coords.longitude, origin['Latitude'], origin['Longitude'])
-    elev_diff = sta_coords.elevation - origin['Depth'] * 1000
+            sta_coords.longitude, float(origin.latitude),
+            float(origin.longitude))
+    elev_diff = sta_coords.elevation - float(origin.depth)
     inci = math.atan2(dist, elev_diff) * 180.0 / math.pi
     return azim, bazim, inci
 
@@ -1005,9 +960,39 @@ class SplitWriter():
             if isinstance(obj, PyQt4.QtGui.QPlainTextEdit):
                 if msg == '\n':
                     return
-                obj.appendPlainText(msg)
+                if msg.endswith('\n'):
+                    msg_ = msg[:-1]
+                else:
+                    msg_ = msg
+                obj.appendPlainText(msg_)
             else:
                 obj.write(msg)
+
+
+def getArrivalForPick(arrivals, pick):
+    """
+    searches first origin of event for an arrival that references the given
+    pick and returns it (empty Arrival object otherwise).
+    """
+    arrival = None
+    for a in arrivals:
+        if a.pick_id == pick.resource_id:
+            arrival = a
+            break
+    return arrival
+
+
+def getPickForArrival(picks, arrival):
+    """
+    searches list of picks for a pick that matches the arrivals pick_id
+    and returns it (empty Pick object otherwise).
+    """
+    pick = None
+    for p in picks:
+        if arrival.pick_id == p.resource_id:
+            pick = p
+            break
+    return pick
 
 
 def get_event_info(starttime, endtime, streams):
@@ -1058,3 +1043,26 @@ def apply_gse2_calib(tr):
                "sensitivity (%s, %s). Continuing anyway.")
         msg = msg % (e.__class__.__name__, str(e))
         print msg
+
+
+def map_rotated_channel_code(channel, rotation):
+    """
+    Modifies a channel code according to given rotation (e.g. EHN -> EHR)
+
+    :type channel: str
+    :type rotation: str
+    """
+    if rotation in ("LQT", "ZRT"):
+        while len(channel) < 3:
+            msg = ("Channel code ('%s') does not have three characters. "
+                   "Filling with leading spaces.")
+            warnings.warn(msg % channel)
+            channel = " " + channel
+        if rotation == "LQT":
+            mapping = ROTATE_LQT_COMP_MAP
+        elif rotation == "ZRT":
+            mapping = ROTATE_ZRT_COMP_MAP
+        channel = channel[0:2] + mapping[channel[2]]
+    elif rotation is None:
+        pass
+    return channel
