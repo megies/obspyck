@@ -3843,6 +3843,10 @@ class ObsPyck(QtGui.QMainWindow):
 
         user = ev.creation_info.author
         public = ev.extra['public']['value']
+        if public in ("True", "true"):
+            public = True
+        elif public in ("False", "false"):
+            public = False
         self.widgets.qCheckBox_public.setChecked(public)
 
         # parse quakeML event type and select right one or add a custom one
