@@ -68,8 +68,7 @@ class ObsPyck(QtGui.QMainWindow):
         Standard init.
         """
         self.clients = clients
-        self.streams_bkp = streams
-        self.streams = [st.copy() for st in self.streams_bkp]
+        self.streams = streams
         self.options = options
         self.keys = keys
 
@@ -241,8 +240,8 @@ class ObsPyck(QtGui.QMainWindow):
 
         # sort streams by station name
         streams.sort(key=lambda st: st[0].stats['station'])
-        # XXX TODO completely get rid of old 'dicts' construct
-        (streams, dicts) = setup_dicts(streams, options)
+        streams = cleanup_streams(streams, options)
+        self.streams_bkp = [st.copy() for st in streams]
         # XXX TODO replace old 'eventMapColors'
 
         #Define a pointer to navigate through the streams
