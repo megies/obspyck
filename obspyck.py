@@ -300,19 +300,6 @@ class ObsPyck(QtGui.QMainWindow):
         """
         return self.streams[self.stPt]
 
-    def getCurrentDict(self):
-        """
-        returns dictionary for currently active/displayed stream
-        """
-        return self.dicts[self.stPt]
-
-    #def getCurrentPicks(self):
-    #    """
-    #    returns dictionary with picks for currently active/displayed stream
-    #    (empty dictionary else)
-    #    """
-    #    return self.dicts[self.stPt].get("picks", {})
-
     def getCurrentPhase(self):
         """
         returns currently active phase as a string
@@ -1015,34 +1002,6 @@ class ObsPyck(QtGui.QMainWindow):
         Also displays a message.
         """
         raise NotImplementedError(NOT_REIMPLEMENTED_MSG)
-        f1 = self.options.ar_f1
-        f2 = self.options.ar_f2
-        sta_p = self.options.ar_sta_p
-        lta_p = self.options.ar_lta_p
-        sta_s = self.options.ar_sta_s
-        lta_s = self.options.ar_lta_s
-        m_p = self.options.ar_m_p
-        m_s = self.options.ar_m_s
-        l_p = self.options.ar_l_p
-        l_s = self.options.ar_l_s
-        self.info("Setting automatic picks using AR picker:")
-        for i, st in enumerate(self.streams):
-            z = st.select(component="Z")[0].data
-            n = st.select(component="N")[0].data
-            e = st.select(component="E")[0].data
-            spr = st[0].stats.sampling_rate
-            p, s = arPick(z, n, e, spr, f1, f2, lta_p, sta_p, lta_s, sta_s,
-                          m_p, m_s, l_p, l_s)
-            net = st[0].stats.network
-            sta = st[0].stats.station
-            self.info("%s.%s: P set at %.3f (%s)" % (net, sta, p, self.time_rel2abs(p)))
-            self.info("%s.%s: S set at %.3f (%s)" % (net, sta, s, self.time_rel2abs(s)))
-            d = self.dicts[i]
-            d['P'] = p
-            d['S'] = s
-        self.updateAllItems()
-        self.redraw()
-        return
 
     def debugger(self):
         sys.stdout = self.stdout_backup
@@ -1110,7 +1069,7 @@ class ObsPyck(QtGui.QMainWindow):
         i = self.axs.index(ax)
         ax.text(x, y, label, transform=self.trans[i], color='k',
                 family='monospace', va="top")
-    
+
     def drawIds(self):
         """
         draws the trace ids plotted as text into each axes.
@@ -1157,10 +1116,9 @@ class ObsPyck(QtGui.QMainWindow):
         else:
             tmp_stream = self.streams[self.stPt]
         for ax, tr in zip(self.axs, tmp_stream):
-            tr_id = tr.id
             # trace ids are first text-plot so its at position 0
             t = ax.texts[0]
-            t.set_text(tr_id)
+            t.set_text(tr.id)
             t.set_color(textcolor)
 
     def drawStream(self):
@@ -1732,7 +1690,7 @@ class ObsPyck(QtGui.QMainWindow):
             except:
                 err = "Error: Failed to map polarity information to " + \
                       "FOCMEC identifier (%s, %s, %s), skipping."
-                err = err % (dict['Station'], pt, pol)
+                err = err % (pick.waveform_id.station_code, pt, pol)
                 self.error(err)
                 continue
             count += 1
@@ -1828,7 +1786,7 @@ class ObsPyck(QtGui.QMainWindow):
         ax = self.axFocMecStations
         ax.set_title(text)
         ax.set_axis_off()
-        for dict, st in zip(self.dicts, self.streams):
+        for st in self.streams:
             net = st[0].stats.network
             sta = st[0].stats.station
             pick = self.getPick(network=net, station=sta, phase_hint='P')
@@ -1915,8 +1873,6 @@ class ObsPyck(QtGui.QMainWindow):
         precall(prog_dict)
 
         f = open(files['phases'], 'wt')
-        #phases_hypo71 = self.dicts2hypo71Phases()
-        #f.write(phases_hypo71)
         phases_nlloc = self.dicts2NLLocPhases()
         f.write(phases_nlloc)
         f.close()
@@ -2211,7 +2167,6 @@ class ObsPyck(QtGui.QMainWindow):
                 msg = "This should not happen! Location output was read and a corresponding pick is missing!"
                 raise NotImplementedError(msg)
             arrival = Arrival(origin=o, pick=pick)
-            #dict['Psynth'] = res + dict['P']
             # residual is defined as P-Psynth by NLLOC!
             arrival.distance = kilometer2degrees(epidist)
             arrival.phase = type
@@ -2470,7 +2425,6 @@ class ObsPyck(QtGui.QMainWindow):
         # XXX TODO need to check that distances are stored with arrival upon
         # creation
         epidists = [a.distance for a in o.arrivals]
-        # XXX TODO check if dict['distHypo'] is needed anywhere
         if not o.quality:
             o.quality = OriginQuality()
         o.quality.maximum_distance = max(epidists)
@@ -2577,7 +2531,7 @@ class ObsPyck(QtGui.QMainWindow):
         pTimes = []
         spTimes = []
         stations = []
-        for st, dict in zip(self.streams, self.dicts):
+        for st in self.streams:
             net = st[0].stats.network
             sta = st[0].stats.station
             pick_p = self.getPick(network=net, station=sta, phase_hint='P')
@@ -2589,7 +2543,7 @@ class ObsPyck(QtGui.QMainWindow):
                 pTimes.append(p)
                 sp = pick_s.time - pick_p.time
                 spTimes.append(sp)
-                stations.append(dict['Station'])
+                stations.append(st[0].stats.station)
             else:
                 continue
         if len(pTimes) < 2:
@@ -2966,7 +2920,7 @@ class ObsPyck(QtGui.QMainWindow):
     # XXX TODO rename method
     def dicts2hypo71Stations(self):
         """
-        Returns the station location information in self.dicts in hypo71
+        Returns the station location information in hypo71
         stations file format as a string. This string can then be written to
         a file.
         """
@@ -2989,11 +2943,9 @@ class ObsPyck(QtGui.QMainWindow):
 
         return hypo71_string
 
-    # XXX continue here!!!
-    
     def dicts2hypo71Phases(self):
         """
-        Returns the pick information in self.dicts in hypo71 phase file format
+        Returns the pick information in hypo71 phase file format
         as a string. This string can then be written to a file.
 
         Information on the file formats can be found at:
@@ -3140,7 +3092,7 @@ class ObsPyck(QtGui.QMainWindow):
     
     def dicts2NLLocPhases(self):
         """
-        Returns the pick information in self.dicts in NonLinLoc's own phase
+        Returns the pick information in NonLinLoc's own phase
         file format as a string. This string can then be written to a file.
         Currently only those fields really needed in location are actually used
         in assembling the phase information string.
@@ -3252,7 +3204,7 @@ class ObsPyck(QtGui.QMainWindow):
 
     def get_QUAKEML_string(self):
         """
-        Returns information of all dictionaries as xml file (type string)
+        Returns all information as xml file (type string)
         """
         cat = self.catalog
         e = cat[0]

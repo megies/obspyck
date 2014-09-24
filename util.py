@@ -492,8 +492,7 @@ def merge_check_and_cleanup_streams(streams, options):
 
     # Sort streams again, if there was a merge this could be necessary 
     for st in streams:
-        st.sort()
-        st.reverse()
+        st.sort(reverse=True)
     sta_list = set()
     # XXX we need the list() because otherwise the iterator gets garbled if
     # XXX removing streams inside the for loop!!
@@ -600,63 +599,39 @@ def merge_check_and_cleanup_streams(streams, options):
                     raise
     return (warn_msg, merge_msg, streams)
 
-def setup_dicts(streams, options):
+
+def cleanup_streams(streams, options):
     """
-    Function to set up the list of dictionaries that is used alongside the
-    streams list.
-    Also removes streams that do not provide the necessary metadata.
+    Function to remove streams that do not provide the necessary metadata.
 
     :returns: (list(:class:`obspy.core.stream.Stream`s),
                list(dict))
     """
-    #set up a list of dictionaries to store all picking data
-    # set all station magnitude use-flags False
-    dicts = []
-    for i in xrange(len(streams)):
-        dicts.append({})
     # we need to go through streams/dicts backwards in order not to get
     # problems because of the pop() statement
     for i in range(len(streams))[::-1]:
-        dict = dicts[i]
         st = streams[i]
-        dict['picks'] = {}
-        dict['arrivals'] = {}
-        dict['station_magnitude'] = StationMagnitude()
-        dict['station_magnitude_contribution'] = StationMagnitudeContribution()
         trZ = st.select(component="Z")[0]
         if len(st) == 3:
             trN = st.select(component="N")[0]
             trE = st.select(component="E")[0]
-        dict['MagUse'] = True
         sta = trZ.stats.station.strip()
         net = trZ.stats.network.strip()
-        loc = trZ.stats.location.strip()
-        dict['Station'] = sta
-        dict['Network'] = net
-        dict['Location'] = loc
-        #XXX not used: dictsMap[sta] = dict
-        # XXX should not be necessary
-        #if net == '':
-        #    net = 'BW'
-        #    print "Warning: Got no network information, setting to " + \
-        #          "default: BW"
         if not options.nometadata:
             try:
-                dict['StaLon'] = trZ.stats.coordinates.longitude
-                dict['StaLat'] = trZ.stats.coordinates.latitude
-                dict['StaEle'] = trZ.stats.coordinates.elevation / 1000. # all depths in km!
-                dict['pazZ'] = trZ.stats.paz
+                trZ.stats.coordinates.get("longitude")
+                trZ.stats.coordinates.get("latitude")
+                trZ.stats.coordinates.get("elevation")
+                trZ.stats.get("paz")
                 if len(st) == 3:
-                    dict['pazN'] = trN.stats.paz
-                    dict['pazE'] = trE.stats.paz
+                    trN.stats.get("paz")
+                    trE.stats.get("paz")
             except:
-                net = trZ.stats.network.strip()
-                print 'Error: Missing metadata for %s. Discarding stream.' \
-                        % (":".join([net, sta]))
+                print 'Error: Missing metadata for %s.%s. Discarding stream.' \
+                    % (net, sta)
                 streams.pop(i)
-                dicts.pop(i)
                 continue
-    return streams, dicts
+    return streams
 
 def setup_external_programs(options):
     """
