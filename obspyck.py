@@ -2649,6 +2649,10 @@ class ObsPyck(QtGui.QMainWindow):
                 plts.append(ax.plot(sampletimes, data_, color=color, alpha=alpha,
                                     zorder=1000)[0])
             # plot picks and arrivals
+            # seiscomp does not store location code with picks, so allow to
+            # match any location code in that case..
+            if event.get("creation_info", {}).get("author", "").startswith("scevent"):
+                loc = None
             picks = self.getPicks(network=net, station=sta, location=loc)
             try:
                 arrivals = event.origins[0].arrivals
@@ -3389,6 +3393,10 @@ class ObsPyck(QtGui.QMainWindow):
             ax.patches = []
             ids.append(st[_i].id)
         # plot picks and arrivals
+        # seiscomp does not store location code with picks, so allow to
+        # match any location code in that case..
+        if event.get("creation_info", {}).get("author", "").startswith("scevent"):
+            loc = None
         picks = self.getPicks(network=net, station=sta, location=loc)
         try:
             arrivals = event.origins[0].arrivals
@@ -3815,6 +3823,12 @@ class ObsPyck(QtGui.QMainWindow):
         # XXX TODO: do we need this!?
         # analyze amplitudes (magnitude picks):
         for ampl in ev.amplitudes:
+            # only works for events created with obspyck as only in that case
+            # we know the logic of the magnitude picking
+            if not str(ampl.method_id).endswith("/amplitude_method/obspyck/1"):
+                msg = "Skipping amplitude not set with obspyck."
+                self.error(msg)
+                continue
             tr = self.getTrace(ampl.waveform_id.getSEEDString())
             if tr is None:
                 continue
