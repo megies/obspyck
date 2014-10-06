@@ -2699,26 +2699,8 @@ class ObsPyck(QtGui.QMainWindow):
         #errLon, errLat = utlLonLat(o.longitude, o.latitude, o.longitude_errors,
         #                           o.latitude_errors)
 
-        ypos = 0.97
-        xpos = 0.03
-        info = "\n".join([
-            "Origin:",
-            " Time: %s" % o.time,
-            " Longitude: %.5f" % o.longitude,
-            " Latitude: %.5f" % o.latitude,
-            " Depth: %.3f km" % (o.depth / 1e3)])
-        axEM.text(xpos, ypos, info, va='top', ha='left', family='monospace',
-                  transform=axEM.transAxes)
-        #if o.quality and o.quality.standard_error:
-        #    axEM.text(xpos, ypos, "\n\n\n\n Residual: %.3f s" % \
-        #              o.quality.standard_error, va='top', ha='left',
-        #              color=PHASE_COLORS['P'], transform=axEM.transAxes,
-        #              family='monospace')
-        link = "http://maps.google.de/maps?f=q&q=%.6f,%.6f" % \
-               (o.latitude, o.longitude)
-        self.widgets.qPlainTextEdit_stdout.appendHtml("<a href='%s'>%s</a> &nbsp;" % (link, link))
-
         ou = o.origin_uncertainty
+        errX, errY = None, None
         if ou is not None:
             # azimuth measured from north gives direction of ellipse major axis
             if ou.azimuth_max_horizontal_uncertainty == 0:
@@ -2728,7 +2710,6 @@ class ObsPyck(QtGui.QMainWindow):
                 errX, errY = (ou.max_horizontal_uncertainty,
                               ou.min_horizontal_uncertainty)
             else:
-                errX, errY = None, None
                 # XXX TODO: support any error ellipses
                 msg = ("Error ellipses with azimuth not equal to 0 or 90 "
                        "degrees from North are not supported yet..")
@@ -2756,6 +2737,30 @@ class ObsPyck(QtGui.QMainWindow):
                             o.time, m.mag, o.longitude, o.latitude, o.depth / 1e3,
                             errX / 1e3, errY / 1e3,
                             o.depth_errors.uncertainty / 1e3, o.quality.standard_error))
+
+        ypos = 0.97
+        xpos = 0.03
+        info = ["Origin:",
+                " Time: %s" % o.time.strftime("%Y-%m-%d %H:%M:%S UTC (%a)")]
+        if errX is not None:
+            info.append(" Longitude: %.5f +/- %0.2fkm" % (o.longitude, errX / 1e3))
+            info.append(" Latitude: %.5f +/- %0.2fkm" % (o.latitude, errY / 1e3))
+        else:
+            info.append(" Longitude: %.5f" % o.longitude)
+            info.append(" Latitude: %.5f" % o.latitude)
+        info.append(" Depth: %.3f km +/- %0.2fkm" % (o.depth / 1e3, o.depth_errors.uncertainty / 1e3))
+        info = "\n".join(info)
+        axEM.text(xpos, ypos, info, va='top', ha='left', family='monospace',
+                  transform=axEM.transAxes)
+        #if o.quality and o.quality.standard_error:
+        #    axEM.text(xpos, ypos, "\n\n\n\n Residual: %.3f s" % \
+        #              o.quality.standard_error, va='top', ha='left',
+        #              color=PHASE_COLORS['P'], transform=axEM.transAxes,
+        #              family='monospace')
+        link = "http://maps.google.de/maps?f=q&q=%.6f,%.6f" % \
+               (o.latitude, o.longitude)
+        self.widgets.qPlainTextEdit_stdout.appendHtml("<a href='%s'>%s</a> &nbsp;" % (link, link))
+
         self.scatterMagIndices = []
         self.scatterMagLon = []
         self.scatterMagLat = []
