@@ -3837,7 +3837,7 @@ class ObsPyck(QtGui.QMainWindow):
         for ampl in ev.amplitudes:
             # only works for events created with obspyck as only in that case
             # we know the logic of the magnitude picking
-            if not str(ampl.method_id).endswith("/amplitude_method/obspyck/1"):
+            if not str(ampl.method_id).endswith("/amplitude_method/obspyck/2"):
                 msg = "Skipping amplitude not set with obspyck."
                 self.error(msg)
                 continue
