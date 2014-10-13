@@ -2727,16 +2727,14 @@ class ObsPyck(QtGui.QMainWindow):
                                        #angle=ou.azimuth_max_horizontal_uncertainty,
                                        fill=False)
                     axEM.add_artist(errorell)
-                if event.magnitudes:
-                    try:
-                        m = event.magnitudes[0]
-                    except:
-                        pass
-                    else:
-                        self.critical("%s %.2f %.6f %.6f %.3f %.3f %.3f %.4f %.6f" % (
-                            o.time, m.mag, o.longitude, o.latitude, o.depth / 1e3,
-                            errX / 1e3, errY / 1e3,
-                            o.depth_errors.uncertainty / 1e3, o.quality.standard_error))
+        m = event.magnitudes and event.magnitudes[0] or None
+        try:
+            self.critical("%s %.2f %.6f %.6f %.3f %.3f %.3f %.4f %.6f" % (
+                o.time, m.mag, o.longitude, o.latitude, o.depth / 1e3,
+                errX / 1e3, errY / 1e3,
+                o.depth_errors.uncertainty / 1e3, o.quality.standard_error))
+        except:
+            pass
 
         ypos = 0.97
         xpos = 0.03
@@ -2749,6 +2747,11 @@ class ObsPyck(QtGui.QMainWindow):
             info.append(" Longitude: %.5f" % o.longitude)
             info.append(" Latitude: %.5f" % o.latitude)
         info.append(" Depth: %.3f km +/- %0.2fkm" % (o.depth / 1e3, o.depth_errors.uncertainty / 1e3))
+        if m is not None:
+            m_ = m.mag
+            m_err_ = m.mag_errors.uncertainty
+            info.append("")
+            info.append("Magnitude: %.1f +/- %.2f" % (m_, m_err_))
         info = "\n".join(info)
         axEM.text(xpos, ypos, info, va='top', ha='left', family='monospace',
                   transform=axEM.transAxes)
@@ -2804,8 +2807,12 @@ class ObsPyck(QtGui.QMainWindow):
                 self.scatterMagLon.append(coords.longitude)
                 self.scatterMagLat.append(coords.latitude)
                 self.scatterMagUsed.append(sm.get("used", True))
+                try:
+                    chann_info = " (%s)" % sm.extra.channels["value"]
+                except:
+                    chann_info = ""
                 label = '\n' * (_i + 3) + \
-                        '  %0.2f (%s)' % (sm.mag, sm.waveform_id.channel_code)
+                        '  %0.2f%s' % (sm.mag, chann_info)
                 axEM.text(coords.longitude, coords.latitude, label, va='top',
                           family='monospace', color=PHASE_COLORS['Mag'])
                 break
