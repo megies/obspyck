@@ -2006,7 +2006,7 @@ class ObsPyck(QtGui.QMainWindow):
         # assign origin info
         o = Origin()
         self.catalog[0].origins = [o]
-        o.method_id = "/".join([ID_ROOT, "location_method", "nlloc", "2"])
+        o.method_id = "/".join([ID_ROOT, "location_method", "nlloc", "3"])
         o.origin_uncertainty = OriginUncertainty()
         o.quality = OriginQuality()
         ou = o.origin_uncertainty
@@ -2135,7 +2135,7 @@ class ObsPyck(QtGui.QMainWindow):
                 continue
             # get values from line
             station = line[0]
-            epidist = float(line[22])
+            epidist = float(line[21])
             azimuth = float(line[23])
             ray_dip = float(line[24])
             # if we do the location on traveltime-grids without angle-grids we
@@ -2426,9 +2426,9 @@ class ObsPyck(QtGui.QMainWindow):
         epidists = [a.distance for a in o.arrivals]
         if not o.quality:
             o.quality = OriginQuality()
-        o.quality.maximum_distance = max(epidists)
-        o.quality.minimum_distance = min(epidists)
-        o.quality.median_distance = np.median(epidists)
+        o.quality.maximum_distance = kilometer2degrees(max(epidists))
+        o.quality.minimum_distance = kilometer2degrees(min(epidists))
+        o.quality.median_distance = kilometer2degrees(np.median(epidists))
 
     def hypoDist(self, coords):
         o = self.catalog[0].origins[0]
