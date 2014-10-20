@@ -2426,9 +2426,9 @@ class ObsPyck(QtGui.QMainWindow):
         epidists = [a.distance for a in o.arrivals]
         if not o.quality:
             o.quality = OriginQuality()
-        o.quality.maximum_distance = kilometer2degrees(max(epidists))
-        o.quality.minimum_distance = kilometer2degrees(min(epidists))
-        o.quality.median_distance = kilometer2degrees(np.median(epidists))
+        o.quality.maximum_distance = max(epidists)
+        o.quality.minimum_distance = min(epidists)
+        o.quality.median_distance = np.median(epidists)
 
     def hypoDist(self, coords):
         o = self.catalog[0].origins[0]
