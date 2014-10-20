@@ -1952,7 +1952,7 @@ class ObsPyck(QtGui.QMainWindow):
         
         line = line.split()
         rms = float(line[8])
-        gap = int(line[12])
+        gap = float(line[12])
 
         # goto location quality info line
         try:
