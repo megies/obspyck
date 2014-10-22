@@ -144,9 +144,20 @@ COMMANDLINE_OPTIONS = (
                 "\"safe\": overlaps are discarded "
                 "completely\n  \"overwrite\": the second trace is used for "
                 "overlapping parts of the trace"}),
+        (("--fdsn-ids",), {'dest': "fdsn_ids", 'default': '',
+                           'help': "Ids to retrieve via FDSN, separated by commas, wildcards allowed, e.g. 'BW.M*..EH*,BW.ROTZ..EH*'"}),
+        (("--fdsn-base_url",), {'dest': "fdsn_base_url",
+                                'default': 'IRIS',
+                                'help': "Base URL of FDSN server (or alias known by ObsPy)"}),
+        (("--fdsn-user",), {'dest': "fdsn_user", 'default': None,
+                            'help': "Username for restricted data access of FDSN server"}),
+        (("--fdsn-password",), {'dest': "fdsn_password", 'default': None,
+                                'help': "Password for restricted data access of FDSN server"}),
+        (("--fdsn-timeout",), {'dest': "fdsn_timeout", 'type': "int",
+                               'default': 30, 'help': "Maximum wait time for a single request to the FDSN server to finish"}),
         (("--arclink-ids",), {'dest': "arclink_ids", 'default': '',
-                'help': "Ids to retrieve via arclink, star for channel "
-                "is allowed, e.g. 'BW.RJOB..EH*,BW.ROTZ..EH*'"}),
+                              'help': "Ids to retrieve via arclink, star for channel "
+                                      "is allowed, e.g. 'BW.RJOB..EH*,BW.ROTZ..EH*'"}),
         (("--arclink-servername",), {'dest': "arclink_servername",
                 'default': 'webdc.eu',
                 'help': "Servername of the arclink server"}),
@@ -449,6 +460,44 @@ def fetch_waveforms_with_metadata(options):
                 tr.stats['_format'] = "ArcLink"
             streams.append(st)
         clients['ArcLink'] = client
+    # FDSN
+    if options.fdsn_ids:
+        from obspy.fdsn import Client
+        print "=" * 80
+        print "Fetching waveforms and metadata via FDSN:"
+        print "-" * 80
+        client = Client(base_url=options.fdsn_base_url,
+                        timeout=options.fdsn_timeout,
+                        user=options.fdsn_user,
+                        password=options.fdsn_password)
+        for id in options.fdsn_ids.split(","):
+            net, sta, loc, cha = id.split(".")
+            net_sta = "%s.%s" % (net, sta)
+            if net_sta in sta_fetched:
+                print "%s skipped! (Was already retrieved)" % net_sta.ljust(8)
+                continue
+            try:
+                sys.stdout.write("\r%s ..." % net_sta.ljust(8))
+                sys.stdout.flush()
+                st = client.get_waveforms(network=net, station=sta,
+                                          location=loc, channel=cha,
+                                          starttime=t1, endtime=t2,
+                                          attach_response=True)
+                sta_fetched.add(net_sta)
+                sys.stdout.write("\r%s fetched.\n" % net_sta.ljust(8))
+                sys.stdout.flush()
+            except Exception, e:
+                sys.stdout.write("\r%s skipped! (Server replied: %s)\n" % (net_sta.ljust(8), e))
+                sys.stdout.flush()
+                continue
+            for tr in st:
+                tr.stats['_format'] = "FDSN"
+                try:
+                    tr.stats.paz = tr.stats.response.get_paz_dict()
+                except:
+                    tr.stats.paz = _get_paz_dict_from_response(tr.stats.response)
+            streams.append(st)
+        clients['FDSN'] = client
     print "=" * 80
     return (clients, streams)
 
@@ -1041,3 +1090,12 @@ def map_rotated_channel_code(channel, rotation):
     elif rotation is None:
         pass
     return channel
+
+
+def _get_paz_dict_from_response(response):
+    paz = response.get_paz()
+    paz_dict = {}
+    paz_dict['poles'] = copy.deepcopy(paz.poles)
+    paz_dict['zeros'] = copy.deepcopy(paz.zeros)
+    paz_dict['sensitivity'] = response.instrument_sensitivity.value
+    return paz_dict
