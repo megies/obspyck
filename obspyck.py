@@ -209,8 +209,6 @@ class ObsPyck(QtGui.QMainWindow):
         self.setXMLEventID()
         # indicates which of the available focal mechanisms is selected
         self.focMechCurrent = None 
-        # indicates how many focal mechanisms are available from focmec
-        self.focMechCount = None
         self.spectrogramColormap = matplotlib.cm.jet
         # indicates which of the available events from seishub was loaded
         self.seishubEventCurrent = None 
@@ -1663,6 +1661,7 @@ class ObsPyck(QtGui.QMainWindow):
                               "Skipping:\n%s" % arrival)
                 continue
             sta = pick.waveform_id.station_code[:4] #focmec has only 4 chars
+            comp = pick.waveform_id.channel_code[-1]
             # XXX commenting the following out again
             # XXX only polarities with Azim/Inci info from location used
             #if pt + 'Azim' not in dict or pt + 'Inci' not in dict:
@@ -1685,7 +1684,7 @@ class ObsPyck(QtGui.QMainWindow):
             inci = arrival.takeoff_angle
             pol = pick.polarity
             try:
-                pol = POLARITY_2_FOCMEC[pol]
+                pol = POLARITY_2_FOCMEC[comp][pol]
             except:
                 err = "Error: Failed to map polarity information to " + \
                       "FOCMEC identifier (%s, %s, %s), skipping."
@@ -1708,12 +1707,14 @@ class ObsPyck(QtGui.QMainWindow):
         self.critical('--> focmec finished')
         lines = open(files['summary'], "rt").readlines()
         self.critical('%i suitable solutions found:' % len(lines))
-        self.focMechList = []
+        fms = []
         for line in lines:
             line = line.split()
             np1 = NodalPlane()
-            np = NodalPlanes(nodal_plane_1=np1)
-            fm = FocalMechanism(nodal_planes=np)
+            np = NodalPlanes()
+            fm = FocalMechanism()
+            fm.nodal_planes = np
+            fm.nodal_planes.nodal_plane_1 = np1
             fm.method_id = "/".join([ID_ROOT, "focal_mechanism_method", "focmec", "2"])
             np1.dip = float(line[0])
             np1.strike = float(line[1])
@@ -1724,30 +1725,30 @@ class ObsPyck(QtGui.QMainWindow):
             fm.comments.append(Comment("Possible Solution Count: %i" % len(lines)))
             self.critical("Strike: %6.2f  Dip: %6.2f  Rake: %6.2f  Misfit: %.2f" % \
                           (np1.strike, np1.dip, np1.rake, fm.misfit))
-            self.focMechList.append(fm)
-        self.focMechCount = len(self.focMechList)
+            fms.append(fm)
+        self.catalog[0].focal_mechanisms = fms
         self.focMechCurrent = 0
-        self.critical("selecting Focal Mechanism No.  1 of %2i:" % self.focMechCount)
-        self.focalMechanism = self.focMechList[0]
-        fm = self.focalMechanism
+        self.critical("selecting Focal Mechanism No.  1 of %2i:" % len(fms))
+        fm = fms[self.focMechCurrent]
+        self.catalog[0].preferred_focal_mechanism_id = str(fm.resource_id)
         np1 = fm.nodal_planes.nodal_plane_1
         self.critical("Strike: %6.2f  Dip: %6.2f  Rake: %6.2f  Misfit: %.2f" % \
                       (np1.strike, np1.dip, np1.rake, fm.misfit))
 
     def nextFocMec(self):
-        if self.focMechCount is None:
-            return
-        self.focMechCurrent = (self.focMechCurrent + 1) % self.focMechCount
-        self.focalMechanism = self.focMechList[self.focMechCurrent]
-        fm = self.focalMechanism
+        fms = self.catalog[0].focal_mechanisms
+        self.focMechCurrent = (self.focMechCurrent + 1) % len(fms)
+        fm = fms[self.focMechCurrent]
         np1 = fm.nodal_planes.nodal_plane_1
+        self.catalog[0].preferred_focal_mechanism_id = str(fm.resource_id)
         self.critical("selecting Focal Mechanism No. %2i of %2i:" % \
-                      (self.focMechCurrent + 1, self.focMechCount))
+                      (self.focMechCurrent + 1, len(fms)))
         self.critical("Strike: %6.2f  Dip: %6.2f  Rake: %6.2f  Misfit: %.2f" % \
                       (np1.strike, np1.dip, np1.rake, fm.misfit))
     
     def drawFocMec(self):
-        if not self.focalMechanism:
+        fms = self.catalog[0].focal_mechanisms
+        if not fms:
             err = "Error: No focal mechanism data!"
             self.error(err)
             return
@@ -1758,18 +1759,18 @@ class ObsPyck(QtGui.QMainWindow):
         fig.subplots_adjust(left=0, bottom=0, right=1, top=1)
         
         # plot the selected solution
-        fm = self.focalMechanism
+        fm = fms[self.focMechCurrent]
         np1 = fm.nodal_planes.nodal_plane_1
         axs.append(Beachball([np1.strike, np1.dip, np1.rake], fig=fig))
         # plot the alternative solutions
-        if self.focMechList != []:
-            for _fm in self.focMechList:
+        for _fm in fms:
+            if _fm is not fm:
                 _np1 = _fm.nodal_planes.nodal_plane_1
                 axs.append(Beachball([_np1.strike, _np1.dip, _np1.rake],
                           nofill=True, fig=fig, edgecolor='k',
                           linewidth=1., alpha=0.3))
         text = "Focal Mechanism (%i of %i)" % \
-               (self.focMechCurrent + 1, self.focMechCount)
+               (self.focMechCurrent + 1, len(fms))
         text += "\nStrike: %6.2f  Dip: %6.2f  Rake: %6.2f" % \
                 (np1.strike, np1.dip, np1.rake)
         if fm.misfit:
@@ -1789,7 +1790,7 @@ class ObsPyck(QtGui.QMainWindow):
             net = st[0].stats.network
             sta = st[0].stats.station
             pick = self.getPick(network=net, station=sta, phase_hint='P')
-            arrival = getArrivalForPick(self.catalog[0], pick)
+            arrival = getArrivalForPick(self.catalog[0].origins[0].arrivals, pick)
             if not pick:
                 continue
             if pick.polarity is None or arrival is None or arrival.azimuth is None or arrival.takeoff_angle is None:
@@ -3384,7 +3385,6 @@ class ObsPyck(QtGui.QMainWindow):
     def clearFocmec(self):
         self.info("Clearing previous focal mechanism data.")
         self.catalog[0].focal_mechanisms = []
-        self.focMechCurrent = None
         self.focMechCount = None
 
     def updateAllItems(self):

@@ -255,8 +255,9 @@ S_POL_MAP_ZRT = {'R': {'up': "forward", 'down': "backward",
                  'T': {'up': "right", 'down': "left",
                        'poorup': "right", 'poordown': "left"}}
 S_POL_PHASE_TYPE = {'R': "SV", 'T': "SH"}
-POLARITY_2_FOCMEC = {'up': "U", 'poorup': "+", 'down': "D", 'poordown': "-",
-                     'left': "L", 'right': "R", 'forward': "F", 'backward': "B"}
+POLARITY_2_FOCMEC = {'Z': {'positive': "U", 'negative': "D"},
+                     'R': {'positive': "F", 'negative': "B"},
+                     'T': {'positive': "R", 'negative': "L"}}
 
 # only strings involved, so shallow copy is fine
 POLARITY_CHARS = {'positive': "+", 'negative': "-", 'undecidable': "?",
@@ -946,7 +947,7 @@ class SplitWriter():
 
 def getArrivalForPick(arrivals, pick):
     """
-    searches first origin of event for an arrival that references the given
+    searches given arrivals for an arrival that references the given
     pick and returns it (empty Arrival object otherwise).
     """
     arrival = None
