@@ -2007,7 +2007,7 @@ class ObsPyck(QtGui.QMainWindow):
         # assign origin info
         o = Origin()
         self.catalog[0].origins = [o]
-        o.method_id = "/".join([ID_ROOT, "location_method", "nlloc", "3"])
+        o.method_id = "/".join([ID_ROOT, "location_method", "nlloc", "4"])
         o.origin_uncertainty = OriginUncertainty()
         o.quality = OriginQuality()
         ou = o.origin_uncertainty
