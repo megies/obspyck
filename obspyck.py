@@ -2469,13 +2469,21 @@ class ObsPyck(QtGui.QMainWindow):
             channels = []
             p2ps = []
             for amplitude in self.getAmplitudes(net, sta, loc):
+                self.debug(str(amplitude))
                 timedelta = amplitude.get_timedelta()
+                self.debug("Timedelta: " + str(timedelta))
                 if timedelta is None:
                     continue
                 tr = self.getTrace(
                     seed_string=amplitude.waveform_id.getSEEDString())
                 paz = tr.stats.get("paz")
+                self.debug("PAZ: " + str(paz))
                 if paz is None:
+                    # XXX TODO we could fetch the metadata from seishub if we
+                    # don't have a trace with PAZ and still use the stored info
+                    msg = ("Skipping amplitude for station "
+                           "'%s': Missing PAZ metadata" % sta)
+                    self.error(msg)
                     continue
                 amplitudes.append(amplitude)
                 p2ps.append(amplitude.get_p2p())
@@ -2483,12 +2491,7 @@ class ObsPyck(QtGui.QMainWindow):
                 pazs.append(paz)
                 channels.append(tr.stats.channel)
 
-            # XXX TODO we could fetch the metadata from seishub if we don't
-            # have a trace with PAZ and still use the stored info
             if not amplitudes:
-                msg = ("Skipping amplitude for station "
-                       "'%s' (missing PAZ metadata?)" % sta)
-                self.error(msg)
                 continue
 
             dist = self.hypoDist(tr.stats.coordinates)
@@ -3837,8 +3840,8 @@ class ObsPyck(QtGui.QMainWindow):
         for ampl in ev.amplitudes:
             # only works for events created with obspyck as only in that case
             # we know the logic of the magnitude picking
-            if not str(ampl.method_id).endswith("/amplitude_method/obspyck/2"):
-                msg = "Skipping amplitude not set with obspyck."
+            if "/obspyck/" not in str(ampl.method_id) or str(ampl.method_id).endswith("/obspyck/1"):
+                msg = "Skipping amplitude not set with obspyck (or with old version)."
                 self.error(msg)
                 continue
             tr = self.getTrace(ampl.waveform_id.getSEEDString())
