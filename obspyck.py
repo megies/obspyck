@@ -36,6 +36,7 @@ from lxml.etree import SubElement as Sub
 
 #sys.path.append('/baysoft/obspy/misc/symlink')
 #os.chdir("/baysoft/obspyck/")
+from obspy import __version__ as OBSPY_VERSION
 from obspy.core.util import NamedTemporaryFile, AttribDict
 from obspy.core.util.geodetics import gps2DistAzimuth, kilometer2degrees
 from obspy import UTCDateTime, Stream#, readEvents
@@ -1902,6 +1903,21 @@ class ObsPyck(QtGui.QMainWindow):
                     files['summary']
             self.error(err)
             return
+        # goto signature info line
+        try:
+            line = lines.pop(0)
+            while not line.startswith("SIGNATURE"):
+                line = lines.pop(0)
+        except:
+            err = "Error: No correct location info found in NLLoc " + \
+                  "outputfile (%s)!" % files['summary']
+            self.error(err)
+            return
+
+        line = line.rstrip().split('"')[1]
+        signature, nlloc_version, date, time = line.rsplit(" ", 3)
+        creation_time = UTCDateTime().strptime(date + time, str("%d%b%Y%Hh%Mm%S"))
+
         # goto maximum likelihood origin location info line
         try:
             line = lines.pop(0)
@@ -2004,9 +2020,17 @@ class ObsPyck(QtGui.QMainWindow):
         model = line2[3]
         model = model.split("/")[-1]
 
-        # assign origin info
+        catalog = self.catalog
+        event = catalog[0]
+        if event.creation_info is None:
+            event.creation_info = CreationInfo()
+            event.creation_info.creation_time = UTCDateTime()
         o = Origin()
-        self.catalog[0].origins = [o]
+        event.origins = [o]
+        o.creation_info = CreationInfo(creation_time=creation_time,
+                                       version=nlloc_version)
+
+        # assign origin info
         o.method_id = "/".join([ID_ROOT, "location_method", "nlloc", "4"])
         o.origin_uncertainty = OriginUncertainty()
         o.quality = OriginQuality()
@@ -2390,6 +2414,8 @@ class ObsPyck(QtGui.QMainWindow):
             return
 
         m = Magnitude()
+        m.creation_info = CreationInfo(version="ObsPy %s" % OBSPY_VERSION,
+                                       creation_time=UTCDateTime())
         event.magnitudes = [m]
         m.method_id = "/".join([ID_ROOT, "magnitude_method", "obspyck", "2"])
         m.origin_id = origin.resource_id
@@ -2655,7 +2681,7 @@ class ObsPyck(QtGui.QMainWindow):
             # plot picks and arrivals
             # seiscomp does not store location code with picks, so allow to
             # match any location code in that case..
-            if event.get("creation_info", {}).get("author", "").startswith("scevent"):
+            if str(event.get("creation_info", {}).get("author", "")).startswith("scevent"):
                 loc = None
             picks = self.getPicks(network=net, station=sta, location=loc)
             try:
@@ -3226,6 +3252,7 @@ class ObsPyck(QtGui.QMainWindow):
         Returns all information as xml file (type string)
         """
         cat = self.catalog
+        cat.creation_info.creation_time = UTCDateTime()
         e = cat[0]
         extra = e.setdefault("extra", AttribDict())
         public = self.widgets.qCheckBox_public.isChecked()

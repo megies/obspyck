@@ -3,6 +3,7 @@ import warnings
 from copy import deepcopy
 import numpy as np
 import obspy.core.event
+from obspy import UTCDateTime
 from obspy.core.event import WaveformStreamID, ResourceIdentifier, \
     TimeWindow, CreationInfo, Comment, OriginQuality
 
@@ -83,6 +84,7 @@ class Event(obspy.core.event.Event, CommonEventHelper):
         self.creation_info.author = username
         self.creation_info.agency_id = agency_id
         self.creation_info.agency_uri = agency_uri
+        self.creation_info.creation_time = UTCDateTime()
 
 
 class Origin(obspy.core.event.Origin, CommonEventHelper):
