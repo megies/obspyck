@@ -2777,6 +2777,10 @@ class ObsPyck(QtGui.QMainWindow):
             info.append(" Longitude: %.5f" % o.longitude)
             info.append(" Latitude: %.5f" % o.latitude)
         info.append(" Depth: %.3f km +/- %0.2fkm" % (o.depth / 1e3, o.depth_errors.uncertainty / 1e3))
+        if o.quality and o.quality.standard_error:
+            info.append(" RMS: %.5f" % o.quality.standard_error)
+        else:
+            info.append(" RMS: ---")
         if m is not None:
             m_ = m.mag
             m_err_ = m.mag_errors.uncertainty
