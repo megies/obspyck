@@ -523,98 +523,223 @@
               </property>
              </item>
              <item>
-              <property name="text">
-               <string>earthquake</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>induced earthquake</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>quarry blast</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>explosion</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>chemical explosion</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>nuclear explosion</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>landslide</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>rockslide</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>snow avalanche</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>debris avalanche</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>mine collapse</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>building collapse</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>volcanic eruption</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>meteor impact</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>plane crash</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>sonic boom</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
+              <property name="text">                                                                                    
                <string>not existing</string>
               </property>
              </item>
              <item>
-              <property name="text">
-               <string>null</string>
+              <property name="text">                                                                                    
+               <string>not reported</string>
               </property>
              </item>
              <item>
-              <property name="text">
-               <string>other</string>
+              <property name="text">                                                                                    
+               <string>earthquake</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>anthropogenic event</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>collapse</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>cavity collapse</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>mine collapse</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>building collapse</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>explosion</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>accidental explosion</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>chemical explosion</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>controlled explosion</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>experimental explosion</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>industrial explosion</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>mining explosion</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>quarry blast</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>road cut</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>blasting levee</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>nuclear explosion</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>induced or triggered event</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>rock burst</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>reservoir loading</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>fluid injection</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>fluid extraction</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>crash</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>plane crash</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>train crash</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>boat crash</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>other event</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>atmospheric event</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>sonic boom</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>sonic blast</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>acoustic noise</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>thunder</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>avalanche</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>snow avalanche</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>debris avalanche</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>hydroacoustic event</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>ice quake</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>slide</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>landslide</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>rockslide</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>meteorite</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">                                                                                    
+               <string>volcanic eruption</string>
               </property>
              </item>
             </widget>
