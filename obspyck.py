@@ -1318,7 +1318,7 @@ class ObsPyck(QtGui.QMainWindow):
             tr = st[self.axs.index(ev.inaxes)]
             # We want to round from the picking location to
             # the time value of the nearest sample:
-            samp_rate = st[0].stats.sampling_rate
+            samp_rate = tr.stats.sampling_rate
             pickSample = (ev.xdata - t[0]) * samp_rate
             self.debug(str(pickSample))
             pickSample = int(round(pickSample))
@@ -1439,7 +1439,7 @@ class ObsPyck(QtGui.QMainWindow):
                 if tr.stats._format == "GSE2":
                     val = val / (tr.stats.calib * 2 * np.pi / tr.stats.gse2.calper)
                 # save time of magnitude minimum in seconds
-                tmp_magtime = self.time_rel2abs(tmp_magtime / samp_rate)
+                tmp_magtime = self.time_rel2abs(t[tmp_magtime])
                 if ev.key == keys['setMagMin']:
                     ampl.setLow(tmp_magtime, val)
                 elif ev.key == keys['setMagMax']:
