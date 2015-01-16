@@ -1635,12 +1635,11 @@ class ObsPyck(QtGui.QMainWindow):
     def doFocmec(self):
         prog_dict = PROGRAMS['focmec']
         files = prog_dict['files']
-        f = open(files['phases'], 'wt')
-        f.write("\n") #first line is ignored!
         #Fortran style! 1: Station 2: Azimuth 3: Incident 4: Polarity
         #fmt = "ONTN  349.00   96.00C"
         fmt = "%4s  %6.2f  %6.2f%1s\n"
         count = 0
+        polarities = []
         for pick in self.catalog[0].picks:
             arrival = getArrivalForPick(self.catalog[0].origins[0].arrivals,
                                         pick)
@@ -1661,7 +1660,7 @@ class ObsPyck(QtGui.QMainWindow):
                 self.critical("focmec: Arrival missing takeoff angle. "
                               "Skipping:\n%s" % arrival)
                 continue
-            sta = pick.waveform_id.station_code[:4] #focmec has only 4 chars
+            sta = pick.waveform_id.station_code
             comp = pick.waveform_id.channel_code[-1]
             # XXX commenting the following out again
             # XXX only polarities with Azim/Inci info from location used
@@ -1693,8 +1692,27 @@ class ObsPyck(QtGui.QMainWindow):
                 self.error(err)
                 continue
             count += 1
-            f.write(fmt % (sta, azim, inci, pol))
-        f.close()
+            polarities.append((sta, azim, inci, pol))
+        # make sure the 4-letter station codes are unique
+        sta_map_tmp = {}
+        for sta, azim, inci, pol in polarities:
+            sta_map_tmp.setdefault(sta[:4], set()).add(sta)
+        sta_map = {}
+        for sta_short, stations in sta_map_tmp.iteritems():
+            stations = list(stations)
+            if len(stations) == 1:
+                sta_map[stations[0]] = sta_short
+            else:
+                if len(stations) <= 10:
+                    for i, sta in enumerate(stations):
+                        sta_map[sta] = sta[:2] + "_%i" % i
+                else:
+                    for i, sta in enumerate(stations):
+                        sta_map[sta] = sta[0] + "_%02i" % i
+        with open(files['phases'], 'wt') as f:
+            f.write("\n") #first line is ignored!
+            for sta, azim, inci, pol in polarities:
+                f.write(fmt % (sta_map[sta], azim, inci, pol))
         self.critical('Phases for focmec: %i' % count)
         self.catFile(files['phases'], self.critical)
         call = prog_dict['Call']
