@@ -152,7 +152,7 @@ class ObsPyck(QtGui.QMainWindow):
         self.widgets.qSplitter_horizontal.setCollapsible(_i, False)
         # XXX this resizing operation (buttons minimum size) should be done in
         # XXX the qt_designer.ui but I didn't find the correct settings there..
-        self.widgets.qSplitter_horizontal.setSizes([1, 9999])
+        self.widgets.qSplitter_horizontal.setSizes([1, 800, 0])
         # Bind the canvas to the mouse wheel event. Use Qt events for it
         # because the matplotlib events seem to have a problem with Debian.
         self.widgets.qMplCanvas.wheelEvent = self.__mpl_wheelEvent
@@ -715,6 +715,20 @@ class ObsPyck(QtGui.QMainWindow):
         except AttributeError:
             pass
 
+    def on_qToolButton_ms_toggled(self):
+        self.updateCurrentStream()
+        self.updatePlot(keep_ylims=False)
+
+    def on_qDoubleSpinBox_waterlevel_valueChanged(self, newvalue):
+        widgets = self.widgets
+        if not widgets.qToolButton_ms.isChecked():
+            self.canv.setFocus() # XXX needed??
+            return
+        self.updateCurrentStream()
+        self.updatePlot()
+        # reset focus to matplotlib figure
+        self.canv.setFocus() # XXX needed?? # XXX do we still need this focus grabbing with QT??? XXX XXX XXX XXX
+
     def on_qToolButton_filter_toggled(self):
         self.updateCurrentStream()
         self.updatePlot()
@@ -847,7 +861,7 @@ class ObsPyck(QtGui.QMainWindow):
 
     def on_qToolButton_spectrogram_toggled(self):
         state = self.widgets.qToolButton_spectrogram.isChecked()
-        widgets_deactivate = ("qToolButton_filter", "qToolButton_overview",
+        widgets_deactivate = ("qToolButton_waterlevel", "qDoubleSpinBox_waterlevel", "qToolButton_filter", "qToolButton_overview",
                 "qComboBox_filterType", "qCheckBox_zerophase",
                 "qCheckBox_50Hz", "qDoubleSpinBox_corners",
                 "qLabel_highpass", "qLabel_lowpass", "qDoubleSpinBox_highpass",
@@ -934,6 +948,21 @@ class ObsPyck(QtGui.QMainWindow):
                 msg2 = "50Hz Bandstop"
                 self.info(msg2)
             stream.filter(type, **options)
+            self.info(msg)
+        except:
+            err = "Error during filtering. Showing unfiltered data."
+            self.error(err)
+
+    def _ms(self, stream):
+        """
+        Corrects to m/s.
+        """
+        w = self.widgets
+        water_level = float(w.qDoubleSpinBox_waterlevel.value())
+        msg = "Correcting to m/s (water_level=%.1f)." % water_level
+        try:
+            stream.simulate(paz_remove="self", paz_simulate=None,
+                            remove_sensitivity=True, water_level=water_level)
             self.info(msg)
         except:
             err = "Error during filtering. Showing unfiltered data."
@@ -1221,6 +1250,8 @@ class ObsPyck(QtGui.QMainWindow):
         st = self.streams[self.stPt]
         # To display filtered data we overwrite our alias to current stream
         # and replace it with the filtered data.
+        if self.widgets.qToolButton_ms.isChecked():
+            self._ms(st)
         if self.widgets.qToolButton_filter.isChecked():
             self._filter(st)
         else:
@@ -1267,6 +1298,12 @@ class ObsPyck(QtGui.QMainWindow):
         if keep_ylims:
             for ax, ylims_ in zip(self.axs, ylims):
                 ax.set_ylim(ylims_)
+        else:
+            for ax in self.axs:
+                ax.relim()
+                ax.autoscale(axis="y", enable=True)
+                ax.autoscale_view(scalex=False)
+                ax.autoscale(axis="y", enable=False)
         self.redraw()
 
     # Define the event that handles the setting of P- and S-wave picks
@@ -1599,7 +1636,19 @@ class ObsPyck(QtGui.QMainWindow):
                 self.widgets.qLabel_xdata_rel.setText(formatXTicklabels(ev.xdata))
                 label = self.time_rel2abs(ev.xdata).isoformat().replace("T", "  ")[:-3]
                 self.widgets.qLabel_xdata_abs.setText(label)
-                self.widgets.qLabel_ydata.setText("%.1f" % ev.ydata)
+                if self.widgets.qToolButton_ms.isChecked():
+                    absval = abs(ev.ydata)
+                    if absval >= 1:
+                        text = "%.3g m/s" % ev.ydata
+                    elif absval >= 1e-4:
+                        text = "%.3g mm/s" % (ev.ydata * 1e3)
+                    elif absval >= 1e-7:
+                        text = "%.3g mu/s" % (ev.ydata * 1e6)
+                    else:
+                        text = "%.3g nm/s" % (ev.ydata * 1e9)
+                    self.widgets.qLabel_ydata.setText(text)
+                else:
+                    self.widgets.qLabel_ydata.setText("%.1f" % ev.ydata)
             else:
                 self.widgets.qLabel_xdata_rel.setText("")
                 self.widgets.qLabel_xdata_abs.setText(str(ev.xdata))
@@ -2659,7 +2708,8 @@ class ObsPyck(QtGui.QMainWindow):
         t = []
         alphas = {'Z': 1.0, 'L': 1.0,
                   'N': 0.4, 'Q': 0.4, 'R': 0.4, 'E': 0.4, 'T': 0.4}
-        for i, st in enumerate(self.streams):
+        for i, st in enumerate(self.streams_bkp):
+            st = st.copy()
             for j, tr in enumerate(st):
                 net, sta, loc, cha = tr.id.split(".")
                 color = COMPONENT_COLORS.get(cha[-1], "gray")
@@ -2689,8 +2739,13 @@ class ObsPyck(QtGui.QMainWindow):
                 # normalize with overall sensitivity and convert to nm/s
                 # if not explicitly deactivated on command line
                 if not self.options.nonormalization and not self.options.nometadata:
-                    scaling = 1e9 / tr.stats.paz.sensitivity
-                    data_ = tr.data * scaling
+                    if self.widgets.qToolButton_ms.isChecked():
+                        self._ms(tr)
+                    if self.widgets.qToolButton_filter.isChecked():
+                        self._filter(tr)
+                    data_ = tr.data
+                    #scaling = 1e9 / tr.stats.paz.sensitivity
+                    #data_ = tr.data * scaling
                 else:
                     scaling = 1.0
                     data_ = tr.data
