@@ -88,7 +88,7 @@
             <number>0</number>
            </property>
            <property name="sizeConstraint">
-            <enum>QLayout::SetMaximumSize</enum>
+            <enum>QLayout::SetFixedSize</enum>
            </property>
            <property name="margin">
             <number>0</number>

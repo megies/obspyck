@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'qt_designer.ui'
 #
-# Created: Thu Jan 22 17:31:47 2015
+# Created: Mon Jan 26 11:00:27 2015
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -73,7 +73,7 @@ class Ui_qMainWindow_obsPyck(object):
         self.layoutWidgetxx.setObjectName(_fromUtf8("layoutWidgetxx"))
         self.leftVerticalLayout = QtGui.QVBoxLayout(self.layoutWidgetxx)
         self.leftVerticalLayout.setSpacing(0)
-        self.leftVerticalLayout.setSizeConstraint(QtGui.QLayout.SetMaximumSize)
+        self.leftVerticalLayout.setSizeConstraint(QtGui.QLayout.SetFixedSize)
         self.leftVerticalLayout.setMargin(0)
         self.leftVerticalLayout.setObjectName(_fromUtf8("leftVerticalLayout"))
         self.qToolButton_clearAll = QtGui.QToolButton(self.layoutWidgetxx)
