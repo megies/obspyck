@@ -153,6 +153,7 @@ class ObsPyck(QtGui.QMainWindow):
         # XXX this resizing operation (buttons minimum size) should be done in
         # XXX the qt_designer.ui but I didn't find the correct settings there..
         self.widgets.qSplitter_horizontal.setSizes([1, 800, 0])
+        self.widgets.qSplitter_vertical.setSizes([800, 90])
         # Bind the canvas to the mouse wheel event. Use Qt events for it
         # because the matplotlib events seem to have a problem with Debian.
         self.widgets.qMplCanvas.wheelEvent = self.__mpl_wheelEvent
@@ -285,7 +286,8 @@ class ObsPyck(QtGui.QMainWindow):
         self.canv.mpl_connect('motion_notify_event', self.__mpl_motionNotifyEvent)
         self.multicursorReinit()
         self.canv.show()
-        self.showMaximized()
+        #self.showMaximized()
+        self.show()
         # XXX XXX the good old focus issue again!?! no events get to the mpl canvas
         # XXX self.canv.setFocusPolicy(Qt.WheelFocus)
         #print self.canv.hasFocus()

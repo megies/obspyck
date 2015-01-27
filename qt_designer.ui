@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1729</width>
-    <height>682</height>
+    <width>1147</width>
+    <height>789</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -88,7 +88,7 @@
             <number>0</number>
            </property>
            <property name="sizeConstraint">
-            <enum>QLayout::SetFixedSize</enum>
+            <enum>QLayout::SetMinAndMaxSize</enum>
            </property>
            <property name="margin">
             <number>0</number>
@@ -159,7 +159,7 @@
              </property>
              <property name="sizeHint" stdset="0">
               <size>
-               <width>201</width>
+               <width>170</width>
                <height>13</height>
               </size>
              </property>
@@ -266,7 +266,7 @@
              </property>
              <property name="sizeHint" stdset="0">
               <size>
-               <width>201</width>
+               <width>170</width>
                <height>13</height>
               </size>
              </property>
@@ -352,7 +352,7 @@
              </property>
              <property name="sizeHint" stdset="0">
               <size>
-               <width>201</width>
+               <width>170</width>
                <height>13</height>
               </size>
              </property>
@@ -751,7 +751,7 @@
              </property>
              <property name="sizeHint" stdset="0">
               <size>
-               <width>201</width>
+               <width>170</width>
                <height>13</height>
               </size>
              </property>
@@ -957,22 +957,6 @@
                 <enum>QLayout::SetDefaultConstraint</enum>
                </property>
                <item>
-                <spacer name="horizontalSpacer_2b">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="sizeType">
-                  <enum>QSizePolicy::Expanding</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>1</width>
-                   <height>10</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-               <item>
                 <layout class="QHBoxLayout" name="horizontalLayout_6">
                  <property name="sizeConstraint">
                   <enum>QLayout::SetMinimumSize</enum>
@@ -1118,22 +1102,6 @@ p, l  i { white-space: pre-wrap; }
                   </layout>
                  </item>
                 </layout>
-               </item>
-               <item>
-                <spacer name="horizontalSpacer_2c">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="sizeType">
-                  <enum>QSizePolicy::Expanding</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>1</width>
-                   <height>10</height>
-                  </size>
-                 </property>
-                </spacer>
                </item>
                <item>
                 <layout class="QHBoxLayout" name="horizontalLayout_12">
@@ -1337,123 +1305,47 @@ p, l  i { white-space: pre-wrap; }
                   </spacer>
                  </item>
                  <item>
-                  <layout class="QVBoxLayout" name="verticalLayout_5">
+                  <layout class="QVBoxLayout" name="verticalLayout_9">
                    <item>
-                    <layout class="QHBoxLayout" name="horizontalLayout_11">
+                    <layout class="QHBoxLayout" name="horizontalLayout_16">
                      <item>
-                      <widget class="QComboBox" name="qComboBox_filterType">
-                       <property name="focusPolicy">
-                        <enum>Qt::NoFocus</enum>
-                       </property>
-                       <item>
-                        <property name="text">
-                         <string>Bandpass</string>
-                        </property>
-                       </item>
-                       <item>
-                        <property name="text">
-                         <string>Bandstop</string>
-                        </property>
-                       </item>
-                       <item>
-                        <property name="text">
-                         <string>Lowpass</string>
-                        </property>
-                       </item>
-                       <item>
-                        <property name="text">
-                         <string>Highpass</string>
-                        </property>
-                       </item>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QCheckBox" name="qCheckBox_zerophase">
-                       <property name="focusPolicy">
-                        <enum>Qt::NoFocus</enum>
-                       </property>
+                      <widget class="QLabel" name="qLabel_sta">
                        <property name="text">
-                        <string>Zero-Ph.</string>
+                        <string>STA</string>
                        </property>
                       </widget>
                      </item>
                      <item>
-                      <widget class="QCheckBox" name="qCheckBox_50Hz">
+                      <widget class="QDoubleSpinBox" name="qDoubleSpinBox_sta">
                        <property name="focusPolicy">
                         <enum>Qt::NoFocus</enum>
                        </property>
-                       <property name="text">
-                        <string>50Hz</string>
+                       <property name="singleStep">
+                        <double>0.100000000000000</double>
+                       </property>
+                       <property name="value">
+                        <double>0.500000000000000</double>
                        </property>
                       </widget>
                      </item>
                     </layout>
                    </item>
                    <item>
-                    <layout class="QHBoxLayout" name="horizontalLayout_10">
+                    <layout class="QHBoxLayout" name="horizontalLayout_14">
                      <item>
-                      <widget class="QLabel" name="qLabel_corners">
+                      <widget class="QLabel" name="qLabel_lta">
                        <property name="text">
-                        <string>Corn.</string>
+                        <string>LTA</string>
                        </property>
                       </widget>
                      </item>
                      <item>
-                      <widget class="QDoubleSpinBox" name="qDoubleSpinBox_corners">
+                      <widget class="QDoubleSpinBox" name="qDoubleSpinBox_lta">
                        <property name="focusPolicy">
                         <enum>Qt::NoFocus</enum>
                        </property>
-                       <property name="decimals">
-                        <number>0</number>
-                       </property>
-                       <property name="minimum">
-                        <double>1.000000000000000</double>
-                       </property>
-                       <property name="maximum">
-                        <double>8.000000000000000</double>
-                       </property>
                        <property name="value">
-                        <double>1.000000000000000</double>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="qLabel_lowpass">
-                       <property name="text">
-                        <string>Low C.</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QDoubleSpinBox" name="qDoubleSpinBox_highpass">
-                       <property name="focusPolicy">
-                        <enum>Qt::NoFocus</enum>
-                       </property>
-                       <property name="minimum">
-                        <double>0.010000000000000</double>
-                       </property>
-                       <property name="value">
-                        <double>1.000000000000000</double>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="qLabel_highpass">
-                       <property name="text">
-                        <string>High C.</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QDoubleSpinBox" name="qDoubleSpinBox_lowpass">
-                       <property name="focusPolicy">
-                        <enum>Qt::NoFocus</enum>
-                       </property>
-                       <property name="minimum">
-                        <double>0.010000000000000</double>
-                       </property>
-                       <property name="value">
-                        <double>20.000000000000000</double>
+                        <double>10.000000000000000</double>
                        </property>
                       </widget>
                      </item>
@@ -1497,6 +1389,28 @@ p, l  i { white-space: pre-wrap; }
                </item>
               </layout>
              </widget>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSplitter" name="qSplitter_horizontal_new2">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::NoFrame</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Plain</enum>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="handleWidth">
+              <number>8</number>
+             </property>
              <widget class="QWidget" name="yyy">
               <layout class="QHBoxLayout" name="horizontalLayout_2b">
                <property name="spacing">
@@ -1506,85 +1420,129 @@ p, l  i { white-space: pre-wrap; }
                 <enum>QLayout::SetDefaultConstraint</enum>
                </property>
                <item>
-                <spacer name="horizontalSpacer">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="sizeType">
-                  <enum>QSizePolicy::Expanding</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>1</width>
-                   <height>10</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-               <item>
-                <layout class="QVBoxLayout" name="verticalLayout_9">
+                <layout class="QVBoxLayout" name="verticalLayout_5">
                  <item>
-                  <layout class="QHBoxLayout" name="horizontalLayout_16">
+                  <layout class="QHBoxLayout" name="horizontalLayout_11">
                    <item>
-                    <widget class="QLabel" name="qLabel_sta">
+                    <widget class="QComboBox" name="qComboBox_filterType">
+                     <property name="focusPolicy">
+                      <enum>Qt::NoFocus</enum>
+                     </property>
+                     <item>
+                      <property name="text">
+                       <string>Bandpass</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
+                       <string>Bandstop</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
+                       <string>Lowpass</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
+                       <string>Highpass</string>
+                      </property>
+                     </item>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QCheckBox" name="qCheckBox_zerophase">
+                     <property name="focusPolicy">
+                      <enum>Qt::NoFocus</enum>
+                     </property>
                      <property name="text">
-                      <string>STA</string>
+                      <string>Zero-Ph.</string>
                      </property>
                     </widget>
                    </item>
                    <item>
-                    <widget class="QDoubleSpinBox" name="qDoubleSpinBox_sta">
+                    <widget class="QCheckBox" name="qCheckBox_50Hz">
                      <property name="focusPolicy">
                       <enum>Qt::NoFocus</enum>
                      </property>
-                     <property name="singleStep">
-                      <double>0.100000000000000</double>
-                     </property>
-                     <property name="value">
-                      <double>0.500000000000000</double>
+                     <property name="text">
+                      <string>50Hz</string>
                      </property>
                     </widget>
                    </item>
                   </layout>
                  </item>
                  <item>
-                  <layout class="QHBoxLayout" name="horizontalLayout_14">
+                  <layout class="QHBoxLayout" name="horizontalLayout_10">
                    <item>
-                    <widget class="QLabel" name="qLabel_lta">
+                    <widget class="QLabel" name="qLabel_corners">
                      <property name="text">
-                      <string>LTA</string>
+                      <string>Corn.</string>
                      </property>
                     </widget>
                    </item>
                    <item>
-                    <widget class="QDoubleSpinBox" name="qDoubleSpinBox_lta">
+                    <widget class="QDoubleSpinBox" name="qDoubleSpinBox_corners">
                      <property name="focusPolicy">
                       <enum>Qt::NoFocus</enum>
                      </property>
+                     <property name="decimals">
+                      <number>0</number>
+                     </property>
+                     <property name="minimum">
+                      <double>1.000000000000000</double>
+                     </property>
+                     <property name="maximum">
+                      <double>8.000000000000000</double>
+                     </property>
                      <property name="value">
-                      <double>10.000000000000000</double>
+                      <double>1.000000000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="qLabel_lowpass">
+                     <property name="text">
+                      <string>Low C.</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QDoubleSpinBox" name="qDoubleSpinBox_highpass">
+                     <property name="focusPolicy">
+                      <enum>Qt::NoFocus</enum>
+                     </property>
+                     <property name="minimum">
+                      <double>0.010000000000000</double>
+                     </property>
+                     <property name="value">
+                      <double>1.000000000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="qLabel_highpass">
+                     <property name="text">
+                      <string>High C.</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QDoubleSpinBox" name="qDoubleSpinBox_lowpass">
+                     <property name="focusPolicy">
+                      <enum>Qt::NoFocus</enum>
+                     </property>
+                     <property name="minimum">
+                      <double>0.010000000000000</double>
+                     </property>
+                     <property name="value">
+                      <double>20.000000000000000</double>
                      </property>
                     </widget>
                    </item>
                   </layout>
                  </item>
                 </layout>
-               </item>
-               <item>
-                <spacer name="horizontalSpacer_3">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="sizeType">
-                  <enum>QSizePolicy::Expanding</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>1</width>
-                   <height>10</height>
-                  </size>
-                 </property>
-                </spacer>
                </item>
                <item>
                 <layout class="QHBoxLayout" name="horizontalLayout_6x">
@@ -1703,6 +1661,9 @@ p, l  i { white-space: pre-wrap; }
           <layout class="QVBoxLayout" name="rightVerticalLayout" stretch="0,0">
            <property name="spacing">
             <number>0</number>
+           </property>
+           <property name="sizeConstraint">
+            <enum>QLayout::SetDefaultConstraint</enum>
            </property>
            <item>
             <widget class="QTextEdit" name="qTextEdit_qml">
@@ -1843,7 +1804,7 @@ p, l  i { white-space: pre-wrap; }
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1729</width>
+     <width>1147</width>
      <height>25</height>
     </rect>
    </property>
