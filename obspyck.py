@@ -2381,7 +2381,10 @@ class ObsPyck(QtGui.QMainWindow):
             if line.startswith(" STA NET COM L CR DIST AZM"):
                 break
         
-        o.quality.used_phase_count = 0
+        oq.used_phase_count = 0
+        oq.extra = AttribDict()
+        oq.extra.usedPhaseCountP = {'value': 0, 'namespace': NAMESPACE}
+        oq.extra.usedPhaseCountS = {'value': 0, 'namespace': NAMESPACE}
         used_stations = set()
         #XXX caution: we sometimes access the prior element!
         for i in range(len(lines)):
@@ -2440,6 +2443,13 @@ class ObsPyck(QtGui.QMainWindow):
             # we use weights 0,1,2,3 but hypo2000 outputs floats...
             arrival.time_weight = weight
             o.quality.used_phase_count += 1
+            if type == "P":
+                o.quality.extra.usedPhaseCountP['value'] += 1
+            elif type == "S":
+                o.quality.extra.usedPhaseCountS['value'] += 1
+            else:
+                self.error("Phase '%s' not recognized as P or S. " % type +
+                           "Not incrementing P nor S phase count.")
         o.used_station_count = len(used_stations)
 
     def updateMagnitude(self):
