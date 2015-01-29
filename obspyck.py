@@ -863,7 +863,7 @@ class ObsPyck(QtGui.QMainWindow):
 
     def on_qToolButton_spectrogram_toggled(self):
         state = self.widgets.qToolButton_spectrogram.isChecked()
-        widgets_deactivate = ("qToolButton_waterlevel", "qDoubleSpinBox_waterlevel", "qToolButton_filter", "qToolButton_overview",
+        widgets_deactivate = ("qToolButton_ms", "qDoubleSpinBox_waterlevel", "qToolButton_filter", "qToolButton_overview",
                 "qComboBox_filterType", "qCheckBox_zerophase",
                 "qCheckBox_50Hz", "qDoubleSpinBox_corners",
                 "qLabel_highpass", "qLabel_lowpass", "qDoubleSpinBox_highpass",
