@@ -59,11 +59,14 @@ COMMANDLINE_OPTIONS = (
                 'help': "Duration of seismogram in seconds"}),
         (("-f", "--files"), {'type': "string", 'dest': "files",
                 'help': "Local files containing waveform data. List of "
-                "absolute paths separated by commas"}),
+                "absolute paths separated by commas. Local files can also "
+                "be provided as command line arguments (also e.g. using "
+                "wildcards and bash expansion)."}),
         (("--dataless",), {'type': "string", 'dest': "dataless",
                 'help': "Local Dataless SEED files to look up metadata for "
                 "local waveform files. List of absolute paths separated by "
-                "commas"}),
+                "commas. Local files can also be provided as command line "
+                "arguments (also e.g. using wildcards and bash expansion)."}),
         (("-i", "--seishub-ids"), {'dest': "seishub_ids", 'default': "",
                 'help': "Ids to retrieve from SeisHub. Star for channel and "
                 "wildcards for stations are allowed, e.g. "
@@ -316,11 +319,13 @@ def check_keybinding_conflicts(keys):
             err = "Interfering keybindings. Please check variable KEYS"
             raise Exception(err)
 
-def fetch_waveforms_with_metadata(options):
+def fetch_waveforms_with_metadata(options, args):
     """
     Sets up obspy clients and fetches waveforms and metadata according to command
     line options.
     Now also fetches data via arclink if --arclink-ids is used.
+    Args are tried to read as local waveform files or metadata files.
+
     XXX Notes: XXX
      - there is a problem in the arclink client with duplicate traces in
        fetched streams. therefore at the moment it might be necessary to use
@@ -368,6 +373,46 @@ def fetch_waveforms_with_metadata(options):
                 if tr.stats._format == 'GSE2':
                     apply_gse2_calib(tr)
             stream_tmp += st
+        ids = set([(tr.stats.network, tr.stats.station, tr.stats.location) for tr in stream_tmp])
+        for net, sta, loc in ids:
+            streams.append(stream_tmp.select(network=net, station=sta, location=loc))
+    if args:
+        from obspy.xseed import Parser
+        from obspy import read, Stream
+        print "=" * 80
+        print "Reading local files:"
+        print "-" * 80
+        stream_tmp = Stream()
+        for file in args:
+            # try to read as metadata
+            try:
+                p = Parser(file)
+            except:
+                pass
+            else:
+                print "%s: Metadata" % file
+                parsers.append(p)
+                continue
+            # try to read as waveforms
+            try:
+                st = read(file, starttime=t1, endtime=t2, verify_chksum=options.verify_chksum)
+            except TypeError:
+                print "File %s not recognized as dataless or waveform file. Skipped." % file
+                continue
+            print "%s: Waveforms" % file
+            stream_tmp += st
+        for tr in stream_tmp:
+            if not options.nometadata:
+                for parser in parsers:
+                    try:
+                        tr.stats.paz = parser.getPAZ(tr.id, tr.stats.starttime)
+                        tr.stats.coordinates = parser.getCoordinates(tr.id, tr.stats.starttime)
+                        break
+                    except:
+                        continue
+                    print "found no metadata for %s!!!" % file
+            if tr.stats._format == 'GSE2':
+                apply_gse2_calib(tr)
         ids = set([(tr.stats.network, tr.stats.station, tr.stats.location) for tr in stream_tmp])
         for net, sta, loc in ids:
             streams.append(stream_tmp.select(network=net, station=sta, location=loc))

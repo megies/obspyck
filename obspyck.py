@@ -4098,14 +4098,17 @@ def main():
     """
     Gets executed when the program starts.
     """
-    usage = "\n * SeisHub:\n    " + \
-            "%prog -t 2010-08-01T12:00:00 -d 30 -i BW.R*..EH*,BW.BGLD..EH*\n" + \
-            "%prog -t 2010-08-01T12:00:00 -d 30 --seishub-ids BW.R*..EH*,BW.BGLD..EH*\n" + \
-            " * ArcLink:\n    " + \
-            "%prog -t 2010-08-01T12:00:00 -d 30 --arclink-ids GE.APE..BH*,GE.IMMV..BH*\n" + \
-            " * combination of clients:\n    " + \
-            "%prog -t 2010-08-01T12:00:00 -d 30 -i BW.R*..EH* --arclink-ids GE.APE..BH*" + \
-            "\n\nGet all available options with: %prog -h"
+    usage = (
+        "\n * SeisHub:\n    "
+        "%prog -t 2010-08-01T12:00:00 -d 30 -i BW.R*..EH*,BW.BGLD..EH*\n"
+        "%prog -t 2010-08-01T12:00:00 -d 30 --seishub-ids BW.R*..EH*,BW.BGLD..EH*\n"
+        " * ArcLink:\n    "
+        "%prog -t 2010-08-01T12:00:00 -d 30 --arclink-ids GE.APE..BH*,GE.IMMV..BH*\n"
+        " * combination of clients:\n    "
+        "%prog -t 2010-08-01T12:00:00 -d 30 -i BW.R*..EH* --arclink-ids GE.APE..BH*\n"
+        " * provide (additional) local files as command line arguments:\n    "
+        "%prog -t 2010-08-01T12:00:00 -d 30 some_path/*/my_local_*_.files"
+        "\n\nGet all available options with: %prog -h")
     parser = optparse.OptionParser(usage)
     for opt_args, opt_kwargs in COMMANDLINE_OPTIONS:
         parser.add_option(*opt_args, **opt_kwargs)
@@ -4117,7 +4120,7 @@ def main():
         return
     # check for necessary options
     if not any([getattr(parser.values, parser.get_option(opt).dest) \
-                for opt in ("--seishub-ids", "--arclink-ids", "-f")]) \
+                for opt in ("--seishub-ids", "--arclink-ids", "-f")] + args) \
        or not all([getattr(parser.values, parser.get_option(opt).dest) \
                    for opt in ('-d', '-t')]):
         parser.print_usage()
@@ -4129,7 +4132,7 @@ def main():
     #    IPython.Shell.IPShellEmbed(['-pdb'],
     #            banner='Entering IPython.  Press Ctrl-D to exit.',
     #            exit_msg='Leaving Interpreter, back to program.')()
-    (clients, streams) = fetch_waveforms_with_metadata(options)
+    (clients, streams) = fetch_waveforms_with_metadata(options, args)
     # Create the GUI application
     qApp = QtGui.QApplication(sys.argv)
     obspyck = ObsPyck(clients, streams, options, KEYS)
