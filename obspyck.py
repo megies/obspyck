@@ -718,12 +718,11 @@ class ObsPyck(QtGui.QMainWindow):
             pass
 
     def on_qToolButton_ms_toggled(self):
-        self.updateCurrentStream()
-        self.updatePlot(keep_ylims=False)
+        self.streams[self.stPt] = self.streams_bkp[self.stPt].copy()
+        self.drawStream()
 
     def on_qDoubleSpinBox_waterlevel_valueChanged(self, newvalue):
-        widgets = self.widgets
-        if not widgets.qToolButton_ms.isChecked():
+        if not self.widgets.qToolButton_ms.isChecked():
             self.canv.setFocus() # XXX needed??
             return
         self.updateCurrentStream()
@@ -1459,6 +1458,9 @@ class ObsPyck(QtGui.QMainWindow):
                 return
 
         if ev.key in (keys['setMagMin'], keys['setMagMax']):
+            if self.widgets.qToolButton_ms.isChecked():
+                self.error("Can only set amplitude pick on raw count data!")
+                return
             # some keyPress events only make sense inside our matplotlib axes
             if not ev.inaxes in self.axs:
                 return
@@ -2758,6 +2760,7 @@ class ObsPyck(QtGui.QMainWindow):
                     data_ = tr.data
                     #scaling = 1e9 / tr.stats.paz.sensitivity
                     #data_ = tr.data * scaling
+                    scaling = None
                 else:
                     scaling = 1.0
                     data_ = tr.data
@@ -3639,6 +3642,9 @@ class ObsPyck(QtGui.QMainWindow):
             ax.axvspan(time, reltime, color=color, alpha=0.2)
 
     def drawAmplitude(self, ax, amplitude, scaling=None, main_axes=True):
+        if self.widgets.qToolButton_ms.isChecked():
+            self.error("Not displaying an amplitude pick set on raw count data.")
+            return
         if main_axes:
             color = PHASE_COLORS['Mag']
         else:
