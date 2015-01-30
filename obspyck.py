@@ -3500,7 +3500,7 @@ class ObsPyck(QtGui.QMainWindow):
 
     def clearOriginMagnitude(self):
         self.info("Clearing previous origin and magnitude data.")
-        self.catalog[0].origins = [Origin()]
+        self.catalog[0].origins = []
         self.catalog[0].magnitudes = []
         self.catalog[0].station_magnitudes = []
 
