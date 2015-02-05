@@ -2253,6 +2253,16 @@ class ObsPyck(QtGui.QMainWindow):
                 polarity = "negative"
             else:
                 polarity = None
+            # predicted travel time is zero.
+            # seems to happen when no travel time cube is present for a
+            # provided station reading. show an error message and skip this
+            # arrival.
+            if float(line[15]) == 0.0:
+                msg = ("Predicted travel time for station '%s' is zero. "
+                       "Most likely the travel time cube is missing for "
+                       "this station! Skipping arrival for this station.")
+                self.error(msg % station)
+                continue
             res = float(line[16])
             weight = float(line[17])
 
