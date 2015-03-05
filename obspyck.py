@@ -3802,30 +3802,37 @@ class ObsPyck(QtGui.QMainWindow):
         """
         network, station, location, channel = seed_string.split(".")
         st = self.getStream(network, station, location)
+        self.debug("seed_string: %s" % seed_string)
+        self.debug(str(st))
         if st is None:
             return None
         st = st.select(channel=channel)
-        if len(st) > 1:
-            err = ("Warning: More than one trace matching. "
-                   "This should not happen.")
-            self.error(err)
-        elif len(st) == 1:
-            return st[0]
-        else:
+        self.debug(str(st))
+        if not st:
             return None
+        if len(st) > 1:
+            err = ("Warning: More than one trace matching:\n%s\n"
+                   "This should not happen. Using first Trace.") % str(st)
+            self.error(err)
+        return st[0]
 
     def getStream(self, network=None, station=None, location=None):
         """
         returns matching stream, does NOT ensure there is only one!
         """
-        streams = self.streams
-        for st in streams:
-            if network is not None and network != st[0].stats.network:
-                continue
-            if station is not None and station != st[0].stats.station:
-                continue
-            if location is not None and location != st[0].stats.location:
-                continue
+        self.debug("net: %s, sta: %s,loc: %s" % (network, station, location))
+        st = Stream()
+        for st_ in self.streams:
+            st += st_
+        for st_ in self.streams_bkp:
+            st += st_.copy()
+        self.debug(str(st))
+        st = st.select(network=network, station=station,
+                       location=location)
+        self.debug(str(st))
+        st.merge(-1)
+        self.debug(str(st))
+        if st:
             return st
         return None
 
