@@ -1697,7 +1697,8 @@ class ObsPyck(QtGui.QMainWindow):
             arrival = getArrivalForPick(self.catalog[0].origins[0].arrivals,
                                         pick)
             if arrival is None:
-                self.critical("focmec: No arrival for pick. "
+                self.critical("focmec: No arrival for pick! Run location "
+                              "routine again after changing/adding picks! "
                               "Skipping:\n%s" % pick)
                 continue
             pt = pick.phase_hint
