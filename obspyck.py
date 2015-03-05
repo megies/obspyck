@@ -46,7 +46,7 @@ from obspy.signal import rotate_ZNE_LQT, rotate_NE_RT
 from obspy.signal import arPick
 from obspy.signal.util import az2baz2az
 from obspy.imaging.spectrogram import spectrogram
-from obspy.imaging.beachball import Beachball
+from obspy.imaging.beachball import Beach
 
 from qt_designer import Ui_qMainWindow_obsPyck
 from util import *
@@ -210,10 +210,10 @@ class ObsPyck(QtGui.QMainWindow):
         self.catalog.events = [event]
         self.setXMLEventID()
         # indicates which of the available focal mechanisms is selected
-        self.focMechCurrent = None 
+        self.focMechCurrent = None
         self.spectrogramColormap = matplotlib.cm.jet
         # indicates which of the available events from seishub was loaded
-        self.seishubEventCurrent = None 
+        self.seishubEventCurrent = None
         # indicates how many events are available from seishub
         self.seishubEventCount = None
         # setup server information
@@ -1818,7 +1818,7 @@ class ObsPyck(QtGui.QMainWindow):
                       (self.focMechCurrent + 1, len(fms)))
         self.critical("Strike: %6.2f  Dip: %6.2f  Rake: %6.2f  Misfit: %.2f" % \
                       (np1.strike, np1.dip, np1.rake, fm.misfit))
-    
+
     def drawFocMec(self):
         fms = self.catalog[0].focal_mechanisms
         if not fms:
@@ -1827,21 +1827,34 @@ class ObsPyck(QtGui.QMainWindow):
             return
         # make up the figure:
         fig = self.fig
-        self.axsFocMec = []
-        axs = self.axsFocMec
+        ax = fig.add_subplot(111, aspect="equal")
+        axs = [ax]
+        self.axsFocMec = axs
+        #ax.autoscale_view(tight=False, scalex=True, scaley=True)
+        width = 2
+        plot_width = width * 0.95
+        #plot_width = 0.95 * width
         fig.subplots_adjust(left=0, bottom=0, right=1, top=1)
-        
         # plot the selected solution
         fm = fms[self.focMechCurrent]
         np1 = fm.nodal_planes.nodal_plane_1
-        axs.append(Beachball([np1.strike, np1.dip, np1.rake], fig=fig))
+        if hasattr(fm, "_beachball"):
+            beach = fm._beachball
+        else:
+            beach = Beach([np1.strike, np1.dip, np1.rake],
+                          width=plot_width)
+            fm._beachball = beach
+        ax.add_collection(beach)
         # plot the alternative solutions
-        for _fm in fms:
-            if _fm is not fm:
-                _np1 = _fm.nodal_planes.nodal_plane_1
-                axs.append(Beachball([_np1.strike, _np1.dip, _np1.rake],
-                          nofill=True, fig=fig, edgecolor='k',
-                          linewidth=1., alpha=0.3))
+        if not hasattr(fm, "_beachball2"):
+            for fm_ in fms:
+                _np1 = fm_.nodal_planes.nodal_plane_1
+                beach = Beach([_np1.strike, _np1.dip, _np1.rake],
+                              nofill=True, edgecolor='k', linewidth=1.,
+                              alpha=0.3, width=plot_width)
+                fm_._beachball2 = beach
+        for fm_ in fms:
+            ax.add_collection(fm_._beachball2)
         text = "Focal Mechanism (%i of %i)" % \
                (self.focMechCurrent + 1, len(fms))
         text += "\nStrike: %6.2f  Dip: %6.2f  Rake: %6.2f" % \
@@ -1851,14 +1864,22 @@ class ObsPyck(QtGui.QMainWindow):
         if fm.station_polarity_count:
             text += "\nStation Polarity Count: %i" % fm.station_polarity_count
         #fig.canvas.set_window_title("Focal Mechanism (%i of %i)" % \
-        #        (self.focMechCurrent + 1, self.focMechCount))
+        #        (self.focMechCurrent + 1, len(fms)))
         fig.subplots_adjust(top=0.88) # make room for suptitle
         # values 0.02 and 0.96 fit best over the outer edges of beachball
         #ax = fig.add_axes([0.00, 0.02, 1.00, 0.96], polar=True)
+        ax.set_ylim(-1, 1)
+        ax.set_xlim(-1, 1)
+        ax.axison = False
         self.axFocMecStations = fig.add_axes([0.00,0.02,1.00,0.84], polar=True)
         ax = self.axFocMecStations
         ax.set_title(text)
         ax.set_axis_off()
+        azims = []
+        incis = []
+        polarities = []
+        bbox = dict(boxstyle="round,pad=0.2", fc="w", ec="k", lw=1.5,
+                    alpha=0.7)
         for st in self.streams:
             net = st[0].stats.network
             sta = st[0].stats.station
@@ -1869,11 +1890,11 @@ class ObsPyck(QtGui.QMainWindow):
             if pick.polarity is None or arrival is None or arrival.azimuth is None or arrival.takeoff_angle is None:
                 continue
             if pick.polarity == "positive":
-                color = "black"
+                polarity = True
             elif pick.polarity == "negative":
-                color = "white"
+                polarity = False
             else:
-                color = "red"
+                polarity = None
             azim = arrival.azimuth
             inci = arrival.takeoff_angle
             # lower hemisphere projection
@@ -1883,8 +1904,21 @@ class ObsPyck(QtGui.QMainWindow):
             #we have to hack the azimuth because of the polar plot
             #axes orientation
             plotazim = (np.pi / 2.) - ((azim / 180.) * np.pi)
-            ax.scatter([plotazim], [inci], facecolor=color)
-            ax.text(plotazim, inci, " " + sta, va="top")
+            azims.append(plotazim)
+            incis.append(inci)
+            polarities.append(polarity)
+            ax.text(plotazim, inci, "  " + sta, va="top", bbox=bbox, zorder=2)
+        azims = np.array(azims)
+        incis = np.array(incis)
+        polarities = np.array(polarities, dtype=bool)
+        ax.scatter(azims, incis, marker="o", lw=2, facecolor="w",
+                   edgecolor="k", s=200, zorder=3)
+        mask = (polarities == True)
+        ax.scatter(azims[mask], incis[mask], marker="+", lw=3, color="k",
+                   s=200, zorder=4)
+        mask = ~mask
+        ax.scatter(azims[mask], incis[mask], marker="_", lw=3, color="k",
+                   s=200, zorder=4)
         #this fits the 90 degree incident value to the beachball edge best
         ax.set_ylim([0., 91])
         self.canv.draw()
@@ -3518,7 +3552,7 @@ class ObsPyck(QtGui.QMainWindow):
     def clearFocmec(self):
         self.info("Clearing previous focal mechanism data.")
         self.catalog[0].focal_mechanisms = []
-        self.focMechCount = None
+        self.focMechCurrent = None
 
     def updateAllItems(self):
         st = self.getCurrentStream()
@@ -3811,10 +3845,10 @@ class ObsPyck(QtGui.QMainWindow):
         self.debug(str(st))
         if not st:
             return None
-        if len(st) > 1:
-            err = ("Warning: More than one trace matching:\n%s\n"
-                   "This should not happen. Using first Trace.") % str(st)
-            self.error(err)
+        #if len(st) > 1:
+        #    err = ("Warning: More than one trace matching:\n%s\n"
+        #           "This should not happen. Using first Trace.") % str(st)
+        #    self.error(err)
         return st[0]
 
     def getStream(self, network=None, station=None, location=None):
@@ -4003,6 +4037,18 @@ class ObsPyck(QtGui.QMainWindow):
                 if contrib.station_magnitude_id == stamag.resource_id:
                     if contrib.weight:
                         stamag.used = True
+
+        if ev.focal_mechanisms:
+            pref_fm = ev.preferred_focal_mechanism()
+            if pref_fm:
+                try:
+                    self.focMechCurrent = ev.focal_mechanisms.index(pref_fm)
+                except ValueError:
+                    self.focMechCurrent = 0
+            else:
+                self.focMechCurrent = 0
+        else:
+            self.focMechCurrent = None
 
         self.critical("Fetched event %i of %i: %s (public: %s, user: %s)"% \
               (self.seishubEventCurrent + 1, self.seishubEventCount,
