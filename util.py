@@ -358,8 +358,11 @@ def fetch_waveforms_with_metadata(options, args):
         print "Reading local waveform files:"
         print "-" * 80
         for file in options.files.split(","):
-            print file
             st = read(file, starttime=t1, endtime=t2, verify_chksum=options.verify_chksum)
+            msg = file
+            if not st:
+                msg += " (not matching requested time window)"
+            print msg
             for tr in st:
                 if not options.nometadata:
                     for parser in parsers:
@@ -399,7 +402,10 @@ def fetch_waveforms_with_metadata(options, args):
             except TypeError:
                 print "File %s not recognized as dataless or waveform file. Skipped." % file
                 continue
-            print "%s: Waveforms" % file
+            msg = "%s: Waveforms" % file
+            if not st:
+                msg += " (not matching requested time window)"
+            print msg
             stream_tmp += st
         for tr in stream_tmp:
             if not options.nometadata:
