@@ -29,6 +29,7 @@ import matplotlib.cm
 import matplotlib.transforms
 from matplotlib.patches import Ellipse
 from matplotlib.ticker import FuncFormatter, FormatStrFormatter, MaxNLocator
+from matplotlib.backend_bases import MouseEvent as MplMouseEvent
 
 #sys.path.append('/baysoft/obspy/misc/symlink')
 #os.chdir("/baysoft/obspyck/")
