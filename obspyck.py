@@ -1795,9 +1795,10 @@ class ObsPyck(QtGui.QMainWindow):
             fm.station_polarity_count = count
             errors = sum([int(float(line[no])) for no in (3, 4, 5)]) # not used in xml
             fm.misfit = errors / float(fm.station_polarity_count)
-            fm.comments.append(Comment("Possible Solution Count: %i" % len(lines)))
-            self.critical("Strike: %6.2f  Dip: %6.2f  Rake: %6.2f  Misfit: %.2f" % \
-                          (np1.strike, np1.dip, np1.rake, fm.misfit))
+            fm.comments.append(Comment(text="Possible Solution Count: %i" % len(lines)))
+            fm.comments.append(Comment(text="Polarity Errors: %i" % errors))
+            self.critical("Strike: %6.2f  Dip: %6.2f  Rake: %6.2f  Polarity Errors: %i/%i" % \
+                      (np1.strike, np1.dip, np1.rake, errors, count))
             fms.append(fm)
         self.catalog[0].focal_mechanisms = fms
         self.focMechCurrent = 0
