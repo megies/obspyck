@@ -1881,10 +1881,12 @@ class ObsPyck(QtGui.QMainWindow):
         polarities = []
         bbox = dict(boxstyle="round,pad=0.2", fc="w", ec="k", lw=1.5,
                     alpha=0.7)
-        for st in self.streams:
-            net = st[0].stats.network
-            sta = st[0].stats.station
-            pick = self.getPick(network=net, station=sta, phase_hint='P')
+        for pick in self.catalog[0].picks:
+            if pick.phase_hint != "P":
+                continue
+            wid = pick.waveform_id
+            net = wid.network_code
+            sta = wid.station_code
             arrival = getArrivalForPick(self.catalog[0].origins[0].arrivals, pick)
             if not pick:
                 continue
