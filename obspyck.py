@@ -21,30 +21,23 @@ from StringIO import StringIO
 import logging
 
 from PyQt4 import QtGui, QtCore
-from PyQt4.QtCore import QEvent, Qt
+from PyQt4.QtCore import Qt
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm
 import matplotlib.transforms
-from matplotlib.transforms import blended_transform_factory
 from matplotlib.patches import Ellipse
 from matplotlib.ticker import FuncFormatter, FormatStrFormatter, MaxNLocator
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as QNavigationToolbar
-from matplotlib.backend_bases import MouseEvent as MplMouseEvent, KeyEvent as MplKeyEvent
-import lxml.etree
-from lxml.etree import SubElement as Sub
 
 #sys.path.append('/baysoft/obspy/misc/symlink')
 #os.chdir("/baysoft/obspyck/")
 from obspy import __version__ as OBSPY_VERSION
 from obspy.core.util import NamedTemporaryFile, AttribDict
 from obspy.core.util.geodetics import gps2DistAzimuth, kilometer2degrees
-from obspy import UTCDateTime, Stream#, readEvents
-from obspy.signal.util import utlLonLat, utlGeoKm
-from obspy.signal.invsim import estimateMagnitude, paz2AmpValueOfFreqResp
+from obspy import UTCDateTime, Stream
+from obspy.signal.util import utlLonLat
+from obspy.signal.invsim import estimateMagnitude
 from obspy.signal import rotate_ZNE_LQT, rotate_NE_RT
-from obspy.signal import arPick
-from obspy.signal.util import az2baz2az
 from obspy.imaging.spectrogram import spectrogram
 from obspy.imaging.beachball import Beach
 
