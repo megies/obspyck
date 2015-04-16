@@ -2393,6 +2393,9 @@ class ObsPyck(QtGui.QMainWindow):
 
         line = lines.pop(0)
         model = line[49:].strip()
+        # this is to prevent characters that are invalid in QuakeML URIs
+        # hopefully handled in the future by obspy/obspy#1018
+        model = re.sub(r"[^\w\d\-\.\*\(\)\+\?_~'=,;#/&amp;]", '_', model)
 
         # assign origin info
         o = Origin()
