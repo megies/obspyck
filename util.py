@@ -1002,12 +1002,10 @@ def getArrivalForPick(arrivals, pick):
     searches given arrivals for an arrival that references the given
     pick and returns it (empty Arrival object otherwise).
     """
-    arrival = None
     for a in arrivals:
         if a.pick_id == pick.resource_id:
-            arrival = a
-            break
-    return arrival
+            return a
+    return None
 
 
 def getPickForArrival(picks, arrival):
