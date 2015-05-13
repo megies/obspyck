@@ -39,7 +39,7 @@ from obspy.core.util.geodetics import gps2DistAzimuth, kilometer2degrees
 from obspy import UTCDateTime, Stream
 from obspy.signal.util import utlLonLat
 from obspy.signal.invsim import estimateMagnitude
-from obspy.signal import rotate_ZNE_LQT, rotate_NE_RT
+from obspy.signal.rotate import rotate_ZNE_LQT, rotate_NE_RT
 from obspy.imaging.spectrogram import spectrogram
 from obspy.imaging.beachball import Beach
 
