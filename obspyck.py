@@ -4212,4 +4212,10 @@ def main():
 
 
 if __name__ == "__main__":
+    try:
+        import obspy.io  # NOQA
+    except ImportError:
+        pass
+    else:
+        raise Exception("ObsPy >= 0.11 not supported.")
     main()
