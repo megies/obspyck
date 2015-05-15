@@ -1158,7 +1158,7 @@ p, l  i { white-space: pre-wrap; }
                      <item>
                       <widget class="QDoubleSpinBox" name="qDoubleSpinBox_waterlevel">
                        <property name="focusPolicy">
-                        <enum>Qt::NoFocus</enum>
+                        <enum>Qt::ClickFocus</enum>
                        </property>
                        <property name="decimals">
                         <number>0</number>
@@ -1318,7 +1318,7 @@ p, l  i { white-space: pre-wrap; }
                      <item>
                       <widget class="QDoubleSpinBox" name="qDoubleSpinBox_sta">
                        <property name="focusPolicy">
-                        <enum>Qt::NoFocus</enum>
+                        <enum>Qt::ClickFocus</enum>
                        </property>
                        <property name="singleStep">
                         <double>0.100000000000000</double>
@@ -1342,7 +1342,7 @@ p, l  i { white-space: pre-wrap; }
                      <item>
                       <widget class="QDoubleSpinBox" name="qDoubleSpinBox_lta">
                        <property name="focusPolicy">
-                        <enum>Qt::NoFocus</enum>
+                        <enum>Qt::ClickFocus</enum>
                        </property>
                        <property name="value">
                         <double>10.000000000000000</double>
@@ -1510,10 +1510,16 @@ p, l  i { white-space: pre-wrap; }
                    <item>
                     <widget class="QDoubleSpinBox" name="qDoubleSpinBox_highpass">
                      <property name="focusPolicy">
-                      <enum>Qt::NoFocus</enum>
+                      <enum>Qt::ClickFocus</enum>
+                     </property>
+                     <property name="acceptDrops">
+                      <bool>false</bool>
                      </property>
                      <property name="minimum">
                       <double>0.010000000000000</double>
+                     </property>
+                     <property name="singleStep">
+                      <double>0.500000000000000</double>
                      </property>
                      <property name="value">
                       <double>1.000000000000000</double>
@@ -1530,7 +1536,7 @@ p, l  i { white-space: pre-wrap; }
                    <item>
                     <widget class="QDoubleSpinBox" name="qDoubleSpinBox_lowpass">
                      <property name="focusPolicy">
-                      <enum>Qt::NoFocus</enum>
+                      <enum>Qt::ClickFocus</enum>
                      </property>
                      <property name="minimum">
                       <double>0.010000000000000</double>
@@ -1587,7 +1593,7 @@ p, l  i { white-space: pre-wrap; }
                      <item>
                       <widget class="QDoubleSpinBox" name="qDoubleSpinBox_wlen">
                        <property name="focusPolicy">
-                        <enum>Qt::NoFocus</enum>
+                        <enum>Qt::ClickFocus</enum>
                        </property>
                        <property name="suffix">
                         <string/>
@@ -1616,7 +1622,7 @@ p, l  i { white-space: pre-wrap; }
                      <item>
                       <widget class="QDoubleSpinBox" name="qDoubleSpinBox_perlap">
                        <property name="focusPolicy">
-                        <enum>Qt::NoFocus</enum>
+                        <enum>Qt::ClickFocus</enum>
                        </property>
                        <property name="maximum">
                         <double>0.990000000000000</double>
@@ -1805,7 +1811,7 @@ p, l  i { white-space: pre-wrap; }
      <x>0</x>
      <y>0</y>
      <width>1147</width>
-     <height>25</height>
+     <height>23</height>
     </rect>
    </property>
   </widget>

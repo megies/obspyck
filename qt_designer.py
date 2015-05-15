@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'qt_designer.ui'
 #
-# Created: Tue Jan 27 15:45:01 2015
-#      by: PyQt4 UI code generator 4.10.4
+# Created: Fri May 15 10:11:45 2015
+#      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -551,7 +551,7 @@ class Ui_qMainWindow_obsPyck(object):
         self.qLabel_waterlevel.setObjectName(_fromUtf8("qLabel_waterlevel"))
         self.horizontalLayout_14aa.addWidget(self.qLabel_waterlevel)
         self.qDoubleSpinBox_waterlevel = QtGui.QDoubleSpinBox(self.xxx)
-        self.qDoubleSpinBox_waterlevel.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.qDoubleSpinBox_waterlevel.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.qDoubleSpinBox_waterlevel.setDecimals(0)
         self.qDoubleSpinBox_waterlevel.setMaximum(1000.0)
         self.qDoubleSpinBox_waterlevel.setSingleStep(5.0)
@@ -630,7 +630,7 @@ class Ui_qMainWindow_obsPyck(object):
         self.qLabel_sta.setObjectName(_fromUtf8("qLabel_sta"))
         self.horizontalLayout_16.addWidget(self.qLabel_sta)
         self.qDoubleSpinBox_sta = QtGui.QDoubleSpinBox(self.xxx)
-        self.qDoubleSpinBox_sta.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.qDoubleSpinBox_sta.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.qDoubleSpinBox_sta.setSingleStep(0.1)
         self.qDoubleSpinBox_sta.setProperty("value", 0.5)
         self.qDoubleSpinBox_sta.setObjectName(_fromUtf8("qDoubleSpinBox_sta"))
@@ -642,7 +642,7 @@ class Ui_qMainWindow_obsPyck(object):
         self.qLabel_lta.setObjectName(_fromUtf8("qLabel_lta"))
         self.horizontalLayout_14.addWidget(self.qLabel_lta)
         self.qDoubleSpinBox_lta = QtGui.QDoubleSpinBox(self.xxx)
-        self.qDoubleSpinBox_lta.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.qDoubleSpinBox_lta.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.qDoubleSpinBox_lta.setProperty("value", 10.0)
         self.qDoubleSpinBox_lta.setObjectName(_fromUtf8("qDoubleSpinBox_lta"))
         self.horizontalLayout_14.addWidget(self.qDoubleSpinBox_lta)
@@ -710,8 +710,10 @@ class Ui_qMainWindow_obsPyck(object):
         self.qLabel_lowpass.setObjectName(_fromUtf8("qLabel_lowpass"))
         self.horizontalLayout_10.addWidget(self.qLabel_lowpass)
         self.qDoubleSpinBox_highpass = QtGui.QDoubleSpinBox(self.yyy)
-        self.qDoubleSpinBox_highpass.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.qDoubleSpinBox_highpass.setFocusPolicy(QtCore.Qt.ClickFocus)
+        self.qDoubleSpinBox_highpass.setAcceptDrops(False)
         self.qDoubleSpinBox_highpass.setMinimum(0.01)
+        self.qDoubleSpinBox_highpass.setSingleStep(0.5)
         self.qDoubleSpinBox_highpass.setProperty("value", 1.0)
         self.qDoubleSpinBox_highpass.setObjectName(_fromUtf8("qDoubleSpinBox_highpass"))
         self.horizontalLayout_10.addWidget(self.qDoubleSpinBox_highpass)
@@ -719,7 +721,7 @@ class Ui_qMainWindow_obsPyck(object):
         self.qLabel_highpass.setObjectName(_fromUtf8("qLabel_highpass"))
         self.horizontalLayout_10.addWidget(self.qLabel_highpass)
         self.qDoubleSpinBox_lowpass = QtGui.QDoubleSpinBox(self.yyy)
-        self.qDoubleSpinBox_lowpass.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.qDoubleSpinBox_lowpass.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.qDoubleSpinBox_lowpass.setMinimum(0.01)
         self.qDoubleSpinBox_lowpass.setProperty("value", 20.0)
         self.qDoubleSpinBox_lowpass.setObjectName(_fromUtf8("qDoubleSpinBox_lowpass"))
@@ -748,7 +750,7 @@ class Ui_qMainWindow_obsPyck(object):
         self.qLabel_wlen.setObjectName(_fromUtf8("qLabel_wlen"))
         self.horizontalLayout_19.addWidget(self.qLabel_wlen)
         self.qDoubleSpinBox_wlen = QtGui.QDoubleSpinBox(self.yyy)
-        self.qDoubleSpinBox_wlen.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.qDoubleSpinBox_wlen.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.qDoubleSpinBox_wlen.setSuffix(_fromUtf8(""))
         self.qDoubleSpinBox_wlen.setMinimum(0.1)
         self.qDoubleSpinBox_wlen.setMaximum(99.99)
@@ -760,7 +762,7 @@ class Ui_qMainWindow_obsPyck(object):
         self.qLabel_perlap.setObjectName(_fromUtf8("qLabel_perlap"))
         self.horizontalLayout_19.addWidget(self.qLabel_perlap)
         self.qDoubleSpinBox_perlap = QtGui.QDoubleSpinBox(self.yyy)
-        self.qDoubleSpinBox_perlap.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.qDoubleSpinBox_perlap.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.qDoubleSpinBox_perlap.setMaximum(0.99)
         self.qDoubleSpinBox_perlap.setSingleStep(0.05)
         self.qDoubleSpinBox_perlap.setProperty("value", 0.9)
@@ -846,7 +848,7 @@ class Ui_qMainWindow_obsPyck(object):
         self.verticalLayout_4.addLayout(self.verticalLayout)
         qMainWindow_obsPyck.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(qMainWindow_obsPyck)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1147, 25))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1147, 23))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         qMainWindow_obsPyck.setMenuBar(self.menubar)
         self.statusbar = QtGui.QStatusBar(qMainWindow_obsPyck)
