@@ -564,8 +564,8 @@ def merge_check_and_cleanup_streams(streams, options):
         # Here we make sure that a station/network combination is not
         # present with two streams.
         if net_sta in sta_list:
-            msg = "Warning: Station/Network combination \"%s\" " + \
-                  "already in stream list. Discarding stream." % net_sta
+            msg = ("Warning: Station/Network combination '%s' "
+                   "already in stream list. Discarding stream.") % net_sta
             print msg
             warn_msg += msg + "\n"
             streams.remove(st)
