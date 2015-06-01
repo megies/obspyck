@@ -13,6 +13,7 @@
 import os
 import re
 import sys
+import locale
 import shutil
 import optparse
 import warnings
@@ -2020,8 +2021,16 @@ class ObsPyck(QtGui.QMainWindow):
 
         line = line.rstrip().split('"')[1]
         signature, nlloc_version, date, time = line.rsplit(" ", 3)
-        creation_time = UTCDateTime().strptime(date + time, str("%d%b%Y%Hh%Mm%S"))
-
+        saved_locale = locale.getlocale()
+        try:
+            locale.setlocale(locale.LC_ALL, ('en_US', 'UTF-8'))
+        except:
+            creation_time = None
+        else:
+            creation_time = UTCDateTime().strptime(date + time,
+                                                   str("%d%b%Y%Hh%Mm%S"))
+        finally:
+            locale.setlocale(locale.LC_ALL, saved_locale)
         # goto maximum likelihood origin location info line
         try:
             line = lines.pop(0)
