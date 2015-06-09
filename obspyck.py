@@ -219,7 +219,7 @@ class ObsPyck(QtGui.QMainWindow):
                                       options.seishub_port)
         server['BaseUrl'] = "http://" + server['Server']
         server['User'] = options.seishub_user # "obspyck"
-        
+
         (warn_msg, merge_msg, streams) = \
                 merge_check_and_cleanup_streams(streams, options)
         # if it's not empty show the merge info message now
@@ -243,6 +243,9 @@ class ObsPyck(QtGui.QMainWindow):
         #Define a pointer to navigate through the streams
         self.stNum = len(streams)
         self.stPt = 0
+
+        if options.event:
+            self.setEventFromFilename(options.event)
 
         self.drawAxes()
         self.multicursor = MultiCursor(self.canv, self.axs, useblit=True,
@@ -3994,12 +3997,37 @@ class ObsPyck(QtGui.QMainWindow):
         resource_xml = client.event.getResource(resource_name)
 
         # parse quakeml
-        self.catalog = readQuakeML(StringIO(resource_xml))
-        self.update_qml_text(resource_xml)
+        catalog = readQuakeML(StringIO(resource_xml))
+        self.setEventFromCatalog(catalog)
+        ev = catalog[0]
+        self.critical("Fetched event %i of %i: %s (public: %s, user: %s)"% \
+              (self.seishubEventCurrent + 1, self.seishubEventCount,
+               resource_name, self.widgets.qCheckBox_public.isChecked(),
+               ev.creation_info.author))
+
+    def setEventFromFilename(self, filename):
+        """
+        Set the currently active Event/Catalog from a filename of a QuakeML
+        file.
+        """
+        # parse quakeml
+        catalog = readQuakeML(filename)
+        self.setEventFromCatalog(catalog)
+        self.critical("Loaded event from file: %s" % filename)
+
+    def setEventFromCatalog(self, catalog):
+        """
+        Set the currently active Event/Catalog.
+        """
+        self.catalog = catalog
+        string_io = StringIO()
+        catalog.write(string_io, format="QUAKEML")
+        string_io.seek(0)
+
+        self.update_qml_text(string_io.read())
         ev = self.catalog[0]
 
-        user = ev.creation_info.author
-        public = ev.extra['public']['value']
+        public = ev.get("extra", {}).get('public', {}).get('value', "false")
         if public in ("True", "true"):
             public = True
         elif public in ("False", "false"):
@@ -4059,10 +4087,6 @@ class ObsPyck(QtGui.QMainWindow):
                 self.focMechCurrent = 0
         else:
             self.focMechCurrent = None
-
-        self.critical("Fetched event %i of %i: %s (public: %s, user: %s)"% \
-              (self.seishubEventCurrent + 1, self.seishubEventCount,
-               resource_name, public, user))
 
     def updateEventListFromSeisHub(self, starttime, endtime):
         """

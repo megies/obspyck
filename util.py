@@ -175,7 +175,11 @@ COMMANDLINE_OPTIONS = (
                                      "'debug', 'quiet'")}),
         (("--filter",), {'action': "store_true", 'dest': "filter",
                 'default': False,
-                'help': "Switch filter button on at startup."}))
+                'help': "Switch filter button on at startup."}),
+        (("--event",), {'dest': "event", 'type': "str",
+                'default': '',
+                'help': "Filename (or path) of event file to load."}),
+        )
 PROGRAMS = {
         'nlloc': {'filenames': {'exe': "NLLoc", 'phases': "nlloc.obs",
                                 'summary': "nlloc.hyp",
