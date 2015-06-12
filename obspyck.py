@@ -3206,6 +3206,11 @@ class ObsPyck(QtGui.QMainWindow):
             pick_s = self.getPick(network=net, station=sta, phase_hint='S')
             if not pick_p and not pick_s:
                 continue
+            if not pick_p:
+                msg = ("Hypo2000 phase file format does not support S pick "
+                       "without P pick. Skipping station: %s") % sta
+                self.error(msg)
+                continue
 
             # P Pick
             pick = pick_p
@@ -3230,7 +3235,7 @@ class ObsPyck(QtGui.QMainWindow):
             else:
                 polarity = "?"
             try:
-                weight = int(pick.extra.weight)
+                weight = int(pick.extra.weight.value)
             except:
                 weight = 0
             hypo71_string += fmtP % (sta, onset, polarity, weight, date)
@@ -3276,7 +3281,7 @@ class ObsPyck(QtGui.QMainWindow):
                 else:
                     polarity2 = "?"
                 try:
-                    weight2 = int(pick.extra.weight)
+                    weight2 = int(pick.extra.weight.value)
                 except:
                     weight2 = 0
                 hypo71_string += fmtS % (date2, onset2, polarity2, weight2)
