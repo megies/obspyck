@@ -126,7 +126,7 @@ COMMANDLINE_OPTIONS = (
                 'dest': "noevents", 'default': False,
                 'help': "Deactivate fetching event data using FDSNWS and plotting theoretical arrivals."}),
         (("--pluginpath",), {'dest': "pluginpath",
-                'default': "/baysoft/obspyck/",
+                'default': None,
                 'help': "Path to local directory containing the folders with "
                 "the files for the external programs. Large files/folders "
                 "should only be linked in this directory as the contents are "
@@ -749,6 +749,8 @@ def setup_external_programs(options):
     :type options: options as returned by :meth:`optparse.OptionParser.parse_args`
     :returns: String representation of temporary directory with program files.
     """
+    if options.pluginpath is None:
+        options.pluginpath = os.path.dirname(os.path.abspath(__file__))
     if not os.path.isdir(options.pluginpath):
         msg = "No such directory: '%s'" % options.pluginpath
         raise IOError(msg)
