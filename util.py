@@ -762,6 +762,10 @@ def setup_external_programs(options):
         SHELL = True
     else:
         SHELL = False
+    # link velocity models ################################################
+    if os.path.exists(os.path.join(options.pluginpath, "VELOCITY_MODELS")):
+        os.symlink(os.path.join(options.pluginpath, "VELOCITY_MODELS"),
+                   os.path.join(tmp_dir, "VELOCITY_MODELS"))
     # Setup external programs #############################################
     for prog_basename, prog_dict in PROGRAMS.iteritems():
         prog_srcpath = os.path.join(options.pluginpath, prog_basename)
