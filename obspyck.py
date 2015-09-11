@@ -1085,7 +1085,7 @@ class ObsPyck(QtGui.QMainWindow):
         bbox = dict(boxstyle="round,pad=0.4", fc=bbox_fc, ec="k", lw=1, alpha=1.0)
         ax.text(x, y, label, transform=self.trans[i], color=color,
                 family='monospace', va=va, bbox=bbox, size="large",
-                zorder=5000)
+                zorder=5000, ha="right")
 
     def drawArrivalLabel(self, ax, arrival, pick):
         """
@@ -1096,7 +1096,7 @@ class ObsPyck(QtGui.QMainWindow):
         y = 1 - 0.03 * len(self.axs)
         i = self.axs.index(ax)
         ax.text(x, y, label, transform=self.trans[i], color='k',
-                family='monospace', va="top")
+                family='monospace', va="top", ha="right")
 
     def drawIds(self):
         """
