@@ -3118,9 +3118,6 @@ class ObsPyck(QtGui.QMainWindow):
         Returns the station location information in hypo71
         stations file format as a string. This string can then be written to
         a file.
-
-        cjh Changed leading 6s to 4s in fmt to eliminate leading two spaces
-        cjh Changed formatting str to accomodate all hemispheres
         """
         fmt = "%6s%02i%05.2f%1s%03i%05.2f%1s%4i\n"
         hypo71_string = ""
