@@ -327,7 +327,7 @@ class ObsPyck(QtGui.QMainWindow):
         :returns: absolute UTCDateTime
         """
         return self.T0 + reltime
-    
+
     def cleanup(self):
         """
         Cleanup and prepare for quit.
@@ -546,7 +546,7 @@ class ObsPyck(QtGui.QMainWindow):
         self.getEventFromSeisHub(resource_name)
         self.updateAllItems()
         self.redraw()
-        
+
     def on_qToolButton_updateEventList_clicked(self, *args):
         if args:
             return
@@ -654,7 +654,7 @@ class ObsPyck(QtGui.QMainWindow):
             self.error(err)
         else:
             self.info("Setting usage of \"sysop\"-account to: %s" % newstate)
-    
+
     # the corresponding signal is emitted when hitting return after entering
     # the password
     def on_qLineEdit_sysopPassword_editingFinished(self):
@@ -682,7 +682,7 @@ class ObsPyck(QtGui.QMainWindow):
         if args:
             return
         self.debugger()
-    
+
     def on_qToolButton_previousStream_clicked(self, *args):
         if args:
             return
@@ -757,7 +757,7 @@ class ObsPyck(QtGui.QMainWindow):
         self._arpicker()
         self.updateAllItems()
         self.redraw()
-        
+
     def on_qComboBox_filterType_currentIndexChanged(self, newvalue):
         if not self.widgets.qToolButton_filter.isChecked():
             return
@@ -1188,7 +1188,7 @@ class ObsPyck(QtGui.QMainWindow):
             else:
                 ax = fig.add_subplot(len(st), 1, i+1, sharex=axs[0], sharey=axs[0])
                 ax.xaxis.set_ticks_position("top")
-            axs.append(ax) 
+            axs.append(ax)
             # relative x-axis times start with 0 at global reference time
             starttime_relative = self.time_abs2rel(tr.stats.starttime)
             sampletimes = np.arange(starttime_relative,
@@ -1225,15 +1225,15 @@ class ObsPyck(QtGui.QMainWindow):
         self.xMin, self.xMax = axs[0].get_xlim()
         self.yMin, self.yMax = axs[0].get_ylim()
         fig.subplots_adjust(bottom=0.001, hspace=0.000, right=0.999, top=0.999, left=0.001)
-    
+
     def delAxes(self):
         for ax in self.axs:
-            if ax in self.fig.axes: 
+            if ax in self.fig.axes:
                 self.fig.delaxes(ax)
             del ax
         if self.supTit in self.fig.texts:
             self.fig.texts.remove(self.supTit)
-    
+
     def redraw(self):
         for line in self.multicursor.lines:
             line.set_visible(False)
@@ -1503,7 +1503,7 @@ class ObsPyck(QtGui.QMainWindow):
         #######################################################################
         # End of key events related to picking                                #
         #######################################################################
-        
+
         if ev.key == keys['switchWheelZoomAxis']:
             self.flagWheelZoomAmplitude = True
             return
@@ -1515,7 +1515,7 @@ class ObsPyck(QtGui.QMainWindow):
             combobox.setCurrentIndex(next)
             self.info("Switching Phase button")
             return
-            
+
         if ev.key == keys['prevStream']:
             if self.widgets.qToolButton_overview.isChecked():
                 return
@@ -1527,7 +1527,7 @@ class ObsPyck(QtGui.QMainWindow):
                 return
             self.on_qToolButton_nextStream_clicked()
             return
-    
+
     def __mpl_keyReleaseEvent(self, ev):
         if ev.key == self.keys['switchWheelZoomAxis']:
             self.flagWheelZoomAmplitude = False
@@ -1586,7 +1586,7 @@ class ObsPyck(QtGui.QMainWindow):
         ax.set_xbound(lower=left, upper=right)
         ax.set_ybound(lower=bottom, upper=top)
         self.redraw()
-    
+
     # Define zoom reset for the mouse button 2 (always wheel wheel!?)
     def __mpl_mouseButtonPressEvent(self, ev):
         if self.widgets.qToolButton_showMap.isChecked():
@@ -1622,7 +1622,7 @@ class ObsPyck(QtGui.QMainWindow):
             # Update all subplots
             self.redraw()
             self.info("Resetting axes")
-    
+
     def __mpl_mouseButtonReleaseEvent(self, ev):
         if self.widgets.qToolButton_showMap.isChecked():
             return
@@ -1658,7 +1658,7 @@ class ObsPyck(QtGui.QMainWindow):
                 self.widgets.qLabel_ydata.setText(str(ev.ydata))
         except TypeError:
             pass
-    
+
     #lookup multicursor source: http://matplotlib.sourcearchive.com/documentation/0.98.1/widgets_8py-source.html
     def multicursorReinit(self):
         self.multicursor.__init__(self.canv, self.axs, useblit=True,
@@ -1676,7 +1676,7 @@ class ObsPyck(QtGui.QMainWindow):
     def updateStreamNumberLabel(self):
         label = "%02i/%02i" % (self.stPt + 1, self.stNum)
         self.widgets.qLabel_streamNumber.setText(label)
-    
+
     def updateStreamNameCombobox(self):
         self.widgets.qComboBox_streamName.setCurrentIndex(self.stPt)
 
@@ -1931,7 +1931,7 @@ class ObsPyck(QtGui.QMainWindow):
             del self.axFocMecStations
         if hasattr(self, "axsFocMec"):
             for ax in self.axsFocMec:
-                if ax in self.fig.axes: 
+                if ax in self.fig.axes:
                     self.fig.delaxes(ax)
                 del ax
 
@@ -2044,14 +2044,14 @@ class ObsPyck(QtGui.QMainWindow):
                   "outputfile (%s)!" % files['summary']
             self.error(err)
             return
-        
+
         line = line.split()
         x = float(line[2])
         y = float(line[4])
         depth = - float(line[6]) # depth: negative down!
-        
+
         lon, lat = gk2lonlat(x, y)
-        
+
         # goto origin time info line
         try:
             line = lines.pop(0)
@@ -2062,7 +2062,7 @@ class ObsPyck(QtGui.QMainWindow):
                   "outputfile (%s)!" % files['summary']
             self.error(err)
             return
-        
+
         line = line.split()
         year = int(line[2])
         month = int(line[3])
@@ -2082,7 +2082,7 @@ class ObsPyck(QtGui.QMainWindow):
                   "outputfile (%s)!" % files['summary']
             self.error(err)
             return
-        
+
         line = line.split()
         rms = float(line[8])
         gap = float(line[12])
@@ -2097,7 +2097,7 @@ class ObsPyck(QtGui.QMainWindow):
                   "outputfile (%s)!" % files['summary']
             self.error(err)
             return
-        
+
         line = line.split()
         # read in the error ellipsoid representation of the location error.
         # this is given as azimuth/dip/length of axis 1 and 2 and as length
@@ -2114,7 +2114,7 @@ class ObsPyck(QtGui.QMainWindow):
         errX, errY, errZ = errorEllipsoid2CartesianErrors(azim1, dip1, len1,
                                                           azim2, dip2, len2,
                                                           len3)
-        
+
         # XXX
         # NLLOC uses error ellipsoid for 68% confidence interval relating to
         # one standard deviation in the normal distribution.
@@ -2169,7 +2169,7 @@ class ObsPyck(QtGui.QMainWindow):
         o.depth_type = "from location"
         o.earth_model_id = "%s/earth_model/%s" % (ID_ROOT, model)
         o.time = time
-        
+
         # goto synthetic phases info lines
         try:
             line = lines.pop(0)
@@ -2191,7 +2191,7 @@ class ObsPyck(QtGui.QMainWindow):
                   "NLLoc outputfile (%s)!" % files['summary']
             self.error(err)
             return
-        
+
         o.quality.used_phase_count = 0
         o.quality.extra = AttribDict()
         o.quality.extra.usedPhaseCountP = {'value': 0, 'namespace': NAMESPACE}
@@ -2203,63 +2203,63 @@ class ObsPyck(QtGui.QMainWindow):
         ID Ins Cmp On Pha FM Q Date HrMn Sec Coda Amp Per PriorWt > Err ErrMag
         TTpred Res Weight StaLoc(X Y Z) SDist SAzim RAz RDip RQual Tcorr
         TTerrTcorr
-        
+
         Fields:
         ID (char*6)
-            station name or code 
+            station name or code
         Ins (char*4)
-            instrument identification for the trace for which the time pick corresponds (i.e. SP, BRB, VBB) 
+            instrument identification for the trace for which the time pick corresponds (i.e. SP, BRB, VBB)
         Cmp (char*4)
-            component identification for the trace for which the time pick corresponds (i.e. Z, N, E, H) 
+            component identification for the trace for which the time pick corresponds (i.e. Z, N, E, H)
         On (char*1)
-            description of P phase arrival onset; i, e 
+            description of P phase arrival onset; i, e
         Pha (char*6)
-            Phase identification (i.e. P, S, PmP) 
+            Phase identification (i.e. P, S, PmP)
         FM (char*1)
-            first motion direction of P arrival; c, C, u, U = compression; d, D = dilatation; +, -, Z, N; . or ? = not readable. 
+            first motion direction of P arrival; c, C, u, U = compression; d, D = dilatation; +, -, Z, N; . or ? = not readable.
         Date (yyyymmdd) (int*6)
-            year (with century), month, day 
+            year (with century), month, day
         HrMn (hhmm) (int*4)
-            Hour, min 
+            Hour, min
         Sec (float*7.4)
-            seconds of phase arrival 
+            seconds of phase arrival
         Err (char*3)
-            Error/uncertainty type; GAU 
+            Error/uncertainty type; GAU
         ErrMag (expFloat*9.2)
-            Error/uncertainty magnitude in seconds 
+            Error/uncertainty magnitude in seconds
         Coda (expFloat*9.2)
-            coda duration reading 
+            coda duration reading
         Amp (expFloat*9.2)
-            Maxumim peak-to-peak amplitude 
+            Maxumim peak-to-peak amplitude
         Per (expFloat*9.2)
-            Period of amplitude reading 
+            Period of amplitude reading
         PriorWt (expFloat*9.2)
-            A-priori phase weight 
+            A-priori phase weight
         > (char*1)
-            Required separator between first part (observations) and second part (calculated values) of phase record. 
+            Required separator between first part (observations) and second part (calculated values) of phase record.
         TTpred (float*9.4)
-            Predicted travel time 
+            Predicted travel time
         Res (float*9.4)
-            Residual (observed - predicted arrival time) 
+            Residual (observed - predicted arrival time)
         Weight (float*9.4)
-            Phase weight (covariance matrix weight for LOCMETH GAU_ANALYTIC, posterior weight for LOCMETH EDT EDT_OT_WT) 
+            Phase weight (covariance matrix weight for LOCMETH GAU_ANALYTIC, posterior weight for LOCMETH EDT EDT_OT_WT)
         StaLoc(X Y Z) (3 * float*9.4)
-            Non-GLOBAL: x, y, z location of station in transformed, rectangular coordinates 
-            GLOBAL: longitude, latitude, z location of station 
+            Non-GLOBAL: x, y, z location of station in transformed, rectangular coordinates
+            GLOBAL: longitude, latitude, z location of station
         SDist (float*9.4)
-            Maximum likelihood hypocenter to station epicentral distance in kilometers 
+            Maximum likelihood hypocenter to station epicentral distance in kilometers
         SAzim (float*6.2)
-            Maximum likelihood hypocenter to station epicentral azimuth in degrees CW from North 
+            Maximum likelihood hypocenter to station epicentral azimuth in degrees CW from North
         RAz (float*5.1)
-            Ray take-off azimuth at maximum likelihood hypocenter in degrees CW from North 
+            Ray take-off azimuth at maximum likelihood hypocenter in degrees CW from North
         RDip (float*5.1)
-            Ray take-off dip at maximum likelihood hypocenter in degrees upwards from vertical down (0 = down, 180 = up) 
+            Ray take-off dip at maximum likelihood hypocenter in degrees upwards from vertical down (0 = down, 180 = up)
         RQual (float*5.1)
-            Quality of take-off angle estimation (0 = unreliable, 10 = best) 
+            Quality of take-off angle estimation (0 = unreliable, 10 = best)
         Tcorr (float*9.4)
             Time correction (station delay) used for location
         TTerr (expFloat*9.2)
-            Traveltime error used for location 
+            Traveltime error used for location
         """
         used_stations = set()
         for line in lines:
@@ -2431,7 +2431,7 @@ class ObsPyck(QtGui.QMainWindow):
         o.depth_type = "from location"
         o.earth_model_id = "%s/earth_model/%s" % (ID_ROOT, model)
         o.time = time
-        
+
         # goto station and phases info lines
         while True:
             try:
@@ -2440,7 +2440,7 @@ class ObsPyck(QtGui.QMainWindow):
                 break
             if line.startswith(" STA NET COM L CR DIST AZM"):
                 break
-        
+
         oq.used_phase_count = 0
         oq.extra = AttribDict()
         oq.extra.usedPhaseCountP = {'value': 0, 'namespace': NAMESPACE}
@@ -3001,7 +3001,7 @@ class ObsPyck(QtGui.QMainWindow):
             self.scatterMag = axEM.scatter(self.scatterMagLon,
                     self.scatterMagLat, s=150, marker='v', color='',
                     edgecolor='black', picker=10)
-                
+
         axEM.set_xlabel('Longitude')
         axEM.set_ylabel('Latitude')
         time = o.time
@@ -3034,7 +3034,7 @@ class ObsPyck(QtGui.QMainWindow):
                     sharey=axEMiXY)
             axEMiXZ = self.axEventMapInletXZ
             axEMiZY = self.axEventMapInletZY
-            
+
             # z axis in km
             axEMiXY.hexbin(data[0], data[1], cmap=cmap)
             axEMiXZ.hexbin(data[0], data[2], cmap=cmap)
@@ -3058,16 +3058,16 @@ class ObsPyck(QtGui.QMainWindow):
             axEMiXY.set_ylim(min_y, max_y)
             axEMiXZ.invert_yaxis()
             axEMiZY.invert_xaxis()
-            
+
             formatter = FormatStrFormatter("%.3f")
             axEMiXY.xaxis.set_major_formatter(formatter)
             axEMiXY.yaxis.set_major_formatter(formatter)
-            
+
             # only draw very few ticklabels in our tiny subaxes
             for ax in [axEMiXZ.xaxis, axEMiXZ.yaxis,
                        axEMiZY.xaxis, axEMiZY.yaxis]:
                 ax.set_major_locator(MaxNLocator(nbins=3))
-            
+
             # hide ticklabels on XY plot
             for ax in [axEMiXY.xaxis, axEMiXY.yaxis]:
                 plt.setp(ax.get_ticklabels(), visible=False)
@@ -3119,7 +3119,7 @@ class ObsPyck(QtGui.QMainWindow):
         stations file format as a string. This string can then be written to
         a file.
         """
-        fmt = "%6s%02i%05.2fN%03i%05.2fE%4i\n"
+        fmt = "%6s%02i%05.2f%1s%03i%05.2f%1s%4i\n"
         hypo71_string = ""
 
         for st in self.streams:
@@ -3129,12 +3129,18 @@ class ObsPyck(QtGui.QMainWindow):
             lon_deg = int(lon)
             lon_min = (lon - lon_deg) * 60.
             lat = stats.coordinates.latitude
-            lat_deg = int(lat)
-            lat_min = (lat - lat_deg) * 60.
+            lat_deg = int(abs(lat))
+            lat_min = (abs(lat) - abs(lat_deg)) * 60.
+            hem_NS = 'N'
+            hem_EW = 'E'
+            if lat < 0:
+                hem_NS = 'S'
+            if lon < 0:
+                hem_NS = 'W'
             # hypo 71 format uses elevation in meters not kilometers
             ele = stats.coordinates.elevation
-            hypo71_string += fmt % (sta, lat_deg, lat_min, lon_deg, lon_min,
-                                    ele)
+            hypo71_string += fmt % (sta, lat_deg, lat_min, hem_NS, lon_deg,
+                                    lon_min, hem_EW, ele)
 
         return hypo71_string
 
@@ -3150,7 +3156,7 @@ class ObsPyck(QtGui.QMainWindow):
         The traditional USGS phase data input format (not Y2000 compatible)
         Some fields were added after the original HYPO71 phase format
         definition.
-        
+
         Col. Len. Format Data
          1    4  A4       4-letter station site code. Also see col 78.
          5    2  A2       P remark such as "IP". If blank, any P time is
@@ -3289,7 +3295,7 @@ class ObsPyck(QtGui.QMainWindow):
                 hypo71_string += "\n"
 
         return hypo71_string
-    
+
     def dicts2NLLocPhases(self):
         """
         Returns the pick information in NonLinLoc's own phase
@@ -3302,64 +3308,64 @@ class ObsPyck(QtGui.QMainWindow):
 
         Quote:
         NonLinLoc Phase file format (ASCII, NLLoc obsFileType = NLLOC_OBS)
-        
+
         The NonLinLoc Phase file format is intended to give a comprehensive
         phase time-pick description that is easy to write and read.
-        
+
         For each event to be located, this file contains one set of records. In
         each set there is one "arrival-time" record for each phase at each seismic
         station. The final record of each set is a blank. As many events as desired can
         be included in one file.
-        
+
         Each record has a fixed format, with a blank space between fields. A
         field should never be left blank - use a "?" for unused characther fields and a
         zero or invalid numeric value for numeric fields.
-        
+
         The NonLinLoc Phase file record is identical to the first part of each
         phase record in the NLLoc Hypocenter-Phase file output by the program NLLoc.
         Thus the phase list output by NLLoc can be used without modification as time
         pick observations for other runs of NLLoc.
-        
+
         NonLinLoc phase record:
         Fields:
         Station name (char*6)
-            station name or code 
+            station name or code
         Instrument (char*4)
             instument identification for the trace for which the time pick
-            corresponds (i.e. SP, BRB, VBB) 
+            corresponds (i.e. SP, BRB, VBB)
         Component (char*4)
             component identification for the trace for which the time pick
-            corresponds (i.e. Z, N, E, H) 
+            corresponds (i.e. Z, N, E, H)
         P phase onset (char*1)
-            description of P phase arrival onset; i, e 
+            description of P phase arrival onset; i, e
         Phase descriptor (char*6)
-            Phase identification (i.e. P, S, PmP) 
+            Phase identification (i.e. P, S, PmP)
         First Motion (char*1)
             first motion direction of P arrival; c, C, u, U = compression;
-            d, D = dilatation; +, -, Z, N; . or ? = not readable. 
+            d, D = dilatation; +, -, Z, N; . or ? = not readable.
         Date (yyyymmdd) (int*6)
-            year (with century), month, day 
+            year (with century), month, day
         Hour/minute (hhmm) (int*4)
-            Hour, min 
+            Hour, min
         Seconds (float*7.4)
-            seconds of phase arrival 
+            seconds of phase arrival
         Err (char*3)
-            Error/uncertainty type; GAU 
+            Error/uncertainty type; GAU
         ErrMag (expFloat*9.2)
-            Error/uncertainty magnitude in seconds 
+            Error/uncertainty magnitude in seconds
         Coda duration (expFloat*9.2)
-            coda duration reading 
+            coda duration reading
         Amplitude (expFloat*9.2)
-            Maxumim peak-to-peak amplitude 
+            Maxumim peak-to-peak amplitude
         Period (expFloat*9.2)
-            Period of amplitude reading 
+            Period of amplitude reading
         PriorWt (expFloat*9.2)
-        
+
         A-priori phase weight Currently can be 0 (do not use reading) or
         1 (use reading). (NLL_FORMAT_VER_2 - WARNING: under development)
-        
+
         Example:
-        
+
         GRX    ?    ?    ? P      U 19940217 2216   44.9200 GAU  2.00e-02 -1.00e+00 -1.00e+00 -1.00e+00
         GRX    ?    ?    ? S      ? 19940217 2216   48.6900 GAU  4.00e-02 -1.00e+00 -1.00e+00 -1.00e+00
         CAD    ?    ?    ? P      D 19940217 2216   46.3500 GAU  2.00e-02 -1.00e+00 -1.00e+00 -1.00e+00
@@ -3419,7 +3425,7 @@ class ObsPyck(QtGui.QMainWindow):
         event_quakeml_type = str(self.widgets.qComboBox_eventType.currentText())
         if event_quakeml_type != '<event type>':
             e.event_type = event_quakeml_type
-        
+
         # XXX TODO change handling of resource ids. never change id set at
         # creation and make sure that only wanted arrivals/picks get
         # saved/stored.
@@ -3431,7 +3437,7 @@ class ObsPyck(QtGui.QMainWindow):
                 xml = fh.read()
 
         return xml
-    
+
     def setXMLEventID(self, event_id=None):
         #XXX TODO: is problematic if two people create an event at exactly the same second!
         # then one event is overwritten with the other during submission.
@@ -3536,7 +3542,7 @@ class ObsPyck(QtGui.QMainWindow):
         else:
             seishub_account = "obspyck"
             client = self.clients['SeisHub']
-        
+
         headers = {}
         try:
             host = socket.gethostname()
@@ -4162,7 +4168,7 @@ class ObsPyck(QtGui.QMainWindow):
         """
         checks if the event has the necessary information a sysop event should
         have::
-        
+
           - datetime (origin time)
           - longitude/latitude/depth
           - magnitude
