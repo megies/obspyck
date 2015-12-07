@@ -238,6 +238,7 @@ class ObsPyck(QtGui.QMainWindow):
         streams.sort(key=lambda st: st[0].stats['station'])
         streams = cleanup_streams(streams, options)
         self.streams_bkp = [st.copy() for st in streams]
+        self._setup_4_letter_station_map()
         # XXX TODO replace old 'eventMapColors'
 
         #Define a pointer to navigate through the streams
@@ -1746,22 +1747,7 @@ class ObsPyck(QtGui.QMainWindow):
                 continue
             count += 1
             polarities.append((sta, azim, inci, pol))
-        # make sure the 4-letter station codes are unique
-        sta_map_tmp = {}
-        for sta, azim, inci, pol in polarities:
-            sta_map_tmp.setdefault(sta[:4], set()).add(sta)
-        sta_map = {}
-        for sta_short, stations in sta_map_tmp.iteritems():
-            stations = list(stations)
-            if len(stations) == 1:
-                sta_map[stations[0]] = sta_short
-            else:
-                if len(stations) <= 10:
-                    for i, sta in enumerate(stations):
-                        sta_map[sta] = sta[:2] + "_%i" % i
-                else:
-                    for i, sta in enumerate(stations):
-                        sta_map[sta] = sta[0] + "_%02i" % i
+        sta_map = self._4_letter_sta_map
         with open(files['phases'], 'wt') as f:
             f.write("\n") #first line is ignored!
             for sta, azim, inci, pol in polarities:
@@ -1934,6 +1920,32 @@ class ObsPyck(QtGui.QMainWindow):
                 if ax in self.fig.axes:
                     self.fig.delaxes(ax)
                 del ax
+
+    def _setup_4_letter_station_map(self):
+        # make sure the 4-letter station codes are unique
+        sta_map_tmp = {}
+        for sta in [st[0].stats.station for st in self.streams_bkp]:
+            sta_map_tmp.setdefault(sta[:4], set()).add(sta)
+        sta_map = {}
+        sta_map_reverse = {}
+        for sta_short, stations in sta_map_tmp.iteritems():
+            stations = list(stations)
+            if len(stations) == 1:
+                sta_map[stations[0]] = sta_short
+                sta_map_reverse[sta_short] = stations[0]
+            else:
+                if len(stations) <= 10:
+                    for i, sta in enumerate(stations):
+                        short_name = sta[:2] + "_%i" % i
+                        sta_map[sta] = short_name
+                        sta_map_reverse[short_name] = sta
+                else:
+                    for i, sta in enumerate(stations):
+                        short_name = sta[0] + "_%02i" % i
+                        sta_map[sta] = short_name
+                        sta_map_reverse[short_name] = sta
+        self._4_letter_sta_map = sta_map
+        self._4_letter_sta_map_reverse = sta_map_reverse
 
     def doHyp2000(self):
         """
@@ -2347,6 +2359,7 @@ class ObsPyck(QtGui.QMainWindow):
         o.nonlinloc_scatter = data
 
     def loadHyp2000Data(self):
+        sta_map_reverse = self._4_letter_sta_map_reverse
         files = PROGRAMS['hyp_2000']['files']
         lines = open(files['summary'], "rt").readlines()
         if lines == []:
@@ -2458,12 +2471,13 @@ class ObsPyck(QtGui.QMainWindow):
             # get values from line
             station = lines[i][0:6].strip()
             if station == "":
-                station = lines[i-1][0:6].strip()
+                station = sta_map_reverse[lines[i-1][0:6].strip()]
                 distance = float(lines[i-1][18:23])
                 azimuth = int(lines[i-1][23:26])
                 #XXX TODO check, if incident is correct!!
                 incident = int(lines[i-1][27:30])
             else:
+                station = sta_map_reverse[station]
                 distance = float(lines[i][18:23])
                 azimuth = int(lines[i][23:26])
                 #XXX TODO check, if incident is correct!!
@@ -3119,6 +3133,7 @@ class ObsPyck(QtGui.QMainWindow):
         stations file format as a string. This string can then be written to
         a file.
         """
+        sta_map = self._4_letter_sta_map
         fmt = "%6s%02i%05.2f%1s%03i%05.2f%1s%4i\n"
         hypo71_string = ""
 
@@ -3139,8 +3154,8 @@ class ObsPyck(QtGui.QMainWindow):
                 hem_NS = 'W'
             # hypo 71 format uses elevation in meters not kilometers
             ele = stats.coordinates.elevation
-            hypo71_string += fmt % (sta, lat_deg, lat_min, hem_NS, lon_deg,
-                                    lon_min, hem_EW, ele)
+            hypo71_string += fmt % (sta_map[sta], lat_deg, lat_min, hem_NS,
+                                    lon_deg, lon_min, hem_EW, ele)
 
         return hypo71_string
 
@@ -3200,6 +3215,7 @@ class ObsPyck(QtGui.QMainWindow):
         82    2  A2       Station network code.
         84-85 2  A2     2-letter station location code (component extension).
         """
+        sta_map = self._4_letter_sta_map
 
         fmtP = "%4s%1sP%1s%1i %15s"
         fmtS = "%12s%1sS%1s%1i\n"
@@ -3244,7 +3260,7 @@ class ObsPyck(QtGui.QMainWindow):
                 weight = int(pick.extra.weight.value)
             except:
                 weight = 0
-            hypo71_string += fmtP % (sta, onset, polarity, weight, date)
+            hypo71_string += fmtP % (sta_map[sta], onset, polarity, weight, date)
 
             # S Pick
             if pick_s:
