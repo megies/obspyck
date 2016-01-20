@@ -3613,7 +3613,7 @@ class ObsPyck(QtGui.QMainWindow):
             self.critical("Upload to Jane failed!")
         else:
             self.critical("Upload to Jane OK. "
-                          "http://jungle/rest/documents/quakeml/%s" % name)
+                          "http://jane/rest/documents/quakeml/%s" % name)
 
     def deleteEventInSeisHub(self, resource_name):
         """
@@ -4351,7 +4351,7 @@ def main():
     os._exit(qApp.exec_())
 
 
-def uploadJane(name, quakeml_string, base_url="http://jungle"):
+def uploadJane(name, quakeml_string, base_url="http://jane"):
     import requests
     r = requests.put(
         url=base_url + "/rest/documents/quakeml/%s" % name,
@@ -4360,7 +4360,7 @@ def uploadJane(name, quakeml_string, base_url="http://jungle"):
     assert r.ok
 
 
-def deleteJane(name, base_url="http://jungle"):
+def deleteJane(name, base_url="http://jane"):
     import requests
     r = requests.delete(
         url=base_url + "/rest/documents/quakeml/%s" % name,
