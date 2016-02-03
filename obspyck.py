@@ -3102,7 +3102,7 @@ class ObsPyck(QtGui.QMainWindow):
         # make hexbin scatter plot, if located with NLLoc
         # XXX no vital commands should come after this block, as we do not
         # handle exceptions!
-        data = o.get("nonlinloc_scatter")
+        data = o.get("nonlinloc_scatter").T
         if data is not None:
             cmap = matplotlib.cm.gist_heat_r
             axEM.hexbin(data[0], data[1], cmap=cmap, zorder=-1000)
@@ -3608,9 +3608,9 @@ class ObsPyck(QtGui.QMainWindow):
         msg += "\nResponse: %s %s" % (code, message)
         self.critical(msg)
         try:
-            uploadJane(name, data)
-        except Exception:
-            self.critical("Upload to Jane failed!")
+            self.uploadJane(name, data)
+        except Exception as e:
+            self.critical("Upload to Jane failed! (%s -- %s)" % (name, str(e)))
         else:
             self.critical("Upload to Jane OK. "
                           "http://jane/rest/documents/quakeml/%s" % name)
@@ -3656,6 +3656,42 @@ class ObsPyck(QtGui.QMainWindow):
             self.critical("Deletion from Jane failed!")
         else:
             self.critical("Deletion from Jane OK.")
+
+    def uploadJane(self, name, quakeml_string, base_url="http://jane",
+                   user="admin", password="admin"):
+        import requests
+        r = requests.put(
+            url=base_url + "/rest/documents/quakeml/%s" % name,
+            data=quakeml_string,
+            auth=(user, password))
+        assert r.ok
+        origin = self.catalog[0].origins[0]
+        nlloc_scatter = origin.get("nonlinloc_scatter")
+        if nlloc_scatter is not None:
+            sio = StringIO()
+            header = "\n".join([
+                "NonLinLoc Scatter",
+                "Origin ID: {}".format(str(origin.resource_id)),
+                "Longitude, Latitude, Z (km below sea level), PDF value",
+                ])
+            np.savetxt(sio, nlloc_scatter, fmt="%.6f %.6f %.4f %.2f",
+                       header=header)
+            sio.seek(0)
+            data = sio.read()
+            sio.close()
+            url = "{}/rest/documents/quakeml/{}?format=json".format(
+                base_url, name)
+            r = requests.get(url, auth=(user, password))
+            assert r.ok
+            jane_id = r.json()["indices"][0]["id"]
+            url = "{}/rest/document_indices/quakeml/{}/attachments".format(
+                base_url, jane_id)
+            headers = {"content-type": "text/plain",
+                       "category": "nonlinloc_scatter"}
+            r = requests.post(url=url, auth=(user, password), headers=headers,
+                              data=data)
+            assert r.ok
+
 
     def clearEvent(self):
         self.info("Clearing previous event data.")
@@ -4351,20 +4387,11 @@ def main():
     os._exit(qApp.exec_())
 
 
-def uploadJane(name, quakeml_string, base_url="http://jane"):
-    import requests
-    r = requests.put(
-        url=base_url + "/rest/documents/quakeml/%s" % name,
-        data=quakeml_string,
-        auth=("admin", "admin"))
-    assert r.ok
-
-
-def deleteJane(name, base_url="http://jane"):
+def deleteJane(name, base_url="http://jane", user="admin", password="admin"):
     import requests
     r = requests.delete(
         url=base_url + "/rest/documents/quakeml/%s" % name,
-        auth=("admin", "admin"))
+        auth=(user, password))
     assert r.ok
 
 
