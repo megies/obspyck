@@ -3102,8 +3102,9 @@ class ObsPyck(QtGui.QMainWindow):
         # make hexbin scatter plot, if located with NLLoc
         # XXX no vital commands should come after this block, as we do not
         # handle exceptions!
-        data = o.get("nonlinloc_scatter").T
+        data = o.get("nonlinloc_scatter")
         if data is not None:
+            data = data.T
             cmap = matplotlib.cm.gist_heat_r
             axEM.hexbin(data[0], data[1], cmap=cmap, zorder=-1000)
 
