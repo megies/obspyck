@@ -51,145 +51,41 @@ COMMANDLINE_OPTIONS = (
         #(("--debug"), {'dest': "debug", 'action': "store_true",
         #        'default': False,
         #        'help': "Switch on Ipython debugging in case of exception"}),
-        (("-t", "--time"), {'dest': "time",
-                'help': "Starttime of seismogram to retrieve. It takes a "
-                "string which UTCDateTime can convert. E.g. "
-                "'2010-01-10T05:00:00'"}),
-        (("-d", "--duration"), {'type': "float", 'dest': "duration",
-                'help': "Duration of seismogram in seconds"}),
-        (("-f", "--files"), {'type': "string", 'dest': "files",
-                'help': "Local files containing waveform data. List of "
-                "absolute paths separated by commas. Local files can also "
-                "be provided as command line arguments (also e.g. using "
-                "wildcards and bash expansion)."}),
-        (("--dataless",), {'type': "string", 'dest': "dataless",
-                'help': "Local Dataless SEED files to look up metadata for "
-                "local waveform files. List of absolute paths separated by "
-                "commas. Local files can also be provided as command line "
-                "arguments (also e.g. using wildcards and bash expansion)."}),
-        (("-i", "--seishub-ids"), {'dest': "seishub_ids", 'default': "",
-                'help': "Ids to retrieve from SeisHub. Star for channel and "
-                "wildcards for stations are allowed, e.g. "
-                "'BW.RJOB..EH*,BW.RM?*..EH*'"}),
-        (("--seishub-servername",), {'dest': "seishub_servername",
-                'default': 'teide',
-                'help': "Servername of the SeisHub server"}),
-        (("--seishub-port",), {'type': "int", 'dest': "seishub_port",
-                'default': 8080, 'help': "Port of the SeisHub server"}),
-        (("--seishub-user",), {'dest': "seishub_user", 'default': 'obspyck',
-                'help': "Username for SeisHub server"}),
-        (("--seishub-password",), {'dest': "seishub_password",
-                'default': 'obspyck', 'help': "Password for SeisHub server"}),
-        (("--seishub-timeout",), {'dest': "seishub_timeout", 'type': "int",
-                'default': 10, 'help': "Timeout for SeisHub server"}),
-        (("-k", "--keys"), {'action': "store_true", 'dest': "keybindings",
-                'default': False, 'help': "Show keybindings and quit"}),
-        (("--lowpass",), {'type': "float", 'dest': "lowpass", 'default': 20.0,
-                'help': "Frequency for Lowpass-Slider"}),
-        (("--highpass",), {'type': "float", 'dest': "highpass", 'default': 1.0,
-                'help': "Frequency for Highpass-Slider"}),
-        (("--sta",), {'type': "float", 'dest': "sta", 'default': 0.5,
-                'help': "Window length for STA-Slider"}),
-        (("--lta",), {'type': "float", 'dest': "lta", 'default': 10.0,
-                'help': "Window length for LTA-Slider"}),
-        (("--ar-f1",), {'type': "float", 'dest': "ar_f1",
-                'default': 1.0, 'help': "Low corner frequency of AR picker"}),
-        (("--ar-f2",), {'type': "float", 'dest': "ar_f2",
-                'default': 20.0, 'help': "High corner frequency of AR picker"}),
-        (("--ar-sta_p",), {'type': "float", 'dest': "ar_sta_p",
-                'default': 0.1, 'help': "P STA window length of AR picker"}),
-        (("--ar-lta_p",), {'type': "float", 'dest': "ar_lta_p",
-                'default': 1.0, 'help': "P LTA window length of AR picker"}),
-        (("--ar-sta_s",), {'type': "float", 'dest': "ar_sta_s",
-                'default': 1.0, 'help': "S STA window length of AR picker"}),
-        (("--ar-lta_s",), {'type': "float", 'dest': "ar_lta_s",
-                'default': 4.0, 'help': "S LTA window length of AR picker"}),
-        (("--ar-m_p",), {'type': "int", 'dest': "ar_m_p",
-                'default': 2, 'help': "number of coefficients for P of AR picker"}),
-        (("--ar-m_s",), {'type': "int", 'dest': "ar_m_s",
-                'default': 8, 'help': "number of coefficients for S of AR picker"}),
-        (("--ar-l_p",), {'type': "float", 'dest': "ar_l_p",
-                'default': 0.1, 'help': "variance window length for P of AR picker"}),
-        (("--ar-l_s",), {'type': "float", 'dest': "ar_l_s",
-                'default': 0.2, 'help': "variance window length for S of AR picker"}),
-        (("--nozeromean",), {'action': "store_true", 'dest': "nozeromean",
-                'default': False,
-                'help': "Deactivate offset removal of traces"}),
-        (("--nonormalization",), {'action': "store_true",
-                'dest': "nonormalization", 'default': False,
-                'help': "Deactivate normalization to nm/s for plotting " + \
-                "using overall sensitivity (tr.stats.paz.sensitivity)"}),
-        (("--nometadata",), {'action': "store_true",
-                'dest': "nometadata", 'default': False,
-                'help': "Deactivate fetching/parsing metadata for waveforms"}),
-        (("--noevents",), {'action': "store_true",
-                'dest': "noevents", 'default': False,
-                'help': "Deactivate fetching event data using FDSNWS and plotting theoretical arrivals."}),
-        (("--pluginpath",), {'dest': "pluginpath",
-                'default': None,
-                'help': "Path to local directory containing the folders with "
-                "the files for the external programs. Large files/folders "
-                "should only be linked in this directory as the contents are "
-                "copied to a temporary directory (links are preserved)."}),
-        (("-o", "--starttime-offset"), {'type': "float", 'dest': "starttime_offset",
-                'default': 0.0, 'help': "Offset to add to specified starttime "
-                "in seconds. Thus a time from an automatic picker can be used "
-                "with a specified offset for the starttime. E.g. to request a "
-                "waveform starting 30 seconds earlier than the specified time "
-                "use -30."}),
-        (("-m", "--merge"), {'type': "choice", 'dest': "merge", 'default': "",
-                'choices': ("", "safe", "overwrite"),
-                'help': "After fetching the streams run a merge "
-                "operation on every stream. If not done, streams with gaps "
-                "and therefore more traces per channel get discarded.\nTwo "
-                "methods are supported (see http://docs.obspy.org/packages/"
-                "auto/obspy.core.trace.Trace.__add__.html  for details)\n  "
-                "\"safe\": overlaps are discarded "
-                "completely\n  \"overwrite\": the second trace is used for "
-                "overlapping parts of the trace"}),
-        (("--fdsn-ids",), {'dest': "fdsn_ids", 'default': '',
-                           'help': "Ids to retrieve via FDSN, separated by commas, wildcards allowed, e.g. 'BW.M*..EH*,BW.ROTZ..EH*'"}),
-        (("--fdsn-base_url",), {'dest': "fdsn_base_url",
-                                'default': 'IRIS',
-                                'help': "Base URL of FDSN server (or alias known by ObsPy)"}),
-        (("--fdsn-user",), {'dest': "fdsn_user", 'default': None,
-                            'help': "Username for restricted data access of FDSN server"}),
-        (("--fdsn-password",), {'dest': "fdsn_password", 'default': None,
-                                'help': "Password for restricted data access of FDSN server"}),
-        (("--fdsn-timeout",), {'dest': "fdsn_timeout", 'type': "int",
-                               'default': 30, 'help': "Maximum wait time for a single request to the FDSN server to finish"}),
-        (("--arclink-ids",), {'dest': "arclink_ids", 'default': '',
-                              'help': "Ids to retrieve via arclink, star for channel "
-                                      "is allowed, e.g. 'BW.RJOB..EH*,BW.ROTZ..EH*'"}),
-        (("--arclink-servername",), {'dest': "arclink_servername",
-                'default': 'webdc.eu',
-                'help': "Servername of the arclink server"}),
-        (("--arclink-port",), {'type': "int", 'dest': "arclink_port",
-                'default': 18001, 'help': "Port of the arclink server"}),
-        (("--arclink-user",), {'dest': "arclink_user", 'default': 'Anonymous',
-                'help': "Username for arclink server"}),
-        (("--arclink-password",), {'dest': "arclink_password", 'default': '',
-                'help': "Password for arclink server"}),
-        (("--arclink-institution",), {'dest': "arclink_institution",
-                'default': 'Anonymous',
-                'help': "Password for arclink server"}),
-        (("--arclink-timeout",), {'dest': "arclink_timeout", 'type': "int",
-                'default': 20, 'help': "Timeout for arclink server"}),
-        (("--ignore-chksum",), {'action': "store_false", 'dest': "verify_chksum",
-                                'default': True,
-                                'help': "Deactivate chksum check for local GSE2 files"}),
-        (("--verbosity",), {'dest': "verbosity",
-                            'default': "normal",
-                            'help': ("Control verbosity of info window. "
-                                     "Possible values: "
-                                     "'normal' (default), 'verbose', "
-                                     "'debug', 'quiet'")}),
-        (("--filter",), {'action': "store_true", 'dest': "filter",
-                'default': False,
-                'help': "Switch filter button on at startup."}),
-        (("--event",), {'dest': "event", 'type': "str",
-                'default': '',
-                'help': "Filename (or path) of event file to load."}),
+        (("-c", "--config"), {
+            'dest': "config_file", "type": "str",
+            'help': "Location of obspyck config file to use. If not "
+                    "specified, obspyck looks up '~/.obspyckrc' (an example "
+                    "configuration will be created if the file does not "
+                    "exist)."}),
+        (("-s", "--station-combination"), {
+            'dest': "station_combination", "type": "str", "default": None,
+            'help': "Station combination to fetch data for (which must be "
+                    "defined in config file). If not specified, the default "
+                    "station combination specified in config file is used."}),
+        (("-t", "--time"), {
+            'dest': "time", "default": None,
+            'help': "Starttime of seismogram to retrieve. It takes a "
+                    "string which UTCDateTime can convert. E.g. "
+                    "'2010-01-10T05:00:00'"}),
+        (("-d", "--duration"), {
+            'type': "float", 'dest': "duration", "default": None,
+            'help': "Duration of seismogram in seconds"}),
+        (("-o", "--starttime-offset"), {
+            'type': "float", 'dest': "starttime_offset",
+            'default': None, 'help': "Offset to add to specified starttime "
+            "in seconds. Thus a time from an automatic picker can be used "
+            "with a specified offset for the starttime. E.g. to request a "
+            "waveform starting 30 seconds earlier than the specified time "
+            "use '-o -30'."}),
+        # (("--noevents",), {
+        #     'action': "store_true",
+        #     'dest': "noevents", 'default': False,
+        #     'help': "Deactivate fetching event data using FDSNWS and "
+        #             "plotting theoretical arrivals."}),
+        (("--event",), {
+            'dest': "event", 'type': "str",
+            'default': '',
+            'help': "Filename (or path) of event file to load."}),
         )
 PROGRAMS = {
         'nlloc': {'filenames': {'exe': "NLLoc", 'phases': "nlloc.obs",
@@ -250,14 +146,6 @@ MAG_PICKWINDOW = 10
 MAG_MARKER = {'marker': (8, 2, 0), 'edgewidth': 1.8, 'size': 20}
 AXVLINEWIDTH = 1.5
 # dictionary for key-bindings.
-KEYS = {'setPick': "a", 'setPickError': "s", 'delPick': "q",
-        'setMagMin': "a", 'setMagMax': "s", 'delMagMinMax': "q",
-        'switchPhase': "control",
-        'prevStream': "y", 'nextStream': "x", 'switchWheelZoomAxis': "shift",
-        'setWeight': {'0': 0, '1': 1, '2': 2, '3': 3},
-        'setPol': {'u': "positive", 'd': "negative", '-': "negative",
-                   '+': "positive"},
-        'setOnset': {'i': "impulsive", 'e': "emergent"}}
 # XXX Qt:
 #KEYS = {'setPick': "Key_A", 'setPickError': "Key_S", 'delPick': "Key_Q",
 #        'setMagMin': "Key_A", 'setMagMax': "Key_S", 'delMagMinMax': "Key_Q",
@@ -334,10 +222,11 @@ def check_keybinding_conflicts(keys):
             err = "Interfering keybindings. Please check variable KEYS"
             raise Exception(err)
 
-def fetch_waveforms_with_metadata(options, args):
+
+def fetch_waveforms_with_metadata(options, args, config):
     """
-    Sets up obspy clients and fetches waveforms and metadata according to command
-    line options.
+    Sets up obspy clients and fetches waveforms and metadata according to
+    command line options.
     Now also fetches data via arclink if --arclink-ids is used.
     Args are tried to read as local waveform files or metadata files.
 
@@ -349,51 +238,51 @@ def fetch_waveforms_with_metadata(options, args):
     :returns: (dictionary with clients,
                list(:class:`obspy.core.stream.Stream`s))
     """
-    getPAZ = not options.nometadata
-    getCoordinates = not options.nometadata
-    t1 = UTCDateTime(options.time) + options.starttime_offset
-    t2 = t1 + options.duration
-    streams = []
+    if options.station_combination is None:
+        station_combination = config.get("base", "station_combination")
+    else:
+        station_combination = options.station_combination
+
+    getPAZ = not config.getboolean("base", "no_metadata")
+    getCoordinates = getPAZ
+
+    if options.time is None:
+        time_ = UTCDateTime(config.get("base", "time"))
+    else:
+        time_ = UTCDateTime(options.time)
+    t1 = time_ + config.getfloat("base", "starttime_offset")
+    if options.duration is None:
+        t2 = t1 + config.getfloat("base", "duration")
+    else:
+        t2 = t1 + options.duration
+
+    seed_ids_to_fetch = {}
+    seed_ids = config.get("station_combinations", station_combination)
+    seed_id_lookup_keys = config.options("seed_id_lookup")
+    for seed_id in seed_ids.split(","):
+        netstaloc = seed_id.rsplit(".", 1)[0]
+        netsta = seed_id.rsplit(".", 2)[0]
+        net = seed_id.rsplit(".", 3)[0]
+        # look up by exact SEED ID:
+        if seed_id in seed_id_lookup_keys:
+            seed_ids_to_fetch[seed_id] = config.get("seed_id_lookup", seed_id)
+        # look up by SEED ID down to location code
+        elif netstaloc in seed_id_lookup_keys:
+            seed_ids_to_fetch[seed_id] = config.get("seed_id_lookup",
+                                                    netstaloc)
+        # look up by SEED ID down to station code
+        elif netsta in seed_id_lookup_keys:
+            seed_ids_to_fetch[seed_id] = config.get("seed_id_lookup", netsta)
+        # look up by network code
+        elif net in seed_id_lookup_keys:
+            seed_ids_to_fetch[seed_id] = config.get("seed_id_lookup", net)
+
     clients = {}
+
+    streams = []
     sta_fetched = set()
     # Local files:
     parsers = []
-    if options.dataless:
-        from obspy.xseed import Parser
-        print "=" * 80
-        print "Reading local dataless files:"
-        print "-" * 80
-        for file in options.dataless.split(","):
-            print file
-            parsers.append(Parser(file))
-    if options.files:
-        from obspy import read, Stream
-        stream_tmp = Stream()
-        print "=" * 80
-        print "Reading local waveform files:"
-        print "-" * 80
-        for file in options.files.split(","):
-            st = read(file, starttime=t1, endtime=t2, verify_chksum=options.verify_chksum)
-            msg = file
-            if not st:
-                msg += " (not matching requested time window)"
-            print msg
-            for tr in st:
-                if not options.nometadata:
-                    for parser in parsers:
-                        try:
-                            tr.stats.paz = parser.getPAZ(tr.id, tr.stats.starttime)
-                            tr.stats.coordinates = parser.getCoordinates(tr.id, tr.stats.starttime)
-                            break
-                        except:
-                            continue
-                        print "found no metadata for %s!!!" % file
-                if tr.stats._format == 'GSE2':
-                    apply_gse2_calib(tr)
-            stream_tmp += st
-        ids = set([(tr.stats.network, tr.stats.station, tr.stats.location) for tr in stream_tmp])
-        for net, sta, loc in ids:
-            streams.append(stream_tmp.select(network=net, station=sta, location=loc))
     if args:
         from obspy.xseed import Parser
         from obspy import read, Stream
@@ -413,7 +302,8 @@ def fetch_waveforms_with_metadata(options, args):
                 continue
             # try to read as waveforms
             try:
-                st = read(file, starttime=t1, endtime=t2, verify_chksum=options.verify_chksum)
+                st = read(file, starttime=t1, endtime=t2,
+                          verify_chksum=not config.getboolean("base", "ignore_gse2_chksum_error"))
             except TypeError:
                 print "File %s not recognized as dataless or waveform file. Skipped." % file
                 continue
@@ -423,7 +313,7 @@ def fetch_waveforms_with_metadata(options, args):
             print msg
             stream_tmp += st
         for tr in stream_tmp:
-            if not options.nometadata:
+            if not config.getboolean("base", "no_metadata"):
                 for parser in parsers:
                     try:
                         tr.stats.paz = parser.getPAZ(tr.id, tr.stats.starttime)
@@ -437,128 +327,152 @@ def fetch_waveforms_with_metadata(options, args):
         ids = set([(tr.stats.network, tr.stats.station, tr.stats.location) for tr in stream_tmp])
         for net, sta, loc in ids:
             streams.append(stream_tmp.select(network=net, station=sta, location=loc))
-    # SeisHub
-    if options.seishub_ids:
-        from obspy.seishub import Client
-        print "=" * 80
-        print "Fetching waveforms and metadata from SeisHub:"
-        print "-" * 80
-        baseurl = "http://" + options.seishub_servername + ":%i" % options.seishub_port
-        client = Client(base_url=baseurl, user=options.seishub_user,
-                        password=options.seishub_password, timeout=options.seishub_timeout)
-        for id in options.seishub_ids.split(","):
-            net, sta_wildcard, loc, cha = id.split(".")
-            stations_to_fetch = []
-            if any([char in sta_wildcard for char in "*?[]"]):
-                for sta in sorted(client.waveform.getStationIds(network=net)):
-                    if fnmatch.fnmatch(sta, sta_wildcard):
-                        stations_to_fetch.append(sta)
-            else:
-                stations_to_fetch = [sta_wildcard]
-            for sta in stations_to_fetch:
-                # make sure we dont fetch a single station of
-                # one network twice (could happen with wildcards)
-                net_sta = "%s.%s" % (net, sta)
-                if net_sta in sta_fetched:
-                    print "%s skipped! (Was already retrieved)" % net_sta.ljust(8)
-                    continue
-                try:
-                    sys.stdout.write("\r%s ..." % net_sta.ljust(8))
-                    sys.stdout.flush()
-                    st = client.waveform.getWaveform(net, sta, loc, cha, t1,
-                            t2, apply_filter=True, getPAZ=getPAZ,
-                            getCoordinates=getCoordinates)
-                    sta_fetched.add(net_sta)
-                    sys.stdout.write("\r%s fetched.\n" % net_sta.ljust(8))
-                    sys.stdout.flush()
-                except Exception, e:
-                    sys.stdout.write("\r%s skipped! (Server replied: %s)\n" % (net_sta.ljust(8), e))
-                    sys.stdout.flush()
-                    continue
+
+    print "=" * 80
+    print "Fetching waveforms and metadata from servers:"
+    print "-" * 80
+    for seed_id, server in sorted(seed_ids_to_fetch.items()):
+        server_type = config.get(server, "type")
+        if server_type not in ("seishub", "fdsn", "jane", "arclink"):
+            msg = ("Unknown server type '{}' in server definition section "
+                   "'{}' in config file.").format(server_type, server)
+            raise NotImplementedError(msg)
+        client = connect_to_server(server, config, clients)
+        net, sta, loc, cha = seed_id.split(".")
+        # make sure we dont fetch a single station of
+        # one network twice (could happen with wildcards)
+        net_sta_loc = "%s.%s.%s" % (net, sta, loc)
+        if any([char in net_sta_loc for char in '?*[]']):
+            msg = ("Wildcards in SEED IDs to fetch are only allowed in "
+                   "channel part: {}").format(seed_id)
+            raise NotImplementedError(msg)
+        if net_sta_loc in sta_fetched:
+            print "%s (%s: %s) skipped! (Was already retrieved)" % (
+                seed_id.ljust(15), server_type, server)
+            continue
+        try:
+            sys.stdout.write("\r%s (%s: %s) ..." % (
+                seed_id.ljust(15), server_type, server))
+            sys.stdout.flush()
+            # SeisHub
+            if server_type == "seishub":
+                st = client.waveform.getWaveform(
+                    net, sta, loc, cha, t1, t2, apply_filter=True,
+                    getPAZ=getPAZ, getCoordinates=getCoordinates)
+            # ArcLink
+            elif server_type == "arclink":
+                st = client.getWaveform(
+                    network=net, station=sta, location=loc, channel=cha,
+                    starttime=t1, endtime=t2, getPAZ=getPAZ,
+                    getCoordinates=getCoordinates)
+            # FDSN (or JANE)
+            elif server_type in ("fdsn", "jane"):
+                st = client.get_waveforms(
+                    network=net, station=sta, location=loc, channel=cha,
+                    starttime=t1, endtime=t2)
+                inventory = client.get_stations(
+                    network=net, station=sta, location=loc, level="response")
+                failed = st.attach_response(inventory)
+                if failed:
+                    msg = ("Failed to get response for {}!").format(failed)
+                    raise Exception(msg)
                 for tr in st:
-                    if tr.stats._format == 'GSE2':
-                        apply_gse2_calib(tr)
-                    tr.stats['_format'] = "SeisHub"
-                streams.append(st)
-        clients['SeisHub'] = client
-    # ArcLink
-    if options.arclink_ids:
-        from obspy.arclink import Client
-        print "=" * 80
-        print "Fetching waveforms and metadata via ArcLink:"
-        print "-" * 80
-        client = Client(host=options.arclink_servername,
-                        port=options.arclink_port,
-                        timeout=options.arclink_timeout,
-                        user=options.arclink_user,
-                        password=options.arclink_password,
-                        institution=options.arclink_institution)
-        for id in options.arclink_ids.split(","):
-            net, sta, loc, cha = id.split(".")
-            net_sta = "%s.%s" % (net, sta)
-            if net_sta in sta_fetched:
-                print "%s skipped! (Was already retrieved)" % net_sta.ljust(8)
-                continue
-            try:
-                sys.stdout.write("\r%s ..." % net_sta.ljust(8))
-                sys.stdout.flush()
-                st = client.getWaveform(network=net, station=sta,
-                                        location=loc, channel=cha,
-                                        starttime=t1, endtime=t2,
-                                        getPAZ=getPAZ, getCoordinates=getCoordinates)
-                sta_fetched.add(net_sta)
-                sys.stdout.write("\r%s fetched.\n" % net_sta.ljust(8))
-                sys.stdout.flush()
-            except Exception, e:
-                sys.stdout.write("\r%s skipped! (Server replied: %s)\n" % (net_sta.ljust(8), e))
-                sys.stdout.flush()
-                continue
+                    tr.stats.coordinates = inventory.get_coordinates(
+                        tr.id, tr.stats.starttime)
+            sta_fetched.add(net_sta_loc)
+            sys.stdout.write("\r%s (%s: %s) fetched.\n" % (
+                seed_id.ljust(15), server_type, server))
+            sys.stdout.flush()
+        except Exception, e:
+            sys.stdout.write(
+                "\r%s (%s: %s) skipped! (Server replied: %s)\n" % (
+                    seed_id.ljust(15), server_type, server, e))
+            sys.stdout.flush()
+            continue
+        # SeisHub
+        if server_type == "seishub":
+            for tr in st:
+                if tr.stats._format == 'GSE2':
+                    apply_gse2_calib(tr)
+                tr.stats['_format'] = "SeisHub"
+        # ArcLink
+        elif server_type == "arclink":
             for tr in st:
                 tr.stats['_format'] = "ArcLink"
-            streams.append(st)
-        clients['ArcLink'] = client
-    # FDSN
-    if options.fdsn_ids:
-        from obspy.fdsn import Client
-        print "=" * 80
-        print "Fetching waveforms and metadata via FDSN:"
-        print "-" * 80
-        client = Client(base_url=options.fdsn_base_url,
-                        timeout=options.fdsn_timeout,
-                        user=options.fdsn_user,
-                        password=options.fdsn_password)
-        for id in options.fdsn_ids.split(","):
-            net, sta, loc, cha = id.split(".")
-            net_sta = "%s.%s" % (net, sta)
-            if net_sta in sta_fetched:
-                print "%s skipped! (Was already retrieved)" % net_sta.ljust(8)
-                continue
-            try:
-                sys.stdout.write("\r%s ..." % net_sta.ljust(8))
-                sys.stdout.flush()
-                st = client.get_waveforms(network=net, station=sta,
-                                          location=loc, channel=cha,
-                                          starttime=t1, endtime=t2,
-                                          attach_response=True)
-                sta_fetched.add(net_sta)
-                sys.stdout.write("\r%s fetched.\n" % net_sta.ljust(8))
-                sys.stdout.flush()
-            except Exception, e:
-                sys.stdout.write("\r%s skipped! (Server replied: %s)\n" % (net_sta.ljust(8), e))
-                sys.stdout.flush()
-                continue
+        # FDSN (or JANE)
+        elif server_type in ("fdsn", "jane"):
             for tr in st:
                 tr.stats['_format'] = "FDSN"
-                try:
-                    tr.stats.paz = tr.stats.response.get_paz_dict()
-                except:
-                    tr.stats.paz = _get_paz_dict_from_response(tr.stats.response)
-            streams.append(st)
-        clients['FDSN'] = client
+        streams.append(st)
     print "=" * 80
     return (clients, streams)
 
-def merge_check_and_cleanup_streams(streams, options):
+
+def connect_to_server(server_name, config, clients):
+    """
+    Return existing client for given server name or connect to server, add it
+    to the clients dictionary and return client.
+
+    :type server_name: str
+    :param server_name: Server name as specified by configuration file
+    :type config: :class:`ConfigParser.ConfigParser`
+    :param config: ObsPyck configuration.
+    :type clients: dict
+    :param clients: Dictionary with already connected servers, keys are server
+        names as specified in configuration, values are corresponding client
+        instances.
+    """
+    if server_name in clients:
+        return clients[server_name]
+
+    server_type = config.get(server_name, "type")
+    kwargs = {}
+    getters = {
+        "timeout": config.getfloat, "user": config.get, "password": config.get,
+        "institution": config.get}
+    from obspy.fdsn import Client as FDSNClient
+    from obspy.arclink import Client as ArcLinkClient
+    from obspy.seishub import Client as SeisHubClient
+    client_classes = {
+        "fdsn": FDSNClient, "jane": FDSNClient, "arclink": ArcLinkClient,
+        "seishub": SeisHubClient}
+
+    if server_type == "seishub":
+        kwargs["base_url"] = "{}:{}".format(config.get(server_name, "address"),
+                                            config.get(server_name, "port"))
+        keys = ("timeout", "user", "password")
+    elif server_type == "arclink":
+        host = config.get(server_name, "address")
+        if host.startswith("http://"):
+            host = host[7:]
+        kwargs["host"] = host
+        kwargs["port"] = config.get(server_name, "port")
+        # TODO: use all other keys in config for client initialization (e.g.
+        # for accessing restricted data)
+        keys = ("timeout", "user", "password", "institution")
+    elif server_type in ("fdsn", "jane"):
+        base_url = config.get(server_name, "address")
+        port = config.get(server_name, "port") or None
+        if port is not None:
+            base_url += ":{}".format(port)
+        kwargs["base_url"] = base_url
+        keys = ("timeout", "user", "password")
+    else:
+        msg = ("Unknown server type '{}' in server definition section "
+               "'{}' in config file.").format(server_type, server_name)
+        raise NotImplementedError(msg)
+
+    for key in keys:
+        value = getters[key](server_name, key) or None
+        if value is not None:
+            kwargs[key] = value
+
+    client = client_classes[server_type](**kwargs)
+    clients[server_name] = client
+    return client
+
+
+def merge_check_and_cleanup_streams(streams, options, config):
     """
     Cleanup given list of streams so that they conform with what ObsPyck
     expects.
@@ -577,11 +491,12 @@ def merge_check_and_cleanup_streams(streams, options):
     # Merge on every stream if this option is passed on command line:
     for st in streams:
         st.merge(method=-1)
-    if options.merge:
-        if options.merge.lower() == "safe":
+    merge_type = config.get("base", "merge")
+    if merge_type:
+        if merge_type == "safe":
             for st in streams:
                 st.merge(method=0)
-        elif options.merge.lower() == "overwrite":
+        elif merge_type == "overwrite":
             for st in streams:
                 if st.getGaps() and max([gap[-1] for gap in st.getGaps()]) < 5:
                     msg = 'Interpolated over gap(s) with less than 5 ' + \
@@ -592,8 +507,8 @@ def merge_check_and_cleanup_streams(streams, options):
                 else:
                     st.merge(method=1)
         else:
-            err = "Unrecognized option for merging traces. Try " + \
-                  "\"safe\" or \"overwrite\"."
+            err = "Unrecognized config value for merging traces. Try " + \
+                  "'safe' or 'overwrite' (or leave empty)."
             raise Exception(err)
 
     # Sort streams again, if there was a merge this could be necessary 
@@ -691,7 +606,7 @@ def merge_check_and_cleanup_streams(streams, options):
             continue
         sta_list.add(net_sta)
     # demean traces if not explicitly deactivated on command line
-    if not options.nozeromean:
+    if config.getboolean("base", "zero_mean"):
         for st in streams:
             try:
                 st.detrend('simple')
@@ -706,7 +621,7 @@ def merge_check_and_cleanup_streams(streams, options):
     return (warn_msg, merge_msg, streams)
 
 
-def cleanup_streams(streams, options):
+def cleanup_streams(streams, config):
     """
     Function to remove streams that do not provide the necessary metadata.
 
@@ -723,7 +638,7 @@ def cleanup_streams(streams, options):
             trE = st.select(component="E")[0]
         sta = trZ.stats.station.strip()
         net = trZ.stats.network.strip()
-        if not options.nometadata:
+        if not config.get("base", "no_metadata"):
             try:
                 trZ.stats.coordinates.get("longitude")
                 trZ.stats.coordinates.get("latitude")
@@ -739,7 +654,7 @@ def cleanup_streams(streams, options):
                 continue
     return streams
 
-def setup_external_programs(options):
+def setup_external_programs(options, config):
     """
     Sets up temdir, copies program files, fills in PROGRAMS dict, sets up
     system calls for programs.
@@ -749,10 +664,11 @@ def setup_external_programs(options):
     :type options: options as returned by :meth:`optparse.OptionParser.parse_args`
     :returns: String representation of temporary directory with program files.
     """
-    if options.pluginpath is None:
-        options.pluginpath = os.path.dirname(os.path.abspath(__file__))
-    if not os.path.isdir(options.pluginpath):
-        msg = "No such directory: '%s'" % options.pluginpath
+    pluginpath = config.get("base", "pluginpath") or None
+    if pluginpath is None:
+        pluginpath = os.path.dirname(os.path.abspath(__file__))
+    if not os.path.isdir(pluginpath):
+        msg = "No such directory: '%s'" % pluginpath
         raise IOError(msg)
     tmp_dir = tempfile.mkdtemp(prefix="obspyck-")
     # set binary names to use depending on architecture and platform...
@@ -765,12 +681,12 @@ def setup_external_programs(options):
     else:
         SHELL = False
     # link velocity models ################################################
-    if os.path.exists(os.path.join(options.pluginpath, "VELOCITY_MODELS")):
-        os.symlink(os.path.join(options.pluginpath, "VELOCITY_MODELS"),
+    if os.path.exists(os.path.join(pluginpath, "VELOCITY_MODELS")):
+        os.symlink(os.path.join(pluginpath, "VELOCITY_MODELS"),
                    os.path.join(tmp_dir, "VELOCITY_MODELS"))
     # Setup external programs #############################################
     for prog_basename, prog_dict in PROGRAMS.iteritems():
-        prog_srcpath = os.path.join(options.pluginpath, prog_basename)
+        prog_srcpath = os.path.join(pluginpath, prog_basename)
         prog_tmpdir = os.path.join(tmp_dir, prog_basename)
         prog_dict['dir'] = prog_tmpdir
         shutil.copytree(prog_srcpath, prog_tmpdir, symlinks=True)
@@ -1151,12 +1067,3 @@ def map_rotated_channel_code(channel, rotation):
     elif rotation is None:
         pass
     return channel
-
-
-def _get_paz_dict_from_response(response):
-    paz = response.get_paz()
-    paz_dict = {}
-    paz_dict['poles'] = copy.deepcopy(paz.poles)
-    paz_dict['zeros'] = copy.deepcopy(paz.zeros)
-    paz_dict['sensitivity'] = response.instrument_sensitivity.value
-    return paz_dict
