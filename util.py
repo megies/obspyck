@@ -41,6 +41,8 @@ from obspy import fdsn
 from obspy.taup.taup import getTravelTimes
 from obspy.core.util import locations2degrees
 
+from rotate_to_zne import _rotate_specific_channels_to_zne
+
 mpl.rc('figure.subplot', left=0.05, right=0.98, bottom=0.10, top=0.92,
        hspace=0.28)
 mpl.rcParams['font.size'] = 10
@@ -339,9 +341,9 @@ def fetch_waveforms_with_metadata(options, args, config):
             raise NotImplementedError(msg)
         client = connect_to_server(server, config, clients)
         net, sta, loc, cha = seed_id.split(".")
+        net_sta_loc = "%s.%s.%s" % (net, sta, loc)
         # make sure we dont fetch a single station of
         # one network twice (could happen with wildcards)
-        net_sta_loc = "%s.%s.%s" % (net, sta, loc)
         if any([char in net_sta_loc for char in '?*[]']):
             msg = ("Wildcards in SEED IDs to fetch are only allowed in "
                    "channel part: {}").format(seed_id)
@@ -389,6 +391,23 @@ def fetch_waveforms_with_metadata(options, args, config):
                     seed_id.ljust(15), server_type, server, e))
             sys.stdout.flush()
             continue
+        # check whether to attempt rotation
+        if config.has_section("rotate_channels"):
+            if net_sta_loc in config.options("rotate_channels"):
+                channels = config.get("rotate_channels", net_sta_loc).split(",")
+                tr = st.select(id=".".join((net_sta_loc, channels[0])))[0]
+                paz = tr.stats.get("paz")
+                coordinates = tr.stats.get("coordinates")
+                response = tr.stats.get("response")
+                st = _rotate_specific_channels_to_zne(
+                    st, net, sta, loc, channels, inventory)
+                for tr in st:
+                    if paz is not None:
+                        tr.stats.paz = copy.deepcopy(paz)
+                    if coordinates is not None:
+                        tr.stats.coordinates = copy.deepcopy(coordinates)
+                    if response is not None:
+                        tr.stats.response = copy.deepcopy(response)
         # SeisHub
         if server_type == "seishub":
             for tr in st:
