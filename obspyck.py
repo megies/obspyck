@@ -3476,11 +3476,12 @@ class ObsPyck(QtGui.QMainWindow):
             elif pick.time_errors.uncertainty:
                 error = 2 * pick.time_errors.uncertainty
             if error is None:
-                err = "Warning: Missing pick error. " + \
-                      "Discarding %s phase of station %s."
-                err = err % (phase, sta)
+                error = self.config.getfloat("nonlinloc",
+                                             "default_pick_uncertainty")
+                err = ("Warning: Missing pick error. Using a default error "
+                       "of {}s for {} phase of station {}. Please set pick "
+                       "errors.").format(error, phase.strip(), sta.strip())
                 self.error(err)
-                continue
             error = "%9.2e" % error
             coda_dur = "-1.00e+00"
             ampl = "-1.00e+00"
