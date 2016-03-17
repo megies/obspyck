@@ -76,17 +76,9 @@ def _trim_common_channels(self):
 
 
 def _rotate_specific_channels_to_zne(
-        self, network, station, location, channels, inventory):
+        self, network, station, location, channels):
     """
     Rotate three explicitly specified channels to ZNE.
-
-    >>> from obspy import read, read_inventory
-    >>> st = read("/path/to/ffbx_unrotated_gaps.mseed")
-    >>> inv = read_inventory("/path/to/ffbx.stationxml")
-    >>> st._rotate_specific_channels_to_zne(
-    ...     "BW", "FFB1", "", ["HHZ", "HH1", "HH2"],
-    ...     inv)  # doctest: +ELLIPSIS
-    <obspy.core.stream.Stream object at 0x...>
 
     :type network: str
     :param network: Network code of channels that should be rotated.
@@ -97,9 +89,6 @@ def _rotate_specific_channels_to_zne(
     :type channels: list
     :param channels: The three channel codes of channels that should be
         rotated.
-    :type inventory: :class:`~obspy.core.inventory.inventory.Inventory` or
-        :class:`~obspy.io.xseed.parser.Parser`
-    :param inventory: Inventory or Parser with metadata of channels.
     """
     from obspy.signal.rotate import rotate2ZNE as rotate2zne
     # build temporary stream that has only those traces that are supposed
@@ -133,13 +122,13 @@ def _rotate_specific_channels_to_zne(
             msg = ("Unexpected behavior in rotation. Please file a bug "
                    "report on github.")
             raise NotImplementedError(msg)
-        # `.get_orientation()` works the same for Inventory and Parser
-        orientation = [get_orientation(inventory, tr.id, tr.stats.starttime)
-                       for tr in traces]
         zne = rotate2zne(
-            traces[0], orientation[0]["azimuth"], orientation[0]["dip"],
-            traces[1], orientation[1]["azimuth"], orientation[1]["dip"],
-            traces[2], orientation[2]["azimuth"], orientation[2]["dip"])
+            traces[0], traces[0].stats.orientation["azimuth"],
+            traces[0].stats.orientation["dip"],
+            traces[1], traces[1].stats.orientation["azimuth"],
+            traces[1].stats.orientation["dip"],
+            traces[2], traces[2].stats.orientation["azimuth"],
+            traces[2].stats.orientation["dip"])
         for tr, new_data, component in zip(traces, zne, "ZNE"):
             tr.data = new_data
             tr.stats.channel = tr.stats.channel[:-1] + component
@@ -272,3 +261,24 @@ def get_orientation(inventory, seed_id, datetime=None):
     for key in ['azimuth', 'dip']:
         orientation[key] = metadata[key]
     return orientation
+
+
+def get_orientation_from_parser(parser, seed_id, datetime=None):
+    """
+    Return orientation (from blockette 52) of a channel.
+
+    :type seed_id: str
+    :param seed_id: SEED or channel id, e.g. ``"BW.RJOB..EHZ"`` or
+        ``"EHE"``.
+    :type datetime: :class:`~obspy.core.utcdatetime.UTCDateTime`, optional
+    :param datetime: Timestamp of requested PAZ values
+    :return: Dictionary containing orientation (azimuth, dip)
+    """
+    blockettes = parser._select(seed_id, datetime)
+    data = {}
+    for blkt in blockettes:
+        if blkt.id == 52:
+            data['azimuth'] = blkt.azimuth
+            data['dip'] = blkt.dip
+            break
+    return data
