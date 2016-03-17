@@ -19,6 +19,7 @@ import tempfile
 import glob
 import fnmatch
 import warnings
+from StringIO import StringIO
 
 import PyQt4
 import numpy as np
@@ -28,18 +29,24 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as QFigureCanvas
 from matplotlib.widgets import MultiCursor as MplMultiCursor
 
-from obspy.core import UTCDateTime
-from obspy.core.event import StationMagnitude, StationMagnitudeContribution
+import obspy
+obspy.arclink.client.MAX_REQUESTS = 200
+from obspy import UTCDateTime, read_inventory, read, Stream
 try:
     from obspy.core.util import gps2DistAzimuth
 except:
     from obspy.signal import gps2DistAzimuth
-from obspy.core.event import Arrival, Pick
 
-from obspy.core.util import getMatplotlibVersion
-from obspy import fdsn
+from obspy.core.util import getMatplotlibVersion, locations2degrees
 from obspy.taup.taup import getTravelTimes
-from obspy.core.util import locations2degrees
+from obspy.fdsn import Client as FDSNClient
+from obspy.arclink import Client as ArcLinkClient
+from obspy.seishub import Client as SeisHubClient
+from obspy.xseed import Parser
+
+from rotate_to_zne import (
+    _rotate_specific_channels_to_zne, get_orientation_from_parser,
+    get_orientation)
 
 mpl.rc('figure.subplot', left=0.05, right=0.98, bottom=0.10, top=0.92,
        hspace=0.28)
@@ -243,8 +250,7 @@ def fetch_waveforms_with_metadata(options, args, config):
     else:
         station_combination = options.station_combination
 
-    getPAZ = not config.getboolean("base", "no_metadata")
-    getCoordinates = getPAZ
+    no_metadata = config.getboolean("base", "no_metadata")
 
     if options.time is None:
         time_ = UTCDateTime(config.get("base", "time"))
@@ -283,9 +289,8 @@ def fetch_waveforms_with_metadata(options, args, config):
     sta_fetched = set()
     # Local files:
     parsers = []
+    inventories = []
     if args:
-        from obspy.xseed import Parser
-        from obspy import read, Stream
         print "=" * 80
         print "Reading local files:"
         print "-" * 80
@@ -300,6 +305,15 @@ def fetch_waveforms_with_metadata(options, args, config):
                 print "%s: Metadata" % file
                 parsers.append(p)
                 continue
+            # try to read as metadata
+            try:
+                inv = read_inventory(file)
+            except:
+                pass
+            else:
+                print "%s: Metadata" % file
+                inventories.append(inv)
+                continue
             # try to read as waveforms
             try:
                 st = read(file, starttime=t1, endtime=t2,
@@ -312,21 +326,47 @@ def fetch_waveforms_with_metadata(options, args, config):
                 msg += " (not matching requested time window)"
             print msg
             stream_tmp += st
+        if len(parsers + inventories) == 0:
+            msg = "No station metadata for waveforms from local files."
+            raise Exception(msg)
         for tr in stream_tmp:
-            if not config.getboolean("base", "no_metadata"):
-                for parser in parsers:
+            if not no_metadata:
+                has_metadata = False
+                for inv in inventories:
                     try:
-                        tr.stats.paz = parser.getPAZ(tr.id, tr.stats.starttime)
-                        tr.stats.coordinates = parser.getCoordinates(tr.id, tr.stats.starttime)
+                        tr.attach_response(inv)
+                        tr.stats.coordinates = inv.get_coordinates(
+                            tr.id, tr.stats.starttime)
+                        tr.stats.orientation = get_orientation(
+                            inv, tr.id, tr.stats.starttime)
+                        has_metadata = True
                         break
                     except:
                         continue
+                if not has_metadata:
+                    for parser in parsers:
+                        try:
+                            tr.stats.paz = parser.getPAZ(tr.id, tr.stats.starttime)
+                            tr.stats.coordinates = parser.getCoordinates(tr.id, tr.stats.starttime)
+                            tr.stats.orientation = get_orientation_from_parser(parser, tr.id, tr.stats.starttime)
+                            has_metadata = True
+                            break
+                        except:
+                            continue
+                if not has_metadata:
                     print "found no metadata for %s!!!" % file
             if tr.stats._format == 'GSE2':
                 apply_gse2_calib(tr)
         ids = set([(tr.stats.network, tr.stats.station, tr.stats.location) for tr in stream_tmp])
         for net, sta, loc in ids:
-            streams.append(stream_tmp.select(network=net, station=sta, location=loc))
+            stream_tmp_ = stream_tmp.select(
+                network=net, station=sta, location=loc)
+            # check whether to attempt rotation
+            if config.has_section("rotate_channels"):
+                net_sta_loc = ".".join((net, sta, loc))
+                if net_sta_loc in config.options("rotate_channels"):
+                    rotate_channels(st, net, sta, loc, config)
+            streams.append(stream_tmp_)
 
     print "=" * 80
     print "Fetching waveforms and metadata from servers:"
@@ -339,9 +379,9 @@ def fetch_waveforms_with_metadata(options, args, config):
             raise NotImplementedError(msg)
         client = connect_to_server(server, config, clients)
         net, sta, loc, cha = seed_id.split(".")
+        net_sta_loc = "%s.%s.%s" % (net, sta, loc)
         # make sure we dont fetch a single station of
         # one network twice (could happen with wildcards)
-        net_sta_loc = "%s.%s.%s" % (net, sta, loc)
         if any([char in net_sta_loc for char in '?*[]']):
             msg = ("Wildcards in SEED IDs to fetch are only allowed in "
                    "channel part: {}").format(seed_id)
@@ -357,38 +397,96 @@ def fetch_waveforms_with_metadata(options, args, config):
             # SeisHub
             if server_type == "seishub":
                 st = client.waveform.getWaveform(
-                    net, sta, loc, cha, t1, t2, apply_filter=True,
-                    getPAZ=getPAZ, getCoordinates=getCoordinates)
+                    net, sta, loc, cha, t1, t2, apply_filter=True)
+                if not no_metadata:
+                    data = client.station.getList(
+                        network=net, station=sta, datetime=t1)
+                    if len(data) == 0:
+                        msg = "No station metadata on server."
+                        raise Exception(msg)
+                    parsers = [
+                        Parser(client.station.getResource(d['resource_name']))
+                        for d in data]
+                    for tr in st:
+                        orientation = [
+                            get_orientation_from_parser(p_, tr.id, datetime=t1)
+                            for p_ in parsers]
+                        coordinates = [
+                            p_.getCoordinates(tr.id, datetime=t1)
+                            for p_ in parsers]
+                        paz = [
+                            p_.getPAZ(tr.id, datetime=t1) for p_ in parsers]
+                        # check for clashing multiple station metadata
+                        for list_ in (orientation, coordinates, paz):
+                            for i in range(1, len(list_))[::-1]:
+                                if list_[i] == list_[0]:
+                                    list_.pop(i)
+                        for list_, name in zip(
+                                (orientation, coordinates, paz),
+                                ("orientation", "coordinates", "paz")):
+                            if len(list_) > 1:
+                                msg = ("Multiple matching station metadata "
+                                       "({}) on server: {}.").format(
+                                    name, list_)
+                                raise Exception(msg)
+                        tr.stats.orientation = orientation[0]
+                        tr.stats.coordinates = coordinates[0]
+                        tr.stats.paz = paz[0]
             # ArcLink
             elif server_type == "arclink":
                 st = client.getWaveform(
                     network=net, station=sta, location=loc, channel=cha,
-                    starttime=t1, endtime=t2, getPAZ=getPAZ,
-                    getCoordinates=getCoordinates)
+                    starttime=t1, endtime=t2)
+                if not no_metadata:
+                    parsers = {}
+                    for net_, sta_, loc_, cha_ in set([
+                            tuple(tr.id.split(".")) for tr in st]):
+                        sio = StringIO()
+                        client.saveResponse(sio, net_, sta_, loc_, cha_,
+                                            t1-10, t2+10)
+                        sio.seek(0)
+                        id_ = ".".join((net_, sta_, loc_, cha_))
+                        parsers[id_] = Parser(sio)
+                    for tr in st:
+                        p_ = parsers[tr.id]
+                        tr.stats.orientation = \
+                            get_orientation_from_parser(p_, tr.id, datetime=t1)
+                        tr.stats.coordinates = \
+                            p_.getCoordinates(tr.id, datetime=t1)
+                        tr.stats.paz = p_.getPAZ(tr.id, datetime=t1)
             # FDSN (or JANE)
             elif server_type in ("fdsn", "jane"):
                 st = client.get_waveforms(
                     network=net, station=sta, location=loc, channel=cha,
                     starttime=t1, endtime=t2)
-                inventory = client.get_stations(
-                    network=net, station=sta, location=loc, level="response")
-                failed = st.attach_response(inventory)
-                if failed:
-                    msg = ("Failed to get response for {}!").format(failed)
-                    raise Exception(msg)
-                for tr in st:
-                    tr.stats.coordinates = inventory.get_coordinates(
-                        tr.id, tr.stats.starttime)
+                if not no_metadata:
+                    inventory = client.get_stations(
+                        network=net, station=sta, location=loc,
+                        level="response")
+                    failed = st.attach_response(inventory)
+                    if failed:
+                        msg = ("Failed to get response for {}!").format(failed)
+                        raise Exception(msg)
+                    for tr in st:
+                        tr.stats.coordinates = inventory.get_coordinates(
+                            tr.id, tr.stats.starttime)
+                        tr.stats.orientation = get_orientation(
+                            inventory, tr.id, tr.stats.starttime)
             sta_fetched.add(net_sta_loc)
             sys.stdout.write("\r%s (%s: %s) fetched.\n" % (
                 seed_id.ljust(15), server_type, server))
             sys.stdout.flush()
         except Exception, e:
             sys.stdout.write(
-                "\r%s (%s: %s) skipped! (Server replied: %s)\n" % (
+                "\r%s (%s: %s) skipped! (Exception: %s)\n" % (
                     seed_id.ljust(15), server_type, server, e))
             sys.stdout.flush()
             continue
+        # check whether to attempt rotation
+        if not no_metadata:
+            if config.has_section("rotate_channels"):
+                if net_sta_loc in config.options("rotate_channels"):
+                    rotate_channels(st, net, sta, loc, config)
         # SeisHub
         if server_type == "seishub":
             for tr in st:
@@ -406,6 +504,24 @@ def fetch_waveforms_with_metadata(options, args, config):
         streams.append(st)
     print "=" * 80
     return (clients, streams)
+
+
+def rotate_channels(st, net, sta, loc, config):
+    net_sta_loc = ".".join((net, sta, loc))
+    channels = config.get("rotate_channels", net_sta_loc).split(",")
+    tr = st.select(id=".".join((net_sta_loc, channels[0])))[0]
+    paz = tr.stats.get("paz")
+    coordinates = tr.stats.get("coordinates")
+    response = tr.stats.get("response")
+    st = _rotate_specific_channels_to_zne(
+        st, net, sta, loc, channels)
+    for tr in st:
+        if paz is not None:
+            tr.stats.paz = copy.deepcopy(paz)
+        if coordinates is not None:
+            tr.stats.coordinates = copy.deepcopy(coordinates)
+        if response is not None:
+            tr.stats.response = copy.deepcopy(response)
 
 
 def connect_to_server(server_name, config, clients):
@@ -426,44 +542,39 @@ def connect_to_server(server_name, config, clients):
         return clients[server_name]
 
     server_type = config.get(server_name, "type")
-    kwargs = {}
-    getters = {
-        "timeout": config.getfloat, "user": config.get, "password": config.get,
-        "institution": config.get}
-    from obspy.fdsn import Client as FDSNClient
-    from obspy.arclink import Client as ArcLinkClient
-    from obspy.seishub import Client as SeisHubClient
+    # # doesnt work on obspy <1.0, so set it above on module level:
+    # ArcLinkClient.max_status_requests = 2000
+
     client_classes = {
-        "fdsn": FDSNClient, "jane": FDSNClient, "arclink": ArcLinkClient,
+        "arclink": ArcLinkClient,
+        "fdsn": FDSNClient,
+        "jane": FDSNClient,
         "seishub": SeisHubClient}
 
-    if server_type == "seishub":
-        kwargs["base_url"] = "{}:{}".format(config.get(server_name, "address"),
-                                            config.get(server_name, "port"))
-        keys = ("timeout", "user", "password")
-    elif server_type == "arclink":
-        host = config.get(server_name, "address")
-        if host.startswith("http://"):
-            host = host[7:]
-        kwargs["host"] = host
-        kwargs["port"] = config.get(server_name, "port")
-        # TODO: use all other keys in config for client initialization (e.g.
-        # for accessing restricted data)
-        keys = ("timeout", "user", "password", "institution")
-    elif server_type in ("fdsn", "jane"):
-        base_url = config.get(server_name, "address")
-        port = config.get(server_name, "port") or None
-        if port is not None:
-            base_url += ":{}".format(port)
-        kwargs["base_url"] = base_url
-        keys = ("timeout", "user", "password")
-    else:
+    if server_type not in client_classes.keys():
         msg = ("Unknown server type '{}' in server definition section "
                "'{}' in config file.").format(server_type, server_name)
         raise NotImplementedError(msg)
 
-    for key in keys:
-        value = getters[key](server_name, key) or None
+    config_keys = {
+        "arclink": (
+            "host", "port", "user", "password", "institution", "timeout",
+            "dcid_key_file", "debug", "command_delay", "status_delay"),
+        "fdsn": (
+            "base_url", "user", "password", "user_agent", "debug", "timeout"),
+        "jane": (
+            "base_url", "user", "password", "user_agent", "debug", "timeout"),
+        "seishub": (
+            "base_url", "user", "password", "timeout", "debug", "retries"),
+        }
+    config_getters = {
+        "port": config.getint, "timeout": config.getfloat,
+        "debug": config.getboolean, "command_delay": config.getfloat,
+        "status_delay": config.getfloat, "retries": config.getint}
+
+    kwargs = {}
+    for key in config_keys[server_type]:
+        value = config_getters.get(key, config.get)(server_name, key) or None
         if value is not None:
             kwargs[key] = value
 
@@ -1000,7 +1111,7 @@ def get_event_info(starttime, endtime, streams):
     events = []
     arrivals = {}
     try:
-        client = fdsn.Client("NERIES")
+        client = FDSNClient("NERIES")
         events = client.get_events(starttime=starttime - 20 * 60,
                                    endtime=endtime)
         for ev in events[::-1]:

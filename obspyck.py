@@ -169,17 +169,6 @@ class ObsPyck(QtGui.QMainWindow):
         self.widgets.qMplCanvas.wheelEvent = self.__mpl_wheelEvent
         #self.keyPressEvent = self.__mpl_keyPressEvent
 
-        # some SeisHub specific adjustments
-        if any([isinstance(client, SeisHubClient)
-                for client in clients.values()]):
-            from obspy.seishub import Client as SClient
-        else:
-            global SClient
-            SClient = None
-            msg = "Warning: SeisHub specific features will not work " + \
-                  "(e.g. 'send Event')."
-            self.error(msg)
-
         # XXX # fetch event data via fdsn, arrivals from taup
         # XXX if self.options.noevents:
         # XXX     fdsn_events, taup_arrivals, msg = None, None, None
@@ -311,12 +300,20 @@ class ObsPyck(QtGui.QMainWindow):
         # XXX XXX the good old focus issue again!?! no events get to the mpl canvas
         # XXX self.canv.setFocusPolicy(Qt.WheelFocus)
         #print self.canv.hasFocus()
+
         if self.event_server:
-            if isinstance(self.event_server, SeisHubClient):
-                self.updateEventListFromSeisHub(self.T0, self.T1)
-            else:
+            if not isinstance(self.event_server, SeisHubClient):
                 msg = ("Only SeisHub implemented as event server right now.")
                 raise NotImplementedError(msg)
+
+        if not self.event_server or not isinstance(self.event_server, SeisHubClient):
+            msg = ("Warning: SeisHub specific features will not work "
+                   "(e.g. 'send Event').")
+            self.error(msg)
+
+        if self.event_server:
+            self.updateEventListFromSeisHub(self.T0, self.T1)
+
         self.setFocusToMatplotlib()
 
     def getCurrentStream(self):
@@ -1250,8 +1247,12 @@ class ObsPyck(QtGui.QMainWindow):
             else:
                 # normalize with overall sensitivity and convert to nm/s
                 # if not explicitly deactivated on command line
-                if self.config.get("base", "normalization") and not self.config.get("base", "no_metadata"):
-                    plts.append(ax.plot(sampletimes, tr.data / tr.stats.paz.sensitivity * 1e9, color='k', zorder=1000)[0])
+                if self.config.getboolean("base", "normalization") and not self.config.getboolean("base", "no_metadata"):
+                    try:
+                        sensitivity = tr.stats.paz.sensitivity
+                    except AttributeError:
+                        sensitivity = tr.stats.response.instrument_sensitivity.value
+                    plts.append(ax.plot(sampletimes, tr.data / sensitivity * 1e9, color='k', zorder=1000)[0])
                 else:
                     plts.append(ax.plot(sampletimes, tr.data, color='k', zorder=1000)[0])
         self.drawIds()
@@ -2887,14 +2888,17 @@ class ObsPyck(QtGui.QMainWindow):
                 ax.xaxis.set_major_formatter(FuncFormatter(formatXTicklabels))
                 # normalize with overall sensitivity and convert to nm/s
                 # if not explicitly deactivated on command line
-                if self.config.get("base", "normalization") and not self.config.get("base", "no_metadata"):
+                if self.config.getboolean("base", "normalization") and not self.config.getboolean("base", "no_metadata"):
                     if self.widgets.qToolButton_ms.isChecked():
                         self._ms(tr)
                     if self.widgets.qToolButton_filter.isChecked():
                         self._filter(tr)
                     data_ = tr.data
-                    #scaling = 1e9 / tr.stats.paz.sensitivity
-                    #data_ = tr.data * scaling
+                    # try:
+                    #     sensitivity = tr.stats.paz.sensitivity
+                    # except AttributeError:
+                    #     sensitivity = tr.stats.response.instrument_sensitivity.value
+                    # data_ = tr.data * 1e9 / sensitivity
                     scaling = None
                 else:
                     scaling = 1.0
