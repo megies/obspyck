@@ -169,17 +169,6 @@ class ObsPyck(QtGui.QMainWindow):
         self.widgets.qMplCanvas.wheelEvent = self.__mpl_wheelEvent
         #self.keyPressEvent = self.__mpl_keyPressEvent
 
-        # some SeisHub specific adjustments
-        if any([isinstance(client, SeisHubClient)
-                for client in clients.values()]):
-            from obspy.seishub import Client as SClient
-        else:
-            global SClient
-            SClient = None
-            msg = "Warning: SeisHub specific features will not work " + \
-                  "(e.g. 'send Event')."
-            self.error(msg)
-
         # XXX # fetch event data via fdsn, arrivals from taup
         # XXX if self.options.noevents:
         # XXX     fdsn_events, taup_arrivals, msg = None, None, None
@@ -311,12 +300,20 @@ class ObsPyck(QtGui.QMainWindow):
         # XXX XXX the good old focus issue again!?! no events get to the mpl canvas
         # XXX self.canv.setFocusPolicy(Qt.WheelFocus)
         #print self.canv.hasFocus()
+
         if self.event_server:
-            if isinstance(self.event_server, SeisHubClient):
-                self.updateEventListFromSeisHub(self.T0, self.T1)
-            else:
+            if not isinstance(self.event_server, SeisHubClient):
                 msg = ("Only SeisHub implemented as event server right now.")
                 raise NotImplementedError(msg)
+
+        if not self.event_server or not isinstance(self.event_server, SeisHubClient):
+            msg = ("Warning: SeisHub specific features will not work "
+                   "(e.g. 'send Event').")
+            self.error(msg)
+
+        if self.event_server:
+            self.updateEventListFromSeisHub(self.T0, self.T1)
+
         self.setFocusToMatplotlib()
 
     def getCurrentStream(self):
