@@ -542,44 +542,39 @@ def connect_to_server(server_name, config, clients):
         return clients[server_name]
 
     server_type = config.get(server_name, "type")
-    kwargs = {}
-    getters = {
-        "timeout": config.getfloat, "user": config.get, "password": config.get,
-        "institution": config.get}
-    # # doesnt work on obspy <1.0:
+    # # doesnt work on obspy <1.0, so set it above on module level:
     # ArcLinkClient.max_status_requests = 2000
+
     client_classes = {
-        "fdsn": FDSNClient, "jane": FDSNClient, "arclink": ArcLinkClient,
+        "arclink": ArcLinkClient,
+        "fdsn": FDSNClient,
+        "jane": FDSNClient,
         "seishub": SeisHubClient}
 
-    if server_type == "seishub":
-        kwargs["base_url"] = "{}:{}".format(config.get(server_name, "address"),
-                                            config.get(server_name, "port"))
-        keys = ("timeout", "user", "password")
-    elif server_type == "arclink":
-        host = config.get(server_name, "address")
-        if host.startswith("http://"):
-            host = host[7:]
-        kwargs["host"] = host
-        kwargs["port"] = config.get(server_name, "port")
-        kwargs["status_delay"] = 1.0
-        # TODO: use all other keys in config for client initialization (e.g.
-        # for accessing restricted data)
-        keys = ("timeout", "user", "password", "institution")
-    elif server_type in ("fdsn", "jane"):
-        base_url = config.get(server_name, "address")
-        port = config.get(server_name, "port") or None
-        if port is not None:
-            base_url += ":{}".format(port)
-        kwargs["base_url"] = base_url
-        keys = ("timeout", "user", "password")
-    else:
+    if server_type not in client_classes.keys():
         msg = ("Unknown server type '{}' in server definition section "
                "'{}' in config file.").format(server_type, server_name)
         raise NotImplementedError(msg)
 
-    for key in keys:
-        value = getters[key](server_name, key) or None
+    config_keys = {
+        "arclink": (
+            "host", "port", "user", "password", "institution", "timeout",
+            "dcid_key_file", "debug", "command_delay", "status_delay"),
+        "fdsn": (
+            "base_url", "user", "password", "user_agent", "debug", "timeout"),
+        "jane": (
+            "base_url", "user", "password", "user_agent", "debug", "timeout"),
+        "seishub": (
+            "base_url", "user", "password", "timeout", "debug", "retries"),
+        }
+    config_getters = {
+        "port": config.getint, "timeout": config.getfloat,
+        "debug": config.getboolean, "command_delay": config.getfloat,
+        "status_delay": config.getfloat, "retries": config.getint}
+
+    kwargs = {}
+    for key in config_keys[server_type]:
+        value = config_getters.get(key, config.get)(server_name, key) or None
         if value is not None:
             kwargs[key] = value
 

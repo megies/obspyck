@@ -1247,8 +1247,12 @@ class ObsPyck(QtGui.QMainWindow):
             else:
                 # normalize with overall sensitivity and convert to nm/s
                 # if not explicitly deactivated on command line
-                if self.config.get("base", "normalization") and not self.config.get("base", "no_metadata"):
-                    plts.append(ax.plot(sampletimes, tr.data / tr.stats.paz.sensitivity * 1e9, color='k', zorder=1000)[0])
+                if self.config.getboolean("base", "normalization") and not self.config.getboolean("base", "no_metadata"):
+                    try:
+                        sensitivity = tr.stats.paz.sensitivity
+                    except AttributeError:
+                        sensitivity = tr.stats.response.instrument_sensitivity.value
+                    plts.append(ax.plot(sampletimes, tr.data / sensitivity * 1e9, color='k', zorder=1000)[0])
                 else:
                     plts.append(ax.plot(sampletimes, tr.data, color='k', zorder=1000)[0])
         self.drawIds()
@@ -2884,14 +2888,17 @@ class ObsPyck(QtGui.QMainWindow):
                 ax.xaxis.set_major_formatter(FuncFormatter(formatXTicklabels))
                 # normalize with overall sensitivity and convert to nm/s
                 # if not explicitly deactivated on command line
-                if self.config.get("base", "normalization") and not self.config.get("base", "no_metadata"):
+                if self.config.getboolean("base", "normalization") and not self.config.getboolean("base", "no_metadata"):
                     if self.widgets.qToolButton_ms.isChecked():
                         self._ms(tr)
                     if self.widgets.qToolButton_filter.isChecked():
                         self._filter(tr)
                     data_ = tr.data
-                    #scaling = 1e9 / tr.stats.paz.sensitivity
-                    #data_ = tr.data * scaling
+                    # try:
+                    #     sensitivity = tr.stats.paz.sensitivity
+                    # except AttributeError:
+                    #     sensitivity = tr.stats.response.instrument_sensitivity.value
+                    # data_ = tr.data * 1e9 / sensitivity
                     scaling = None
                 else:
                     scaling = 1.0
