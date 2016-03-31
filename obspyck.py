@@ -18,6 +18,7 @@ import shutil
 import optparse
 import warnings
 import tempfile
+import traceback
 import socket
 from StringIO import StringIO
 import logging
@@ -3610,8 +3611,10 @@ class ObsPyck(QtGui.QMainWindow):
         self.critical(msg)
         try:
             self.uploadJane(name, data)
-        except Exception as e:
-            self.critical("Upload to Jane failed! (%s -- %s)" % (name, str(e)))
+        except Exception:
+            msg = traceback.format_exc()
+            self.critical("Upload to Jane failed! (%s, traceback follows:)" % name)
+            self.critical(msg)
         else:
             self.critical("Upload to Jane OK. "
                           "http://jane/rest/documents/quakeml/%s" % name)
@@ -3658,13 +3661,17 @@ class ObsPyck(QtGui.QMainWindow):
         else:
             self.critical("Deletion from Jane OK.")
 
-    def uploadJane(self, name, quakeml_string, base_url="http://jane",
-                   user="admin", password="admin"):
+    def uploadJane(self, name, quakeml_string, base_url="http://jane"):
+        conf = self.config
+        server_key = conf.get("base", "test_event_server_jane")
+        client = connect_to_server(server_key, conf, self.clients)
+        base_url = client.base_url
+        user = conf.get(server_key, "user")
+        password = conf.get(server_key, "password")
         import requests
-        r = requests.put(
-            url=base_url + "/rest/documents/quakeml/%s" % name,
-            data=quakeml_string,
-            auth=(user, password))
+        url = base_url + "/rest/documents/quakeml/%s" % name
+        data = quakeml_string.encode("UTF-8")
+        r = requests.put(url=url, data=data, auth=(user, password))
         assert r.ok
         origin = self.catalog[0].origins[0]
         nlloc_scatter = origin.get("nonlinloc_scatter")
