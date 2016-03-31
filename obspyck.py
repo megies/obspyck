@@ -3177,8 +3177,8 @@ class ObsPyck(QtGui.QMainWindow):
             return
         if event.artist != self.scatterMag:
             return
-        i = self.scatterMagIndices[event.ind[0]]
         j = event.ind[0]
+        i = self.scatterMagIndices[j]
         net = self.streams[i][0].stats.network
         sta = self.streams[i][0].stats.station
         loc = self.streams[i][0].stats.location
@@ -3188,7 +3188,7 @@ class ObsPyck(QtGui.QMainWindow):
             return
         stamag.used = not stamag.used
         colors = self.scatterMag.get_facecolors()
-        colors[i] = stamag.used and (0, 1, 0, 1) or (0, 0, 0, 0)
+        colors[j] = stamag.used and (0, 1, 0, 1) or (0, 0, 0, 0)
         self.scatterMag.set_facecolors(colors)
         self.updateNetworkMag()
         self.canv.draw()
