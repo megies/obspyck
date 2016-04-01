@@ -3673,6 +3673,9 @@ class ObsPyck(QtGui.QMainWindow):
         data = quakeml_string.encode("UTF-8")
         r = requests.put(url=url, data=data, auth=(user, password))
         assert r.ok
+        if not self.catalog[0].origins:
+            return
+
         origin = self.catalog[0].origins[0]
         nlloc_scatter = origin.get("nonlinloc_scatter")
         if nlloc_scatter is not None:
