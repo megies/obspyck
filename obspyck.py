@@ -1463,7 +1463,6 @@ class ObsPyck(QtGui.QMainWindow):
                 if pick is None:
                     return
                 key = phase_type + "Pol"
-                value = keys['setPol'][ev.key]
                 if ev.key == keys['setPolU']:
                     value = "positive"
                 elif ev.key == keys['setPolD']:
