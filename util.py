@@ -1005,42 +1005,6 @@ def formatXTicklabels(x, *pos):
     else:
         return "%.3f" % x
 
-def map_qKeys(key_dict):
-    """
-    Map Dictionary of form {'functionality': "Qt_Key_name"} to
-    {'functionality': Qt_Key_Code} for use in check against event Keys.
-
-    >>> KEYS = {'delMagMinMax': 'Key_Escape',
-    ...         'delPick': 'Key_Escape',
-    ...         'nextStream': 'Key_X',
-    ...         'prevStream': 'Key_Y',
-    ...         'setPol': {'Key_D': 'down',
-    ...                    'Key_Minus': 'poordown',
-    ...                    'Key_Plus': 'poorup',
-    ...                    'Key_U': 'up'},
-    ...         'setWeight': {'Key_0': 0, 'Key_1': 1, 'Key_2': 2, 'Key_3': 3},
-    ...         'switchWheelZoomAxis': 'Key_Shift'}
-    >>> map_qKeys(KEYS)
-    {'delMagMinMax': 16777216,
-     'delPick': 16777216,
-     'nextStream': 88,
-     'prevStream': 89,
-     'setPol': {43: 'poorup', 45: 'poordown', 68: 'down', 85: 'up'},
-     'setWeight': {48: 0, 49: 1, 50: 2, 51: 3},
-     'switchWheelZoomAxis': 16777248}
-    """
-    Qt = PyQt4.QtCore.Qt
-    for functionality, key_name in key_dict.iteritems():
-        if isinstance(key_name, str):
-            key_dict[functionality] = getattr(Qt, key_name)
-        # sometimes we get a nested dictionary (e.g. "setWeight")...
-        elif isinstance(key_name, dict):
-            nested_dict = key_name
-            new = {}
-            for key_name, value in nested_dict.iteritems():
-                new[getattr(Qt, key_name)] = value
-            key_dict[functionality] = new
-    return key_dict
 
 def coords2azbazinc(stream, origin):
     """
