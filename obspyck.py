@@ -4297,15 +4297,8 @@ def main():
     Gets executed when the program starts.
     """
     usage = (
-        "\n * SeisHub:\n    "
-        "%prog -t 2010-08-01T12:00:00 -d 30 -i BW.R*..EH*,BW.BGLD..EH*\n"
-        "%prog -t 2010-08-01T12:00:00 -d 30 --seishub-ids BW.R*..EH*,BW.BGLD..EH*\n"
-        " * ArcLink:\n    "
-        "%prog -t 2010-08-01T12:00:00 -d 30 --arclink-ids GE.APE..BH*,GE.IMMV..BH*\n"
-        " * combination of clients:\n    "
-        "%prog -t 2010-08-01T12:00:00 -d 30 -i BW.R*..EH* --arclink-ids GE.APE..BH*\n"
-        " * provide (additional) local files as command line arguments:\n    "
-        "%prog -t 2010-08-01T12:00:00 -d 30 some_path/*/my_local_*_.files"
+        "\n %prog -t 2010-08-01T12:00:00 -d 30 "
+        "[local waveform or station metadata files]"
         "\n\nGet all available options with: %prog -h")
     parser = optparse.OptionParser(usage)
     for opt_args, opt_kwargs in COMMANDLINE_OPTIONS:
