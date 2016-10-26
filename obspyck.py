@@ -2822,8 +2822,8 @@ class ObsPyck(QtGui.QMainWindow):
         ax.axvline(x0, color="blue", ls=":",
                    label="origin time from wadati diagram")
         # origin time from event location
-        if self.origin.time:
-            otime = "%.3f" % self.origin.time.timestamp
+        if self.catalog[0].origins[0].time
+            otime = "%.3f" % self.catalog[0].origins[0].time.timestamp
             otime = float(otime[-7:])
             ax.axvline(otime, color="red", ls=":",
                        label="origin time from event location")
