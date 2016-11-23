@@ -57,6 +57,11 @@ NAMESPACE = "http://erdbeben-in-bayern.de/xmlns/0.1"
 NSMAP = {"edb": NAMESPACE}
 
 
+if map(int, OBSPY_VERSION.split('.')[:2]) < [1, 1]:
+    msg = "Needing ObsPy version >= 1.1.0 (current version is: {})"
+    raise ImportError(msg.format(OBSPY_VERSION))
+
+
 class ObsPyck(QtGui.QMainWindow):
     """
     Main Window with the design loaded from the Qt Designer.
@@ -2713,13 +2718,19 @@ class ObsPyck(QtGui.QMainWindow):
                     continue
                 tr = self.getTrace(
                     seed_string=amplitude.waveform_id.get_seed_string())
-                paz = tr.stats.get("paz")
-                self.debug("PAZ: " + str(paz))
+                # either use attached PAZ or response..
+                if "paz" in tr.stats:
+                    paz = tr.stats["paz"]
+                elif "response" in tr.stats:
+                    paz = tr.stats["response"]
+                else:
+                    paz = None
+                self.debug("PAZ/response: " + str(paz))
                 if paz is None:
                     # XXX TODO we could fetch the metadata from seishub if we
                     # don't have a trace with PAZ and still use the stored info
                     msg = ("Skipping amplitude for station "
-                           "'%s': Missing PAZ metadata" % sta)
+                           "'%s': Missing PAZ/response metadata" % sta)
                     self.error(msg)
                     continue
                 amplitudes.append(amplitude)
