@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
+import warnings
 from copy import deepcopy
 
 import obspy.core.event
@@ -14,6 +15,14 @@ AGENCY_URI = "%s/agency" % ID_ROOT
 CLASSES_TO_PATCH = [
     'FocalMechanism', 'StationMagnitudeContribution', 'StationMagnitude',
     'Magnitude', 'Catalog', 'Event', 'Origin', 'Pick', 'Arrival', 'Amplitude']
+
+
+# we're setting some attributes for internal purposes and want to ignore those
+# warnings:
+warnings.filterwarnings(
+    action='ignore', module=r'obspy\.core\.util\.attribdict',
+    category=UserWarning,
+    message=r'Setting attribute .* which is not a default attribute .*')
 
 
 def camelcase2lower(name):
