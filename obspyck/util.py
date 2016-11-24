@@ -8,16 +8,15 @@
 # Copyright (C) 2010 Tobias Megies, Lion Krischer
 #---------------------------------------------------------------------
 
-import os
-import sys
+import copy
+import glob
 import math
+import os
 import platform
 import shutil
 import subprocess
-import copy
+import sys
 import tempfile
-import glob
-import fnmatch
 import warnings
 from StringIO import StringIO
 
@@ -29,7 +28,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as QFigureCanvas
 from matplotlib.widgets import MultiCursor as MplMultiCursor
 
-import obspy
+import obspy.arclink
 obspy.arclink.client.MAX_REQUESTS = 200
 from obspy import UTCDateTime, read_inventory, read, Stream
 try:
@@ -37,14 +36,14 @@ try:
 except:
     from obspy.signal import gps2DistAzimuth
 
-from obspy.core.util import getMatplotlibVersion, locations2degrees
-from obspy.taup.taup import getTravelTimes
-from obspy.fdsn import Client as FDSNClient
 from obspy.arclink import Client as ArcLinkClient
+from obspy.core.util import getMatplotlibVersion, locations2degrees
+from obspy.fdsn import Client as FDSNClient
 from obspy.seishub import Client as SeisHubClient
+from obspy.taup.taup import getTravelTimes
 from obspy.xseed import Parser
 
-from rotate_to_zne import (
+from .rotate_to_zne import (
     _rotate_specific_channels_to_zne, get_orientation_from_parser,
     get_orientation)
 

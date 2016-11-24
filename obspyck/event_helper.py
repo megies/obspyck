@@ -1,19 +1,19 @@
+# -*- coding: utf-8 -*-
 import re
-import warnings
 from copy import deepcopy
-import numpy as np
+
 import obspy.core.event
 from obspy import UTCDateTime
 from obspy.core.event import WaveformStreamID, ResourceIdentifier, \
-    TimeWindow, CreationInfo, Comment, OriginQuality
+    TimeWindow, CreationInfo, Comment
 
 ID_ROOT = "smi:de.erdbeben-in-bayern"
 AGENCY_ID = "Erdbebendienst Bayern"
 AGENCY_URI = "%s/agency" % ID_ROOT
 # these classes get subclassed and need to be patched in readEvents
-CLASSES_TO_PATCH = ['FocalMechanism',
-    'StationMagnitudeContribution', 'StationMagnitude', 'Magnitude', 'Catalog',
-    'Event', 'Origin', 'Pick', 'Arrival', 'Amplitude']
+CLASSES_TO_PATCH = [
+    'FocalMechanism', 'StationMagnitudeContribution', 'StationMagnitude',
+    'Magnitude', 'Catalog', 'Event', 'Origin', 'Pick', 'Arrival', 'Amplitude']
 
 
 def camelcase2lower(name):

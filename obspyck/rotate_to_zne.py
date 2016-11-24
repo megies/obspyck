@@ -1,8 +1,11 @@
+# -*- coding: utf-8 -*-
 """
 Rotation routines backported from obspy/obspy#1310
 """
 import warnings
+
 import numpy as np
+
 from obspy import UTCDateTime
 
 

@@ -9,19 +9,18 @@
 #
 # Copyright (C) 2010 Tobias Megies, Lion Krischer
 #---------------------------------------------------------------------
-
+import locale
+import logging
+import optparse
 import os
 import re
-import sys
-import locale
 import shutil
-import optparse
-import warnings
-import tempfile
 import socket
-from StringIO import StringIO
-import logging
+import sys
+import tempfile
+import warnings
 from configparser import SafeConfigParser
+from StringIO import StringIO
 
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import Qt
@@ -37,6 +36,8 @@ from matplotlib.backend_bases import MouseEvent as MplMouseEvent
 #os.chdir("/baysoft/obspyck/")
 from obspy import __version__ as OBSPY_VERSION
 from obspy import UTCDateTime, Stream
+from obspy.core.event import CreationInfo, WaveformStreamID, \
+    OriginUncertainty, OriginQuality, Comment, NodalPlane, NodalPlanes
 from obspy.core.util import NamedTemporaryFile, AttribDict
 from obspy.core.util.geodetics import gps2DistAzimuth, kilometer2degrees
 from obspy.signal.util import utlLonLat
@@ -44,17 +45,14 @@ from obspy.signal.invsim import estimateMagnitude
 from obspy.signal.rotate import rotate_ZNE_LQT, rotate_NE_RT
 from obspy.imaging.spectrogram import spectrogram
 from obspy.imaging.beachball import Beach
-from obspy.fdsn import Client as FDSNClient
-from obspy.arclink import Client as ArcLinkClient
 from obspy.seishub import Client as SeisHubClient
 
-from qt_designer import Ui_qMainWindow_obsPyck
-from util import *
-from event_helper import Catalog, Event, Origin, Pick, Arrival, \
+from . import __version__
+from .qt_designer import Ui_qMainWindow_obsPyck
+from .util import *
+from .event_helper import Catalog, Event, Origin, Pick, Arrival, \
     Magnitude, StationMagnitude, StationMagnitudeContribution, \
     FocalMechanism, ResourceIdentifier, ID_ROOT, readQuakeML, Amplitude
-from obspy.core.event import CreationInfo, WaveformStreamID, \
-    OriginUncertainty, OriginQuality, Comment, NodalPlane, NodalPlanes
 
 NAMESPACE = "http://erdbeben-in-bayern.de/xmlns/0.1"
 NSMAP = {"edb": NAMESPACE}
@@ -4304,6 +4302,8 @@ def main():
     for opt_args, opt_kwargs in COMMANDLINE_OPTIONS:
         parser.add_option(*opt_args, **opt_kwargs)
     (options, args) = parser.parse_args()
+    print "Running ObsPyck version {} (location: {})".format(__version__,
+                                                             __file__)
     # read config file
     if options.config_file:
         config_file = os.path.expanduser(options.config_file)
