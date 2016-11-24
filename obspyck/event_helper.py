@@ -276,10 +276,10 @@ def readQuakeML(*args, **kwargs):
     # replace original event classes with subclasses
     for classname in CLASSES_TO_PATCH:
         bkp[classname] = obspy.core.event.__dict__[classname]
-        obspy.core.quakeml.__dict__[classname] = local[classname]
-    from obspy.core.quakeml import readQuakeML
-    ret = obspy.core.quakeml.readQuakeML(*args, **kwargs)
+        obspy.io.quakeml.core.__dict__[classname] = local[classname]
+    from obspy.io.quakeml.core import _read_quakeml
+    ret = obspy.io.quakeml.core._read_quakeml(*args, **kwargs)
     # reset original event classes
     for classname, class_ in bkp.iteritems():
-        obspy.core.quakeml.__dict__[classname] = bkp[classname]
+        obspy.io.quakeml.core.__dict__[classname] = bkp[classname]
     return ret
