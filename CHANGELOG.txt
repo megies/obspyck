@@ -1,4 +1,5 @@
 master
+ - add support for fetching data from a seedlink server
  - set meaningful creation info including obspyck+obspy version numbers on all
    event objects
  - fix a bug with beachball function naming in 0.3.0 (likely to lead to

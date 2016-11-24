@@ -33,6 +33,7 @@ import obspy.clients.arclink
 from obspy import UTCDateTime, read_inventory, read, Stream
 from obspy.clients.arclink import Client as ArcLinkClient
 from obspy.clients.fdsn import Client as FDSNClient
+from obspy.clients.seedlink import Client as SeedlinkClient
 from obspy.clients.seishub import Client as SeisHubClient
 from obspy.core.util import get_matplotlib_version
 from obspy.geodetics.base import gps2dist_azimuth
@@ -372,7 +373,8 @@ def fetch_waveforms_with_metadata(options, args, config):
     print "-" * 80
     for seed_id, server in sorted(seed_ids_to_fetch.items()):
         server_type = config.get(server, "type")
-        if server_type not in ("seishub", "fdsn", "jane", "arclink"):
+        if server_type not in ("seishub", "fdsn", "jane", "arclink",
+                               "seedlink"):
             msg = ("Unknown server type '{}' in server definition section "
                    "'{}' in config file.").format(server_type, server)
             raise NotImplementedError(msg)
@@ -471,6 +473,45 @@ def fetch_waveforms_with_metadata(options, args, config):
                             tr.id, tr.stats.starttime)
                         tr.stats.orientation = get_orientation(
                             inventory, tr.id, tr.stats.starttime)
+            # Seedlink
+            elif server_type == "seedlink":
+                for wc in "*?":
+                    for code in (net, sta, loc):
+                        if wc in code:
+                            msg = ("Wildcards are not allowed for network/"
+                                   "station/location when fetching data via "
+                                   "seedlink ('{}')")
+                            raise ValueError(msg.format(code))
+                if '*' in cha:
+                    msg = ("Wildcard '*' not allowed for channel code "
+                           "when fetching data via seedlink ('{}')")
+                    raise ValueError(msg.format(cha))
+                st = client.get_waveform(
+                    network=net, station=sta, location=loc, channel=cha,
+                    starttime=t1, endtime=t2)
+                if not st:
+                    msg = "Server returned no data."
+                    raise Exception(msg)
+                if not no_metadata:
+                    meta_server = config.get(server, "metadata_server")
+                    meta_server_type = config.get(meta_server, "type")
+                    meta_client = connect_to_server(meta_server,
+                                                    config, clients)
+                    if meta_server_type in ('fdsn', 'jane'):
+                        inventory = meta_client.get_stations(
+                            network=net, station=sta, location=loc,
+                            level="response")
+                        failed = st.attach_response(inventory)
+                        if failed:
+                            msg = "Failed to get response for {}!"
+                            raise Exception(msg.format(failed))
+                        for tr in st:
+                            tr.stats.coordinates = inventory.get_coordinates(
+                                tr.id, tr.stats.starttime)
+                            tr.stats.orientation = get_orientation(
+                                inventory, tr.id, tr.stats.starttime)
+                    else:
+                        raise NotImplementedError()
             sta_fetched.add(net_sta_loc)
             sys.stdout.write("\r%s (%s: %s) fetched.\n" % (
                 seed_id.ljust(15), server_type, server))
@@ -500,6 +541,10 @@ def fetch_waveforms_with_metadata(options, args, config):
         elif server_type in ("fdsn", "jane"):
             for tr in st:
                 tr.stats['_format'] = "FDSN"
+        # seedlink
+        elif server_type == "seedlink":
+            for tr in st:
+                tr.stats['_format'] = "SeedLink"
         streams.append(st)
     print "=" * 80
     return (clients, streams)
@@ -548,7 +593,9 @@ def connect_to_server(server_name, config, clients):
         "arclink": ArcLinkClient,
         "fdsn": FDSNClient,
         "jane": FDSNClient,
-        "seishub": SeisHubClient}
+        "seishub": SeisHubClient,
+        "seedlink": SeedlinkClient,
+        }
 
     if server_type not in client_classes.keys():
         msg = ("Unknown server type '{}' in server definition section "
@@ -565,6 +612,8 @@ def connect_to_server(server_name, config, clients):
             "base_url", "user", "password", "user_agent", "debug", "timeout"),
         "seishub": (
             "base_url", "user", "password", "timeout", "debug", "retries"),
+        "seedlink": (
+            "server", "port", "timeout", "debug"),
         }
     config_getters = {
         "port": config.getint, "timeout": config.getfloat,
