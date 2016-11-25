@@ -1,3 +1,6 @@
+master:
+ - switch obspy dependency version from 0.10.* to 1.*
+
 0.2.0
  - packaging cleanup
 

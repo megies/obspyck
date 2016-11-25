@@ -39,13 +39,13 @@ from obspy import UTCDateTime, Stream
 from obspy.core.event import CreationInfo, WaveformStreamID, \
     OriginUncertainty, OriginQuality, Comment, NodalPlane, NodalPlanes
 from obspy.core.util import NamedTemporaryFile, AttribDict
-from obspy.core.util.geodetics import gps2DistAzimuth, kilometer2degrees
-from obspy.signal.util import utlLonLat
-from obspy.signal.invsim import estimateMagnitude
-from obspy.signal.rotate import rotate_ZNE_LQT, rotate_NE_RT
+from obspy.geodetics.base import gps2dist_azimuth, kilometer2degrees
+from obspy.signal.util import util_lon_lat
+from obspy.signal.invsim import estimate_magnitude
+from obspy.signal.rotate import rotate_zne_lqt, rotate_ne_rt
 from obspy.imaging.spectrogram import spectrogram
-from obspy.imaging.beachball import Beach
-from obspy.seishub import Client as SeisHubClient
+from obspy.imaging.beachball import beach
+from obspy.clients.seishub import Client as SeisHubClient
 
 from . import __version__
 from .qt_designer import Ui_qMainWindow_obsPyck
@@ -1015,7 +1015,7 @@ class ObsPyck(QtGui.QMainWindow):
         n = stream.select(component="N")[0].data
         e = stream.select(component="E")[0].data
         self.info("using baz, takeoff: %s, %s" % (bazim, inci))
-        l, q, t = rotate_ZNE_LQT(z, n, e, bazim, inci)
+        l, q, t = rotate_zne_lqt(z, n, e, bazim, inci)
         for comp, data in zip("ZNE", (l, q, t)):
             tr = stream.select(component=comp)[0]
             tr.data = data
@@ -1036,7 +1036,7 @@ class ObsPyck(QtGui.QMainWindow):
         n = stream.select(component="N")[0].data
         e = stream.select(component="E")[0].data
         self.info("using baz: %s" % bazim)
-        r, t = rotate_NE_RT(n, e, bazim)
+        r, t = rotate_ne_rt(n, e, bazim)
         stream.select(component="N")[0].data = r
         stream.select(component="E")[0].data = t
         for comp, data in zip("NE", (r, t)):
@@ -1888,7 +1888,7 @@ class ObsPyck(QtGui.QMainWindow):
         if hasattr(fm, "_beachball"):
             beach = fm._beachball
         else:
-            beach = Beach([np1.strike, np1.dip, np1.rake],
+            beach = beach([np1.strike, np1.dip, np1.rake],
                           width=plot_width)
             fm._beachball = beach
         ax.add_collection(beach)
@@ -1896,7 +1896,7 @@ class ObsPyck(QtGui.QMainWindow):
         if not hasattr(fm, "_beachball2"):
             for fm_ in fms:
                 _np1 = fm_.nodal_planes.nodal_plane_1
-                beach = Beach([_np1.strike, _np1.dip, _np1.rake],
+                beach = beach([_np1.strike, _np1.dip, _np1.rake],
                               nofill=True, edgecolor='k', linewidth=1.,
                               alpha=0.3, width=plot_width)
                 fm_._beachball2 = beach
@@ -2673,9 +2673,9 @@ class ObsPyck(QtGui.QMainWindow):
 
     def hypoDist(self, coords):
         o = self.catalog[0].origins[0]
-        epi_dist, _, _ = gps2DistAzimuth(o.latitude, o.longitude,
-                                         coords['latitude'],
-                                         coords['longitude'])
+        epi_dist, _, _ = gps2dist_azimuth(o.latitude, o.longitude,
+                                          coords['latitude'],
+                                          coords['longitude'])
         # origin depth is in m positive down,
         # station elevation is in m positive up
         if abs(o.depth) < 800:
@@ -2715,7 +2715,7 @@ class ObsPyck(QtGui.QMainWindow):
                 if timedelta is None:
                     continue
                 tr = self.getTrace(
-                    seed_string=amplitude.waveform_id.getSEEDString())
+                    seed_string=amplitude.waveform_id.get_seed_string())
                 paz = tr.stats.get("paz")
                 self.debug("PAZ: " + str(paz))
                 if paz is None:
@@ -2735,7 +2735,7 @@ class ObsPyck(QtGui.QMainWindow):
                 continue
 
             dist = self.hypoDist(tr.stats.coordinates)
-            mag = estimateMagnitude(pazs, p2ps, timedeltas, dist)
+            mag = estimate_magnitude(pazs, p2ps, timedeltas, dist)
             sm = StationMagnitude()
             event.station_magnitudes.append(sm)
             sm.origin_id = origin.resource_id
@@ -2950,8 +2950,8 @@ class ObsPyck(QtGui.QMainWindow):
         #self.fig.subplots_adjust(bottom=0.07, top=0.95, left=0.07, right=0.98)
         axEM.scatter([o.longitude], [o.latitude], 30, color='red', marker='o')
         # XXX TODO handle different origin uncertainty descriptions
-        #errLon, errLat = utlLonLat(o.longitude, o.latitude, o.longitude_errors,
-        #                           o.latitude_errors)
+        #errLon, errLat = util_lon_lat(o.longitude, o.latitude, o.longitude_errors,
+        #                              o.latitude_errors)
 
         ou = o.origin_uncertainty
         errX, errY = None, None
@@ -2969,8 +2969,8 @@ class ObsPyck(QtGui.QMainWindow):
                        "degrees from North are not supported yet..")
                 self.error(msg)
             if errX and errY:
-                errLon, errLat = utlLonLat(o.longitude, o.latitude,
-                                           errX / 1e3, errY / 1e3)
+                errLon, errLat = util_lon_lat(o.longitude, o.latitude,
+                                              errX / 1e3, errY / 1e3)
                 errLon -= o.longitude
                 errLat -= o.latitude
                 if ou.preferred_description == "uncertainty ellipse":
@@ -3596,8 +3596,8 @@ class ObsPyck(QtGui.QMainWindow):
         headers["Content-type"] = "text/xml; charset=\"UTF-8\""
         headers["Content-length"] = "%d" % len(data)
         # XXX TODO: Calculate real PGV?!
-        code, message = client.event.putResource(name, xml_string=data,
-                                                 headers=headers)
+        code, message = client.event.put_resource(name, xml_string=data,
+                                                  headers=headers)
         msg = "Seishub Account: %s" % seishub_account
         msg += "\nUser: %s" % self.username
         msg += "\nName: %s" % name
@@ -3631,8 +3631,8 @@ class ObsPyck(QtGui.QMainWindow):
             host = "localhost"
         headers["Host"] = host
         headers["User-Agent"] = "obspyck"
-        code, message = client.event.deleteResource(str(resource_name),
-                                                    headers=headers)
+        code, message = client.event.delete_resource(str(resource_name),
+                                                     headers=headers)
         msg = "Deleting Event!"
         msg += "\nSeishub Account: %s" % seishub_account
         msg += "\nUser: %s" % self.username
@@ -3694,7 +3694,7 @@ class ObsPyck(QtGui.QMainWindow):
             for _id, ax in zip(ids, self.axs):
                 self.debug(str(pick))
                 self.debug(str(_id))
-                if pick.waveform_id.getSEEDString() == _id:
+                if pick.waveform_id.get_seed_string() == _id:
                     main_axes = True
                     self.drawPickLabel(ax, pick)
                 else:
@@ -3704,7 +3704,7 @@ class ObsPyck(QtGui.QMainWindow):
                     self.drawArrival(ax, arrival, pick, main_axes=main_axes)
             # if no pick label was drawn yet.. draw it
             for _id, ax in zip(ids, self.axs):
-                if pick.waveform_id.getSEEDString() == _id:
+                if pick.waveform_id.get_seed_string() == _id:
                     break
             else:
                 self.drawPickLabel(self.axs[-1], pick, main_axes=False)
@@ -3720,7 +3720,7 @@ class ObsPyck(QtGui.QMainWindow):
                 if amplitude is None:
                     continue
                 for _id, ax in zip(ids, self.axs):
-                    if amplitude.waveform_id.getSEEDString() == _id:
+                    if amplitude.waveform_id.get_seed_string() == _id:
                         self.drawAmplitude(ax, amplitude, main_axes=True)
                         break
                 else:
@@ -3843,13 +3843,13 @@ class ObsPyck(QtGui.QMainWindow):
                 continue
             if waveform_id is not None and waveform_id != p.waveform_id:
                 continue
-            if seed_string is not None and seed_string != p.waveform_id.getSEEDString():
+            if seed_string is not None and seed_string != p.waveform_id.get_seed_string():
                 continue
             if axes is not None:
                 _i = self.axs.index(axes)
                 _id = self.getCurrentStream()[_i].id
                 phase_hint = self.getCurrentPhase()
-                if p.waveform_id.getSEEDString() != _id:
+                if p.waveform_id.get_seed_string() != _id:
                     continue
                 if p.phase_hint != phase_hint:
                     continue
@@ -3897,12 +3897,12 @@ class ObsPyck(QtGui.QMainWindow):
                 continue
             if waveform_id is not None and waveform_id != a.waveform_id:
                 continue
-            if seed_string is not None and seed_string != a.waveform_id.getSEEDString():
+            if seed_string is not None and seed_string != a.waveform_id.get_seed_string():
                 continue
             if axes is not None:
                 _i = self.axs.index(axes)
                 _id = self.getCurrentStream()[_i].id
-                if a.waveform_id.getSEEDString() != _id:
+                if a.waveform_id.get_seed_string() != _id:
                     continue
             return a
         if setdefault:
@@ -4086,7 +4086,7 @@ class ObsPyck(QtGui.QMainWindow):
         Fetch a Resource XML from SeisHub
         """
         client = self.event_server
-        resource_xml = client.event.getResource(resource_name)
+        resource_xml = client.event.get_resource(resource_name)
 
         # parse quakeml
         catalog = readQuakeML(StringIO(resource_xml))
@@ -4148,7 +4148,7 @@ class ObsPyck(QtGui.QMainWindow):
                 msg = "Skipping amplitude not set with obspyck (or with old version)."
                 self.error(msg)
                 continue
-            tr = self.getTrace(ampl.waveform_id.getSEEDString())
+            tr = self.getTrace(ampl.waveform_id.get_seed_string())
             if tr is None:
                 continue
             ampl.setFromTimeWindow(tr)
@@ -4191,8 +4191,8 @@ class ObsPyck(QtGui.QMainWindow):
         """
         self.checkForSysopEventDuplicates(self.T0, self.T1)
 
-        events = self.event_server.event.getList(min_last_pick=starttime,
-                                                 max_first_pick=endtime)
+        events = self.event_server.event.get_list(min_last_pick=starttime,
+                                                  max_first_pick=endtime)
         events.sort(key=lambda x: x['resource_name'])
         self.seishubEventList = events
         self.seishubEventCount = len(events)
@@ -4217,8 +4217,8 @@ class ObsPyck(QtGui.QMainWindow):
         at the moment this check is conducted for the current timewindow when
         submitting a sysop event.
         """
-        events = self.event_server.event.getList(min_last_pick=starttime,
-                                                 max_first_pick=endtime)
+        events = self.event_server.event.get_list(min_last_pick=starttime,
+                                                  max_first_pick=endtime)
         # XXX TODO: we don't have sysop as author anymore!
         # all controlled by public tag now.
         sysop_events = []
@@ -4331,10 +4331,4 @@ def main():
 
 
 if __name__ == "__main__":
-    try:
-        import obspy.io  # NOQA
-    except ImportError:
-        pass
-    else:
-        raise Exception("ObsPy >= 0.11 not supported.")
     main()

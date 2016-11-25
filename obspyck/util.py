@@ -1,4 +1,5 @@
-#-------------------------------------------------------------------
+# -*- coding: utf-8 -*-
+# -------------------------------------------------------------------
 # Filename: util.py
 #  Purpose: Helper functions for ObsPyck
 #   Author: Tobias Megies, Lion Krischer
@@ -6,8 +7,7 @@
 #  License: GPLv2
 #
 # Copyright (C) 2010 Tobias Megies, Lion Krischer
-#---------------------------------------------------------------------
-
+# -------------------------------------------------------------------
 import copy
 import glob
 import math
@@ -28,24 +28,20 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as QFigureCanvas
 from matplotlib.widgets import MultiCursor as MplMultiCursor
 
-import obspy.arclink
-obspy.arclink.client.MAX_REQUESTS = 200
+import obspy.clients.arclink
 from obspy import UTCDateTime, read_inventory, read, Stream
-try:
-    from obspy.core.util import gps2DistAzimuth
-except:
-    from obspy.signal import gps2DistAzimuth
-
-from obspy.arclink import Client as ArcLinkClient
-from obspy.core.util import getMatplotlibVersion, locations2degrees
-from obspy.fdsn import Client as FDSNClient
-from obspy.seishub import Client as SeisHubClient
-from obspy.taup.taup import getTravelTimes
-from obspy.xseed import Parser
+from obspy.clients.arclink import Client as ArcLinkClient
+from obspy.clients.fdsn import Client as FDSNClient
+from obspy.clients.seishub import Client as SeisHubClient
+from obspy.core.util import get_matplotlib_version
+from obspy.geodetics.base import gps2dist_azimuth
+from obspy.io.xseed import Parser
 
 from .rotate_to_zne import (
     _rotate_specific_channels_to_zne, get_orientation_from_parser,
     get_orientation)
+
+obspy.clients.arclink.client.MAX_REQUESTS = 200
 
 mpl.rc('figure.subplot', left=0.05, right=0.98, bottom=0.10, top=0.92,
        hspace=0.28)
@@ -395,26 +391,26 @@ def fetch_waveforms_with_metadata(options, args, config):
             sys.stdout.flush()
             # SeisHub
             if server_type == "seishub":
-                st = client.waveform.getWaveform(
+                st = client.waveform.get_waveforms(
                     net, sta, loc, cha, t1, t2, apply_filter=True)
                 if not no_metadata:
-                    data = client.station.getList(
+                    data = client.station.get_list(
                         network=net, station=sta, datetime=t1)
                     if len(data) == 0:
                         msg = "No station metadata on server."
                         raise Exception(msg)
                     parsers = [
-                        Parser(client.station.getResource(d['resource_name']))
+                        Parser(client.station.get_resource(d['resource_name']))
                         for d in data]
                     for tr in st:
                         orientation = [
                             get_orientation_from_parser(p_, tr.id, datetime=t1)
                             for p_ in parsers]
                         coordinates = [
-                            p_.getCoordinates(tr.id, datetime=t1)
+                            p_.get_coordinates(tr.id, datetime=t1)
                             for p_ in parsers]
                         paz = [
-                            p_.getPAZ(tr.id, datetime=t1) for p_ in parsers]
+                            p_.get_paz(tr.id, datetime=t1) for p_ in parsers]
                         # check for clashing multiple station metadata
                         for list_ in (orientation, coordinates, paz):
                             for i in range(1, len(list_))[::-1]:
@@ -433,7 +429,7 @@ def fetch_waveforms_with_metadata(options, args, config):
                         tr.stats.paz = paz[0]
             # ArcLink
             elif server_type == "arclink":
-                st = client.getWaveform(
+                st = client.get_waveforms(
                     network=net, station=sta, location=loc, channel=cha,
                     starttime=t1, endtime=t2)
                 if not no_metadata:
@@ -441,8 +437,8 @@ def fetch_waveforms_with_metadata(options, args, config):
                     for net_, sta_, loc_, cha_ in set([
                             tuple(tr.id.split(".")) for tr in st]):
                         sio = StringIO()
-                        client.saveResponse(sio, net_, sta_, loc_, cha_,
-                                            t1-10, t2+10)
+                        client.save_response(sio, net_, sta_, loc_, cha_,
+                                             t1-10, t2+10)
                         sio.seek(0)
                         id_ = ".".join((net_, sta_, loc_, cha_))
                         parsers[id_] = Parser(sio)
@@ -902,14 +898,14 @@ class MultiCursor(MplMultiCursor):
 
     @property
     def lines(self):
-        if getMatplotlibVersion() < [1, 3, 0]:
+        if get_matplotlib_version() < [1, 3, 0]:
             return self.__dict__["lines"]
         else:
             return self.vlines
 
     @lines.setter
     def lines(self, value):
-        if getMatplotlibVersion() < [1, 3, 0]:
+        if get_matplotlib_version() < [1, 3, 0]:
             self.__dict__["lines"] = value
         else:
             self.vlines = value
@@ -1012,7 +1008,7 @@ def coords2azbazinc(stream, origin):
     dictionary.
     """
     sta_coords = stream[0].stats.coordinates
-    dist, bazim, azim = gps2DistAzimuth(sta_coords.latitude,
+    dist, bazim, azim = gps2dist_azimuth(sta_coords.latitude,
             sta_coords.longitude, float(origin.latitude),
             float(origin.longitude))
     elev_diff = sta_coords.elevation - float(origin.depth)
@@ -1074,30 +1070,34 @@ def get_event_info(starttime, endtime, streams):
     events = []
     arrivals = {}
     try:
-        client = FDSNClient("NERIES")
-        events = client.get_events(starttime=starttime - 20 * 60,
-                                   endtime=endtime)
-        for ev in events[::-1]:
-            has_arrivals = False
-            origin = ev.origins[0]
-            origin_time = origin.time
-            lon1 = origin.longitude
-            lat1 = origin.latitude
-            depth = abs(origin.depth / 1e3)
-            for st in streams:
-                sta = st[0].stats.station
-                lon2 = st[0].stats.coordinates['longitude']
-                lat2 = st[0].stats.coordinates['latitude']
-                dist = locations2degrees(lat1, lon1, lat2, lon2)
-                tts = getTravelTimes(dist, depth)
-                list_ = arrivals.setdefault(sta, [])
-                for tt in tts:
-                    tt['time'] = origin_time + tt['time']
-                    if starttime < tt['time'] < endtime:
-                        has_arrivals = True
-                        list_.append(tt)
-            if not has_arrivals:
-                events[:] = events[:-1]
+        msg = ('getTravelTimes not available in obspy.taup in newer obspy '
+               'versions anymore, so this functionality is currently not '
+               'implemented.')
+        raise NotImplementedError(msg)
+        # client = FDSNClient("NERIES")
+        # events = client.get_events(starttime=starttime - 20 * 60,
+        #                            endtime=endtime)
+        # for ev in events[::-1]:
+        #     has_arrivals = False
+        #     origin = ev.origins[0]
+        #     origin_time = origin.time
+        #     lon1 = origin.longitude
+        #     lat1 = origin.latitude
+        #     depth = abs(origin.depth / 1e3)
+        #     for st in streams:
+        #         sta = st[0].stats.station
+        #         lon2 = st[0].stats.coordinates['longitude']
+        #         lat2 = st[0].stats.coordinates['latitude']
+        #         dist = locations2degrees(lat1, lon1, lat2, lon2)
+        #         tts = getTravelTimes(dist, depth)
+        #         list_ = arrivals.setdefault(sta, [])
+        #         for tt in tts:
+        #             tt['time'] = origin_time + tt['time']
+        #             if starttime < tt['time'] < endtime:
+        #                 has_arrivals = True
+        #                 list_.append(tt)
+        #     if not has_arrivals:
+        #         events[:] = events[:-1]
     except Exception as e:
         msg = ("Problem while fetching events or determining theoretical "
                "phases: %s: %s" % (e.__class__.__name__, str(e)))

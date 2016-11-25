@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
+import warnings
 from copy import deepcopy
 
 import obspy.core.event
@@ -14,6 +15,14 @@ AGENCY_URI = "%s/agency" % ID_ROOT
 CLASSES_TO_PATCH = [
     'FocalMechanism', 'StationMagnitudeContribution', 'StationMagnitude',
     'Magnitude', 'Catalog', 'Event', 'Origin', 'Pick', 'Arrival', 'Amplitude']
+
+
+# we're setting some attributes for internal purposes and want to ignore those
+# warnings:
+warnings.filterwarnings(
+    action='ignore', module=r'obspy\.core\.util\.attribdict',
+    category=UserWarning,
+    message=r'Setting attribute .* which is not a default attribute .*')
 
 
 def camelcase2lower(name):
@@ -276,10 +285,10 @@ def readQuakeML(*args, **kwargs):
     # replace original event classes with subclasses
     for classname in CLASSES_TO_PATCH:
         bkp[classname] = obspy.core.event.__dict__[classname]
-        obspy.core.quakeml.__dict__[classname] = local[classname]
-    from obspy.core.quakeml import readQuakeML
-    ret = obspy.core.quakeml.readQuakeML(*args, **kwargs)
+        obspy.io.quakeml.core.__dict__[classname] = local[classname]
+    from obspy.io.quakeml.core import _read_quakeml
+    ret = obspy.io.quakeml.core._read_quakeml(*args, **kwargs)
     # reset original event classes
     for classname, class_ in bkp.iteritems():
-        obspy.core.quakeml.__dict__[classname] = bkp[classname]
+        obspy.io.quakeml.core.__dict__[classname] = bkp[classname]
     return ret
