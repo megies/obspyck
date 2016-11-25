@@ -1,3 +1,6 @@
+master
+ - fix minor bug that prevents 0.4.0 from running
+
 0.4.0
  - add support for fetching data from a seedlink server
  - set meaningful creation info including obspyck+obspy version numbers on all

@@ -39,6 +39,7 @@ from obspy.core.util import get_matplotlib_version
 from obspy.geodetics.base import gps2dist_azimuth
 from obspy.io.xseed import Parser
 
+from . import __version__
 from .rotate_to_zne import (
     _rotate_specific_channels_to_zne, get_orientation_from_parser,
     get_orientation)
