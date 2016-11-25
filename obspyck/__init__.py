@@ -11,4 +11,4 @@ ObsPyck is a GUI application that is intended to cover the tasks in a standard
 analysis workflow for seismic events in seismological observatory practice.
 """
 
-__version__ = '0.2.0.post0'
+__version__ = '0.3.0'
