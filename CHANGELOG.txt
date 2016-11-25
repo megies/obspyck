@@ -1,6 +1,8 @@
 master
  - set meaningful creation info including obspyck+obspy version numbers on all
    event objects
+ - fix a bug with beachball function naming in 0.3.0 (likely to lead to
+   RunTimeErrors)
 
 0.3.0
  - switch obspy dependency version from 0.10.* to 1.*
