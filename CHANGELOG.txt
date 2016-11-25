@@ -1,5 +1,7 @@
 master
  - fix minor bug that prevents 0.4.0 from running
+ - switch obspy dependency version from >=1.* to >1.0.3 (the import reroutes in
+   obspy 1.0.x break the monkey patching of event object classes in obspyck)
 
 0.4.0
  - add support for fetching data from a seedlink server
