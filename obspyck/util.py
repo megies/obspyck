@@ -28,6 +28,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as QFigureCanvas
 from matplotlib.widgets import MultiCursor as MplMultiCursor
 
+import obspy
 import obspy.clients.arclink
 from obspy import UTCDateTime, read_inventory, read, Stream
 from obspy.clients.arclink import Client as ArcLinkClient
@@ -46,6 +47,9 @@ obspy.clients.arclink.client.MAX_REQUESTS = 200
 mpl.rc('figure.subplot', left=0.05, right=0.98, bottom=0.10, top=0.92,
        hspace=0.28)
 mpl.rcParams['font.size'] = 10
+
+
+VERSION_INFO = 'ObsPyck {}, ObsPy {}'.format(__version__, obspy.__version__)
 
 
 COMMANDLINE_OPTIONS = (

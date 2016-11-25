@@ -1,4 +1,8 @@
-0.3.0:
+master
+ - set meaningful creation info including obspyck+obspy version numbers on all
+   event objects
+
+0.3.0
  - switch obspy dependency version from 0.10.* to 1.*
 
 0.2.0

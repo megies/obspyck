@@ -34,7 +34,6 @@ from matplotlib.backend_bases import MouseEvent as MplMouseEvent
 
 #sys.path.append('/baysoft/obspy/misc/symlink')
 #os.chdir("/baysoft/obspyck/")
-from obspy import __version__ as OBSPY_VERSION
 from obspy import UTCDateTime, Stream
 from obspy.core.event import CreationInfo, WaveformStreamID, \
     OriginUncertainty, OriginQuality, Comment, NodalPlane, NodalPlanes
@@ -204,7 +203,7 @@ class ObsPyck(QtGui.QMainWindow):
             warnings.warn(msg)
         self.catalog = Catalog()
         event = Event()
-        event.set_creation_info(self.username)
+        event.set_creation_info_username(self.username)
         self.catalog.events = [event]
         self.setXMLEventID()
         # indicates which of the available focal mechanisms is selected
@@ -2628,8 +2627,6 @@ class ObsPyck(QtGui.QMainWindow):
             return
 
         m = Magnitude()
-        m.creation_info = CreationInfo(version="ObsPy %s" % OBSPY_VERSION,
-                                       creation_time=UTCDateTime())
         event.magnitudes = [m]
         m.method_id = "/".join([ID_ROOT, "magnitude_method", "obspyck", "2"])
         m.origin_id = origin.resource_id
@@ -3495,6 +3492,7 @@ class ObsPyck(QtGui.QMainWindow):
         """
         cat = self.catalog
         cat.creation_info.creation_time = UTCDateTime()
+        cat.creation_info.version = VERSION_INFO
         e = cat[0]
         extra = e.setdefault("extra", AttribDict())
         public = self.widgets.qCheckBox_public.isChecked()
@@ -3645,7 +3643,7 @@ class ObsPyck(QtGui.QMainWindow):
         self.info("Clearing previous event data.")
         self.catalog = Catalog()
         event = Event()
-        event.set_creation_info(self.username)
+        event.set_creation_info_username(self.username)
         self.catalog.events = [event]
 
     def clearOriginMagnitude(self):

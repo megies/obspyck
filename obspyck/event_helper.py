@@ -8,6 +8,8 @@ from obspy import UTCDateTime
 from obspy.core.event import WaveformStreamID, ResourceIdentifier, \
     TimeWindow, CreationInfo, Comment
 
+from .util import VERSION_INFO
+
 ID_ROOT = "smi:de.erdbeben-in-bayern"
 AGENCY_ID = "Erdbebendienst Bayern"
 AGENCY_URI = "%s/agency" % ID_ROOT
@@ -49,11 +51,19 @@ class CommonEventHelper():
         class_name = camelcase2lower(self.__class__.__name__)
         self.resource_id = newResourceIdentifier(class_name)
 
+    def _set_creation_info(self):
+        self.creation_info = CreationInfo()
+        self.creation_info.agency_id = AGENCY_ID
+        self.creation_info.agency_uri = AGENCY_URI
+        self.creation_info.creation_time = UTCDateTime()
+        self.creation_info.version = VERSION_INFO
+
 
 class FocalMechanism(obspy.core.event.FocalMechanism, CommonEventHelper):
     def __init__(self, *args, **kwargs):
         super(FocalMechanism, self).__init__()
         self.newID()
+        self._set_creation_info()
 
 
 class StationMagnitudeContribution(
@@ -68,38 +78,40 @@ class StationMagnitude(obspy.core.event.StationMagnitude, CommonEventHelper):
         super(StationMagnitude, self).__init__()
         self.used = True
         self.newID()
+        self._set_creation_info()
 
 
 class Magnitude(obspy.core.event.Magnitude, CommonEventHelper):
     def __init__(self, *args, **kwargs):
         super(Magnitude, self).__init__()
         self.newID()
+        self._set_creation_info()
 
 
 class Catalog(obspy.core.event.Catalog, CommonEventHelper):
     def __init__(self, *args, **kwargs):
         super(Catalog, self).__init__()
         self.newID()
+        self._set_creation_info()
 
 
 class Event(obspy.core.event.Event, CommonEventHelper):
     def __init__(self, *args, **kwargs):
         super(Event, self).__init__()
         self.newID()
+        self._set_creation_info()
 
-    def set_creation_info(self, username, agency_id=AGENCY_ID,
-                          agency_uri=AGENCY_URI):
-        self.creation_info = CreationInfo()
+    def set_creation_info_username(self, username):
+        if not self.creation_info:
+            self._set_creation_info()
         self.creation_info.author = username
-        self.creation_info.agency_id = agency_id
-        self.creation_info.agency_uri = agency_uri
-        self.creation_info.creation_time = UTCDateTime()
 
 
 class Origin(obspy.core.event.Origin, CommonEventHelper):
     def __init__(self, *args, **kwargs):
         super(Origin, self).__init__()
         self.newID()
+        self._set_creation_info()
 
 
 class Pick(obspy.core.event.Pick, CommonEventHelper):
@@ -110,6 +122,7 @@ class Pick(obspy.core.event.Pick, CommonEventHelper):
         if phase_hint:
             self.phase_hint = phase_hint
         self.newID()
+        self._set_creation_info()
 
     def __setattr__(self, name, value):
         """
@@ -151,6 +164,7 @@ class Arrival(obspy.core.event.Arrival, CommonEventHelper):
             origin.arrivals.append(self)
         if pick:
             self.pick_id = pick.resource_id
+        self._set_creation_info()
 
 
 class Amplitude(obspy.core.event.Amplitude, CommonEventHelper):
@@ -164,6 +178,7 @@ class Amplitude(obspy.core.event.Amplitude, CommonEventHelper):
         self.low_time = None
         self.high_time = None
         self.time_window = TimeWindow()
+        self._set_creation_info()
 
     def __setattr__(self, name, value):
         """
