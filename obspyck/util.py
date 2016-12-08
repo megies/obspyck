@@ -366,7 +366,7 @@ def fetch_waveforms_with_metadata(options, args, config):
             if config.has_section("rotate_channels"):
                 net_sta_loc = ".".join((net, sta, loc))
                 if net_sta_loc in config.options("rotate_channels"):
-                    rotate_channels(st, net, sta, loc, config)
+                    rotate_channels(stream_tmp_, net, sta, loc, config)
             streams.append(stream_tmp_)
 
     print "=" * 80
