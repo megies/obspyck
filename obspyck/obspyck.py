@@ -34,6 +34,7 @@ from matplotlib.backend_bases import MouseEvent as MplMouseEvent
 
 #sys.path.append('/baysoft/obspy/misc/symlink')
 #os.chdir("/baysoft/obspyck/")
+import obspy
 from obspy import UTCDateTime, Stream
 from obspy.core.event import CreationInfo, WaveformStreamID, \
     OriginUncertainty, OriginQuality, Comment, NodalPlane, NodalPlanes
@@ -57,9 +58,9 @@ NAMESPACE = "http://erdbeben-in-bayern.de/xmlns/0.1"
 NSMAP = {"edb": NAMESPACE}
 
 
-if map(int, OBSPY_VERSION.split('.')[:2]) < [1, 1]:
+if map(int, obspy.__version__.split('.')[:2]) < [1, 1]:
     msg = "Needing ObsPy version >= 1.1.0 (current version is: {})"
-    raise ImportError(msg.format(OBSPY_VERSION))
+    warnings.warn(msg.format(obspy.__version__))
 
 
 class ObsPyck(QtGui.QMainWindow):
