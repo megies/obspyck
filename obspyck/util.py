@@ -328,8 +328,9 @@ def fetch_waveforms_with_metadata(options, args, config):
             print msg
             stream_tmp += st
         if len(parsers + inventories) == 0:
-            msg = "No station metadata for waveforms from local files."
-            raise Exception(msg)
+            if not no_metadata:
+                msg = "No station metadata for waveforms from local files."
+                raise Exception(msg)
         for tr in stream_tmp:
             if not no_metadata:
                 has_metadata = False
@@ -673,7 +674,7 @@ def merge_check_and_cleanup_streams(streams, options, config):
 
     # Sort streams again, if there was a merge this could be necessary 
     for st in streams:
-        st.sort(reverse=True)
+        st.traces = sorted(st.traces, key=_seed_id_keyfunction)
     sta_list = set()
     # XXX we need the list() because otherwise the iterator gets garbled if
     # XXX removing streams inside the for loop!!
@@ -698,72 +699,6 @@ def merge_check_and_cleanup_streams(streams, options, config):
             warn_msg += msg + "\n"
             streams.remove(st)
             continue
-        if len(st) not in [1, 3]:
-            msg = 'Warning: All streams must have either one Z trace ' + \
-                  'or a set of three ZNE traces.'
-            print msg
-            warn_msg += msg + "\n"
-            # remove all unknown channels ending with something other than
-            # Z/N/E and try again...
-            removed_channels = ""
-            for tr in st:
-                if tr.stats.channel[-1] not in ["Z", "N", "E"]:
-                    removed_channels += " " + tr.stats.channel
-                    st.remove(tr)
-            if len(st.traces) in [1, 3]:
-                msg = 'Warning: deleted some unknown channels in ' + \
-                      'stream %s.%s' % (net_sta, removed_channels)
-                print msg
-                warn_msg += msg + "\n"
-                continue
-            else:
-                msg = 'Stream %s discarded.\n' % net_sta + \
-                      'Reason: Number of traces != (1 or 3)'
-                print msg
-                warn_msg += msg + "\n"
-                #for j, tr in enumerate(st.traces):
-                #    msg = 'Trace no. %i in Stream: %s\n%s' % \
-                #            (j + 1, tr.stats.channel, tr.stats)
-                msg = str(st)
-                print msg
-                warn_msg += msg + "\n"
-                streams.remove(st)
-                merge_msg = '\nIMPORTANT:\nYou can try the command line ' + \
-                        'option merge (-m safe or -m overwrite) to ' + \
-                        'avoid losing streams due gaps/overlaps.'
-                continue
-        if len(st) == 1 and st[0].stats.channel[-1] != 'Z':
-            msg = 'Warning: All streams must have either one Z trace ' + \
-                  'or a set of three ZNE traces.'
-            msg += 'Stream %s discarded. Reason: ' % net_sta + \
-                   'Exactly one trace present but this is no Z trace'
-            print msg
-            warn_msg += msg + "\n"
-            #for j, tr in enumerate(st.traces):
-            #    msg = 'Trace no. %i in Stream: %s\n%s' % \
-            #            (j + 1, tr.stats.channel, tr.stats)
-            msg = str(st)
-            print msg
-            warn_msg += msg + "\n"
-            streams.remove(st)
-            continue
-        if len(st) == 3 and (st[0].stats.channel[-1] != 'Z' or
-                             st[1].stats.channel[-1] != 'N' or
-                             st[2].stats.channel[-1] != 'E'):
-            msg = 'Warning: All streams must have either one Z trace ' + \
-                  'or a set of three ZNE traces.'
-            msg += 'Stream %s discarded. Reason: ' % net_sta + \
-                   'Exactly three traces present but they are not ZNE'
-            print msg
-            warn_msg += msg + "\n"
-            #for j, tr in enumerate(st.traces):
-            #    msg = 'Trace no. %i in Stream: %s\n%s' % \
-            #            (j + 1, tr.stats.channel, tr.stats)
-            msg = str(st)
-            print msg
-            warn_msg += msg + "\n"
-            streams.remove(st)
-            continue
         sta_list.add(net_sta)
     # demean traces if not explicitly deactivated on command line
     if config.getboolean("base", "zero_mean"):
@@ -781,37 +716,28 @@ def merge_check_and_cleanup_streams(streams, options, config):
     return (warn_msg, merge_msg, streams)
 
 
-def cleanup_streams(streams, config):
+def cleanup_streams_without_metadata(streams):
     """
     Function to remove streams that do not provide the necessary metadata.
 
-    :returns: (list(:class:`obspy.core.stream.Stream`s),
-               list(dict))
+    :returns: list of streams
     """
     # we need to go through streams/dicts backwards in order not to get
     # problems because of the pop() statement
     for i in range(len(streams))[::-1]:
-        st = streams[i]
-        trZ = st.select(component="Z")[0]
-        if len(st) == 3:
-            trN = st.select(component="N")[0]
-            trE = st.select(component="E")[0]
-        sta = trZ.stats.station.strip()
-        net = trZ.stats.network.strip()
-        if not config.get("base", "no_metadata"):
-            try:
-                trZ.stats.coordinates.get("longitude")
-                trZ.stats.coordinates.get("latitude")
-                trZ.stats.coordinates.get("elevation")
-                trZ.stats.get("paz")
-                if len(st) == 3:
-                    trN.stats.get("paz")
-                    trE.stats.get("paz")
-            except:
-                print 'Error: Missing metadata for %s.%s. Discarding stream.' \
-                    % (net, sta)
+        ok = True
+        for tr in streams[i]:
+            for key in ('orientation', 'coordinates'):
+                if key not in tr.stats:
+                    ok = False
+            # for dataless we have paz, for stationxml/fdsnws we have response
+            if "paz" not in tr.stats and "response" not in tr.stats:
+                ok = False
+            if not ok:
+                print 'Error: Missing metadata for "%s". Discarding stream.' \
+                    % tr.id
                 streams.pop(i)
-                continue
+                break
     return streams
 
 def setup_external_programs(options, config):
@@ -1195,3 +1121,61 @@ def map_rotated_channel_code(channel, rotation):
     elif rotation is None:
         pass
     return channel
+
+
+# copied from obspy master pre 1.1.0
+def _seed_id_keyfunction(tr):
+    """
+    Keyfunction to use in sorting two Traces by SEED ID
+
+    Assumes that the last (or only) "."-separated part is a channel code.
+    Assumes the last character is a the component code and sorts it
+    "Z"-"N"-"E"-others_lexical.
+    """
+    x = tr.id
+    # for comparison we build a list of 5 SEED code pieces:
+    # [network, station, location, band+instrument, component]
+    # with partial codes (i.e. not 4 fields after splitting at dots),
+    # we go with the following assumptions (these seem a bit random, but that's
+    # what can be encountered in string representations of the Inventory object
+    # hierarchy):
+    #  - no dot means network code only (e.g. "IU")
+    #  - one dot means network.station code only (e.g. "IU.ANMO")
+    #  - two dots means station.location.channel code only (e.g. "ANMO.10.BHZ")
+    #  - three dots: full SEED ID (e.g. "IU.ANMO.10.BHZ")
+    #  - more dots: sort after any of the previous, plain lexical sort
+    # if no "." in the string: assume it's a network code
+
+    # split to get rid of the description that that is added to networks and
+    # stations which might also contain dots.
+    number_of_dots = x.strip().split()[0].count(".")
+
+    x = x.upper()
+    if number_of_dots == 0:
+        x = [x] + [""] * 4
+    elif number_of_dots == 1:
+        x = x.split(".") + [""] * 3
+    elif number_of_dots in (2, 3):
+        x = x.split(".")
+        if number_of_dots == 2:
+            x = [""] + x
+        # split channel code into band+instrument code and component code
+        x = x[:-1] + [x[-1][:-1], x[-1] and x[-1][-1] or '']
+        # special comparison for component code, convert "ZNE" to integers
+        # which compare less than any character
+        comp = "ZNE".find(x[-1])
+        # last item is component code, either the original 1-char string, or an
+        # int from 0-2 if any of "ZNE". Python3 does not allow comparison of
+        # int and string anymore (Python 2 always compares ints smaller than
+        # any string), so we need to work around this by making this last item
+        # a tuple with first item False for ints and True for strings.
+        if comp >= 0:
+            x[-1] = (False, comp)
+        else:
+            x[-1] = (True, x[-1])
+    # all other cases, just convert the upper case string to a single item
+    # list - it will compare greater than any of the split lists.
+    else:
+        x = [x, ]
+
+    return x

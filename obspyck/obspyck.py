@@ -237,7 +237,8 @@ class ObsPyck(QtGui.QMainWindow):
 
         # sort streams by station name
         streams.sort(key=lambda st: st[0].stats['station'])
-        streams = cleanup_streams(streams, config)
+        if not config.get("base", "no_metadata"):
+            streams = cleanup_streams_without_metadata(streams)
         self.streams_bkp = [st.copy() for st in streams]
         self._setup_4_letter_station_map()
         # XXX TODO replace old 'eventMapColors'
