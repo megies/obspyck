@@ -355,7 +355,7 @@ def fetch_waveforms_with_metadata(options, args, config):
                         except:
                             continue
                 if not has_metadata:
-                    print "found no metadata for %s!!!" % file
+                    print "found no metadata for %s!!!" % tr.id
             if tr.stats._format == 'GSE2':
                 apply_gse2_calib(tr)
         ids = set([(tr.stats.network, tr.stats.station, tr.stats.location) for tr in stream_tmp])
