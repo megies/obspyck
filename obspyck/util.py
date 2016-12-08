@@ -328,8 +328,9 @@ def fetch_waveforms_with_metadata(options, args, config):
             print msg
             stream_tmp += st
         if len(parsers + inventories) == 0:
-            msg = "No station metadata for waveforms from local files."
-            raise Exception(msg)
+            if not no_metadata:
+                msg = "No station metadata for waveforms from local files."
+                raise Exception(msg)
         for tr in stream_tmp:
             if not no_metadata:
                 has_metadata = False
@@ -715,37 +716,28 @@ def merge_check_and_cleanup_streams(streams, options, config):
     return (warn_msg, merge_msg, streams)
 
 
-def cleanup_streams(streams, config):
+def cleanup_streams_without_metadata(streams):
     """
     Function to remove streams that do not provide the necessary metadata.
 
-    :returns: (list(:class:`obspy.core.stream.Stream`s),
-               list(dict))
+    :returns: list of streams
     """
     # we need to go through streams/dicts backwards in order not to get
     # problems because of the pop() statement
     for i in range(len(streams))[::-1]:
-        st = streams[i]
-        trZ = st.select(component="Z")[0]
-        if len(st) == 3:
-            trN = st.select(component="N")[0]
-            trE = st.select(component="E")[0]
-        sta = trZ.stats.station.strip()
-        net = trZ.stats.network.strip()
-        if not config.get("base", "no_metadata"):
-            try:
-                trZ.stats.coordinates.get("longitude")
-                trZ.stats.coordinates.get("latitude")
-                trZ.stats.coordinates.get("elevation")
-                trZ.stats.get("paz")
-                if len(st) == 3:
-                    trN.stats.get("paz")
-                    trE.stats.get("paz")
-            except:
-                print 'Error: Missing metadata for %s.%s. Discarding stream.' \
-                    % (net, sta)
+        ok = True
+        for tr in streams[i]:
+            for key in ('orientation', 'coordinates'):
+                if key not in tr.stats:
+                    ok = False
+            # for dataless we have paz, for stationxml/fdsnws we have response
+            if "paz" not in tr.stats and "response" not in tr.stats:
+                ok = False
+            if not ok:
+                print 'Error: Missing metadata for "%s". Discarding stream.' \
+                    % tr.id
                 streams.pop(i)
-                continue
+                break
     return streams
 
 def setup_external_programs(options, config):
