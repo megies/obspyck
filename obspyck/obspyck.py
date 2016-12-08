@@ -2215,8 +2215,9 @@ class ObsPyck(QtGui.QMainWindow):
             event.creation_info.creation_time = UTCDateTime()
         o = Origin()
         event.origins = [o]
+        # version field has 64 char maximum per QuakeML RNG schema
         o.creation_info = CreationInfo(creation_time=creation_time,
-                                       version=nlloc_version)
+                                       version=nlloc_version[:64])
 
         # assign origin info
         o.method_id = "/".join([ID_ROOT, "location_method", "nlloc", "4"])
@@ -3492,7 +3493,7 @@ class ObsPyck(QtGui.QMainWindow):
         """
         cat = self.catalog
         cat.creation_info.creation_time = UTCDateTime()
-        cat.creation_info.version = VERSION_INFO
+        cat.creation_info.version = VERSION_INFO[:64]
         e = cat[0]
         extra = e.setdefault("extra", AttribDict())
         public = self.widgets.qCheckBox_public.isChecked()
