@@ -347,8 +347,8 @@ def fetch_waveforms_with_metadata(options, args, config):
                 if not has_metadata:
                     for parser in parsers:
                         try:
-                            tr.stats.paz = parser.getPAZ(tr.id, tr.stats.starttime)
-                            tr.stats.coordinates = parser.getCoordinates(tr.id, tr.stats.starttime)
+                            tr.stats.paz = parser.get_paz(tr.id, tr.stats.starttime)
+                            tr.stats.coordinates = parser.get_coordinates(tr.id, tr.stats.starttime)
                             tr.stats.orientation = get_orientation_from_parser(parser, tr.id, tr.stats.starttime)
                             has_metadata = True
                             break
