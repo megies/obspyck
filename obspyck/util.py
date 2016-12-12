@@ -51,7 +51,9 @@ mpl.rc('figure.subplot', left=0.05, right=0.98, bottom=0.10, top=0.92,
 mpl.rcParams['font.size'] = 10
 
 
-VERSION_INFO = 'ObsPyck {}, ObsPy {}'.format(__version__, obspy.__version__)
+# restrict to 64 characters to fit in allowed QuakeML maximum version field
+# length
+VERSION_INFO = 'ObsPyck {}, ObsPy {}'.format(__version__, obspy.__version__)[:64]
 
 
 COMMANDLINE_OPTIONS = (

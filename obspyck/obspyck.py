@@ -3506,7 +3506,7 @@ class ObsPyck(QtGui.QMainWindow):
         """
         cat = self.catalog
         cat.creation_info.creation_time = UTCDateTime()
-        cat.creation_info.version = VERSION_INFO[:64]
+        cat.creation_info.version = VERSION_INFO
         e = cat[0]
         extra = e.setdefault("extra", AttribDict())
         public = self.widgets.qCheckBox_public.isChecked()
