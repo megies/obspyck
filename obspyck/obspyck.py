@@ -693,11 +693,9 @@ class ObsPyck(QtGui.QMainWindow):
         event_server = self.config.get("base", "event_server")
         passwd = str(self.widgets.qLineEdit_sysopPassword.text())
         tmp_client = SeisHubClient(
-            base_url='{}:{}'.format(
-                self.config.get(event_server, "address"),
-                self.config.get(event_server, "port")),
-                user="sysop", password=passwd)
-        if tmp_client.testAuth():
+            base_url=self.config.get(event_server, "base_url"),
+            user="sysop", password=passwd)
+        if tmp_client.test_auth():
             self.clients['__SeisHub-sysop__'] = tmp_client
             self.widgets.qCheckBox_sysop.setChecked(True)
         # if authentication test fails empty password field and uncheck sysop
