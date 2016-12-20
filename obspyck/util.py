@@ -259,7 +259,10 @@ def fetch_waveforms_with_metadata(options, args, config):
         time_ = UTCDateTime(config.get("base", "time"))
     else:
         time_ = UTCDateTime(options.time)
-    t1 = time_ + config.getfloat("base", "starttime_offset")
+    if options.starttime_offset is None:
+        t1 = time_ + config.getfloat("base", "starttime_offset")
+    else:
+        t1 = time_ + options.starttime_offset
     if options.duration is None:
         t2 = t1 + config.getfloat("base", "duration")
     else:
