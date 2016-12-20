@@ -2690,7 +2690,9 @@ class ObsPyck(QtGui.QMainWindow):
             msg = ("Calculating hypocentral distance for station "
                    "elevation '%s' meters." % coords['elevation'])
             self.error(msg)
-        z_dist = o.depth + coords['elevation']
+        # if sensor is buried or downhole, account for the specified sensor
+        # depth
+        z_dist = o.depth + coords['elevation'] - coords.get('local_depth', 0)
         return np.sqrt(epi_dist ** 2 + z_dist ** 2) / 1e3
 
     # XXX TODO maybe rename to "updateStationMagnitude"
@@ -3128,7 +3130,16 @@ class ObsPyck(QtGui.QMainWindow):
             axEMiZY.hexbin(data[2], data[1], cmap=cmap)
             stalons = [st[0].stats.coordinates.longitude for st in self.streams]
             stalats = [st[0].stats.coordinates.latitude for st in self.streams]
-            stadepths = [st[0].stats.coordinates.elevation for st in self.streams]
+            stadepths = []
+            for st in self.streams:
+                coords_ = st[0].stats.coordinates
+                elev_ = coords_.elevation
+                # if sensor is buried or downhole, account for the specified
+                # sensor depth
+                depth_ = coords_.get('local_depth')
+                if depth_:
+                    elev_ -= depth_
+                stadepths.append(elev_)
             axEMiXY.scatter(stalons, stalats, s=200, marker='v', color='k')
             axEMiXZ.scatter(stalons, stadepths, s=200, marker='v', color='k')
             axEMiZY.scatter(stadepths, stalats, s=200, marker='v', color='k')
@@ -3227,6 +3238,11 @@ class ObsPyck(QtGui.QMainWindow):
                 hem_NS = 'W'
             # hypo 71 format uses elevation in meters not kilometers
             ele = stats.coordinates.elevation
+            # if sensor is buried or downhole, account for the specified sensor
+            # depth
+            depth = stats.coordinates.get('local_depth')
+            if depth:
+                ele -= depth
             hypo71_string += fmt % (sta_map[sta], lat_deg, lat_min, hem_NS,
                                     lon_deg, lon_min, hem_EW, ele)
 
