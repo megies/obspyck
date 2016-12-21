@@ -2220,6 +2220,7 @@ class ObsPyck(QtGui.QMainWindow):
             event.creation_info.creation_time = UTCDateTime()
         o = Origin()
         event.origins = [o]
+        self.catalog[0].set_creation_info_username(self.username)
         # version field has 64 char maximum per QuakeML RNG schema
         o.creation_info = CreationInfo(creation_time=creation_time,
                                        version=nlloc_version[:64])
@@ -2493,6 +2494,7 @@ class ObsPyck(QtGui.QMainWindow):
         # assign origin info
         o = Origin()
         self.catalog[0].origins = [o]
+        self.catalog[0].set_creation_info_username(self.username)
         o.clear()
         o.method_id = "/".join([ID_ROOT, "location_method", "hyp2000", "2"])
         o.origin_uncertainty = OriginUncertainty()
