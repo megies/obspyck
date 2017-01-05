@@ -1705,7 +1705,8 @@ class ObsPyck(QtGui.QMainWindow):
                 self.widgets.qLabel_xdata_rel.setText(formatXTicklabels(ev.xdata))
                 label = self.time_rel2abs(ev.xdata).isoformat().replace("T", "  ")[:-3]
                 self.widgets.qLabel_xdata_abs.setText(label)
-                if self.widgets.qToolButton_ms.isChecked():
+                if self.widgets.qToolButton_ms.isChecked() \
+                        and not self.widgets.qToolButton_spectrogram.isChecked():
                     absval = abs(ev.ydata)
                     if absval >= 1:
                         text = "%.3g m/s" % ev.ydata
