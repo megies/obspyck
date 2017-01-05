@@ -19,15 +19,17 @@ import socket
 import sys
 import tempfile
 import warnings
-from configparser import SafeConfigParser
+from configparser import SafeConfigParser, NoOptionError
 from StringIO import StringIO
 
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import Qt
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.cm
 import matplotlib.transforms
+from matplotlib.cm import get_cmap
 from matplotlib.patches import Ellipse
 from matplotlib.ticker import FuncFormatter, FormatStrFormatter, MaxNLocator
 from matplotlib.backend_bases import MouseEvent as MplMouseEvent
@@ -35,6 +37,7 @@ from matplotlib.backend_bases import MouseEvent as MplMouseEvent
 #sys.path.append('/baysoft/obspy/misc/symlink')
 #os.chdir("/baysoft/obspyck/")
 import obspy
+import obspy.imaging.cm as obspy_cm
 from obspy import UTCDateTime, Stream
 from obspy.core.event import CreationInfo, WaveformStreamID, \
     OriginUncertainty, OriginQuality, Comment, NodalPlane, NodalPlanes
@@ -214,7 +217,17 @@ class ObsPyck(QtGui.QMainWindow):
         self.setXMLEventID()
         # indicates which of the available focal mechanisms is selected
         self.focMechCurrent = None
-        self.spectrogramColormap = matplotlib.cm.jet
+        try:
+            _cmap_name = config.get("base", "spectrogram_colormap")
+            try:
+                cmap_spectrogram = getattr(
+                    obspy_cm, _cmap_name)
+            except AttributeError:
+                cmap_spectrogram = get_cmap(_cmap_name)
+        except NoOptionError:
+            _cmap_name = matplotlib.rcParams.get('image.cmap', 'jet')
+            cmap_spectrogram = get_cmap(_cmap_name)
+        self.spectrogramColormap = cmap_spectrogram
         # indicates which of the available events from seishub was loaded
         self.seishubEventCurrent = None
         # indicates how many events are available from seishub
