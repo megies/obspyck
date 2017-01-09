@@ -136,24 +136,24 @@ class ObsPyck(QtGui.QMainWindow):
         sh = logging.StreamHandler(sys.stdout)
         sh.setFormatter(logging.Formatter('%(message)s'))
         log1.addHandler(sh)
-        # XXX TODO: parse verbose flag from command line
-        loglevel = LOGLEVELS.get(config.get("base", "verbosity"), None)
-        if loglevel is None:
-            loglevel = "CRITICAL"
-            self.error("unknown loglevel ('%s'), using %s." % (
-                config.get("base", "verbosity"), loglevel))
-        log1.setLevel(loglevel)
-        self.log1 = log1
         log2 = logging.getLogger("log2")
         sh = logging.StreamHandler(sys.stderr)
         sh.setFormatter(logging.Formatter('%(message)s'))
         log2.addHandler(sh)
         log2.setLevel("DEBUG")
         self.log2 = log2
+        self.error = self.log2.error
+        # XXX TODO: parse verbose flag from command line
+        loglevel = LOGLEVELS.get(config.get("base", "verbosity"), None)
+        if loglevel is None:
+            loglevel = "CRITICAL"
+            self.error("unknown loglevel ('%s'), using loglevel 'normal'." % (
+                config.get("base", "verbosity")))
+        log1.setLevel(loglevel)
+        self.log1 = log1
         self.info = self.log1.info
         self.critical = self.log1.critical
         self.debug = self.log1.debug
-        self.error = self.log2.error
         logging.getLogger().handlers = []
 
         # Matplotlib figure.
