@@ -121,10 +121,6 @@ PROGRAMS = {
 SEISMIC_PHASES = ('P', 'S')
 PHASE_COLORS = {'P': "red", 'S': "blue", 'Mag': "green"}
 COMPONENT_COLORS = {'Z': "k", 'N': "b", 'E': "r"}
-PHASE_LINESTYLES = {'P': "-", 'S': "-", 'Psynth': "--", 'Ssynth': "--",
-        'PErr1': "-", 'PErr2': "-", 'SErr1': "-", 'SErr2': "-"}
-PHASE_LINEHEIGHT_PERC = {'P': 1, 'S': 1, 'Psynth': 1, 'Ssynth': 1,
-        'PErr1': 0.75, 'PErr2': 0.75, 'SErr1': 0.75, 'SErr2': 0.75}
 WIDGET_NAMES = ("qToolButton_clearAll", "qToolButton_clearOrigMag",
         "qToolButton_clearFocMec", "qToolButton_doHyp2000",
         "qToolButton_doNlloc", "qComboBox_nllocModel",
