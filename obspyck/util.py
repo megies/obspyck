@@ -69,10 +69,19 @@ COMMANDLINE_OPTIONS = (
                     "configuration will be created if the file does not "
                     "exist)."}),
         (("-s", "--station-combination"), {
-            'dest': "station_combination", "type": "str", "default": None,
+            'dest': "station_combinations", "action": "append", "default": [],
             'help': "Station combination to fetch data for (which must be "
-                    "defined in config file). If not specified, the default "
-                    "station combination specified in config file is used."}),
+                    "defined in config file). Can be specified multiple times "
+                    "to combine station combinations."}),
+        (("-i", "--id"), {
+            'dest': "seed_ids", "action": "append", "default": [],
+            'help': "Additional SEED ID to fetch. The ID should be specified "
+                    "as a full SEED ID with a '?' for the component code "
+                    "(e.g. 'GR.FUR..HH?'). The server to use for fetching the "
+                    "specified SEED ID is looked up in the config file "
+                    "section '[seed_id_lookup]' same as for SEED IDs "
+                    "specified in station combinations. Can be specified "
+                    "multiple times."}),
         (("-t", "--time"), {
             'dest': "time", "default": None,
             'help': "Starttime of seismogram to retrieve. It takes a "
@@ -249,10 +258,10 @@ def fetch_waveforms_with_metadata(options, args, config):
     :returns: (dictionary with clients,
                list(:class:`obspy.core.stream.Stream`s))
     """
-    if options.station_combination is None:
-        station_combination = config.get("base", "station_combination")
-    else:
-        station_combination = options.station_combination
+    if not options.station_combinations and not options.seed_ids and not args:
+        msg = ('No data to use specified. At least use one of option "-s", '
+               '"-i" or specify local waveform/metadata files to load.')
+        raise Exception(msg)
 
     no_metadata = config.getboolean("base", "no_metadata")
 
@@ -267,26 +276,32 @@ def fetch_waveforms_with_metadata(options, args, config):
     else:
         t2 = t1 + options.duration
 
-    seed_ids_to_fetch = {}
-    seed_ids = config.get("station_combinations", station_combination)
+    seed_ids_to_fetch = set()
+    for station_combination_key in options.station_combinations:
+        seed_ids = config.get("station_combinations", station_combination_key)
+        for seed_id in seed_ids.split(","):
+            seed_ids_to_fetch.add(seed_id)
+    for seed_id in options.seed_ids:
+        seed_ids_to_fetch.add(seed_id)
+
+    seed_id_lookup = {}
     seed_id_lookup_keys = config.options("seed_id_lookup")
-    for seed_id in seed_ids.split(","):
+    for seed_id in seed_ids_to_fetch:
         netstaloc = seed_id.rsplit(".", 1)[0]
         netsta = seed_id.rsplit(".", 2)[0]
         net = seed_id.rsplit(".", 3)[0]
         # look up by exact SEED ID:
         if seed_id in seed_id_lookup_keys:
-            seed_ids_to_fetch[seed_id] = config.get("seed_id_lookup", seed_id)
+            seed_id_lookup[seed_id] = config.get("seed_id_lookup", seed_id)
         # look up by SEED ID down to location code
         elif netstaloc in seed_id_lookup_keys:
-            seed_ids_to_fetch[seed_id] = config.get("seed_id_lookup",
-                                                    netstaloc)
+            seed_id_lookup[seed_id] = config.get("seed_id_lookup", netstaloc)
         # look up by SEED ID down to station code
         elif netsta in seed_id_lookup_keys:
-            seed_ids_to_fetch[seed_id] = config.get("seed_id_lookup", netsta)
+            seed_id_lookup[seed_id] = config.get("seed_id_lookup", netsta)
         # look up by network code
         elif net in seed_id_lookup_keys:
-            seed_ids_to_fetch[seed_id] = config.get("seed_id_lookup", net)
+            seed_id_lookup[seed_id] = config.get("seed_id_lookup", net)
 
     clients = {}
 
@@ -377,7 +392,7 @@ def fetch_waveforms_with_metadata(options, args, config):
     print "=" * 80
     print "Fetching waveforms and metadata from servers:"
     print "-" * 80
-    for seed_id, server in sorted(seed_ids_to_fetch.items()):
+    for seed_id, server in sorted(seed_id_lookup.items()):
         server_type = config.get(server, "type")
         if server_type not in ("seishub", "fdsn", "jane", "arclink",
                                "seedlink", "sds"):
