@@ -1540,7 +1540,7 @@ class ObsPyck(QtGui.QMainWindow):
             if not ev.inaxes in self.axs:
                 return
             if phase_type == 'Mag':
-                picker_width = self.config.get("base", "magnitude_picker_width")
+                picker_width = self.config.getint("base", "magnitude_picker_width")
                 ampl = self.getAmplitude(axes=ev.inaxes, setdefault=True, seed_string=tr.id)
                 ampl.set_general_info()
                 # do the actual work
