@@ -1540,17 +1540,18 @@ class ObsPyck(QtGui.QMainWindow):
             if not ev.inaxes in self.axs:
                 return
             if phase_type == 'Mag':
+                picker_width = self.config.get("base", "magnitude_picker_width")
                 ampl = self.getAmplitude(axes=ev.inaxes, setdefault=True, seed_string=tr.id)
                 ampl.set_general_info()
                 # do the actual work
                 ydata = ev.inaxes.lines[0].get_ydata() #get the first line hoping that it is the seismogram!
-                cutoffSamples = xpos - MAG_PICKWINDOW #remember, how much samples there are before our small window! We have to add this number for our MagMinT estimation!
+                cutoffSamples = xpos - picker_width #remember, how much samples there are before our small window! We have to add this number for our MagMinT estimation!
                 if ev.key == keys['setMagMin']:
-                    val = np.min(ydata[xpos-MAG_PICKWINDOW:xpos+MAG_PICKWINDOW])
-                    tmp_magtime = cutoffSamples + np.argmin(ydata[xpos-MAG_PICKWINDOW:xpos+MAG_PICKWINDOW])
+                    val = np.min(ydata[xpos-picker_width:xpos+picker_width])
+                    tmp_magtime = cutoffSamples + np.argmin(ydata[xpos-picker_width:xpos+picker_width])
                 elif ev.key == keys['setMagMax']:
-                    val = np.max(ydata[xpos-MAG_PICKWINDOW:xpos+MAG_PICKWINDOW])
-                    tmp_magtime = cutoffSamples + np.argmax(ydata[xpos-MAG_PICKWINDOW:xpos+MAG_PICKWINDOW])
+                    val = np.max(ydata[xpos-picker_width:xpos+picker_width])
+                    tmp_magtime = cutoffSamples + np.argmax(ydata[xpos-picker_width:xpos+picker_width])
                 # XXX TODO GSE calib handling! special handling for GSE2 data: apply calibration
                 if tr.stats._format == "GSE2":
                     val = val / (tr.stats.calib * 2 * np.pi / tr.stats.gse2.calper)

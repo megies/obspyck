@@ -146,8 +146,6 @@ WIDGET_NAMES = ("qToolButton_clearAll", "qToolButton_clearOrigMag",
         "qCheckBox_spectrogramLog", "qLabel_wlen", "qDoubleSpinBox_wlen",
         "qLabel_perlap", "qDoubleSpinBox_perlap", "qPlainTextEdit_stdout",
         "qPlainTextEdit_stderr")
-#Estimating the maximum/minimum in a sample-window around click
-MAG_PICKWINDOW = 10
 MAG_MARKER = {'marker': (8, 2, 0), 'edgewidth': 1.8, 'size': 20}
 AXVLINEWIDTH = 1.5
 # dictionary for key-bindings.
