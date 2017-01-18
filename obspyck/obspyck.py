@@ -4344,6 +4344,9 @@ def main():
     for opt_args, opt_kwargs in COMMANDLINE_OPTIONS:
         parser.add_option(*opt_args, **opt_kwargs)
     (options, args) = parser.parse_args()
+    if options.time is None:
+        msg = 'Time option ("-t", "--time") must be specified.'
+        raise Exception(msg)
     print "Running ObsPyck version {} (location: {})".format(__version__,
                                                              __file__)
     # read config file
