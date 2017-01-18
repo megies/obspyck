@@ -125,17 +125,6 @@ PHASE_LINESTYLES = {'P': "-", 'S': "-", 'Psynth': "--", 'Ssynth': "--",
         'PErr1': "-", 'PErr2': "-", 'SErr1': "-", 'SErr2': "-"}
 PHASE_LINEHEIGHT_PERC = {'P': 1, 'S': 1, 'Psynth': 1, 'Ssynth': 1,
         'PErr1': 0.75, 'PErr2': 0.75, 'SErr1': 0.75, 'SErr2': 0.75}
-KEY_FULLNAMES = {'P': "P pick", 'Psynth': "synthetic P pick",
-        'PWeight': "P pick weight", 'PPol': "P pick polarity",
-        'POnset': "P pick onset", 'PErr1': "left P error pick",
-        'PErr2': "right P error pick", 'S': "S pick",
-        'Ssynth': "synthetic S pick", 'SWeight': "S pick weight",
-        'SPol': "S pick polarity", 'SOnset': "S pick onset",
-        'SErr1': "left S error pick", 'SErr2': "right S error pick",
-        'MagMin1': "Magnitude minimum estimation pick",
-        'MagMax1': "Magnitude maximum estimation pick",
-        'MagMin2': "Magnitude minimum estimation pick",
-        'MagMax2': "Magnitude maximum estimation pick"}
 WIDGET_NAMES = ("qToolButton_clearAll", "qToolButton_clearOrigMag",
         "qToolButton_clearFocMec", "qToolButton_doHyp2000",
         "qToolButton_doNlloc", "qComboBox_nllocModel",

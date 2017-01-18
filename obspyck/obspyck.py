@@ -1437,9 +1437,9 @@ class ObsPyck(QtGui.QMainWindow):
                 #self.updateAxes(ev.inaxes)
                 self.updateAllItems()
                 self.redraw()
-                self.info("%s set at %.3f (%s)" % (KEY_FULLNAMES[phase_type],
-                                                   self.time_abs2rel(pick.time),
-                                                   pick.time.isoformat()))
+                self.info("%s pick set at %.3f (%s)" % (phase_type,
+                                                        self.time_abs2rel(pick.time),
+                                                        pick.time.isoformat()))
                 net = pick.waveform_id.network_code
                 sta = pick.waveform_id.station_code
                 phase_hint2 = {'P': 'S', 'S': 'P'}.get(pick.phase_hint, None)
@@ -1455,7 +1455,6 @@ class ObsPyck(QtGui.QMainWindow):
             if phase_type in SEISMIC_PHASES:
                 if pick is None:
                     return
-                key = phase_type + "Weight"
                 if ev.key == keys['setWeight0']:
                     value = 0
                 elif ev.key == keys['setWeight1']:
@@ -1470,14 +1469,13 @@ class ObsPyck(QtGui.QMainWindow):
                                 'namespace': NAMESPACE}
                 self.updateAllItems()
                 self.redraw()
-                self.info("%s set to %i" % (KEY_FULLNAMES[key], value))
+                self.info("%s weight set to %i" % (key, value))
                 return
 
         if ev.key in (keys['setPolU'], keys['setPolD']):
             if phase_type in SEISMIC_PHASES:
                 if pick is None:
                     return
-                key = phase_type + "Pol"
                 if ev.key == keys['setPolU']:
                     value = "positive"
                 elif ev.key == keys['setPolD']:
@@ -1498,14 +1496,13 @@ class ObsPyck(QtGui.QMainWindow):
                 pick.polarity = value
                 self.updateAllItems()
                 self.redraw()
-                self.info("%s set to %s" % (KEY_FULLNAMES[key], value))
+                self.info("%s polarity set to %s" % (key, value))
                 return
 
         if ev.key in (keys['setOnsetI'], keys['setOnsetE']):
             if phase_type in SEISMIC_PHASES:
                 if pick is None:
                     return
-                key = phase_type + "Onset"
                 if ev.key == keys['setOnsetI']:
                     pick.onset = "impulsive"
                 elif ev.key == keys['setOnsetE']:
@@ -1514,7 +1511,7 @@ class ObsPyck(QtGui.QMainWindow):
                     raise NotImplementedError()
                 self.updateAllItems()
                 self.redraw()
-                self.info("%s set to %s" % (KEY_FULLNAMES[key], pick.onset))
+                self.info("%s onset set to %s" % (key, pick.onset))
                 return
 
         if ev.key == keys['delPick']:
@@ -1531,8 +1528,8 @@ class ObsPyck(QtGui.QMainWindow):
                 pick.setErrorTime(self.time_rel2abs(pickSample))
                 self.updateAllItems()
                 self.redraw()
-                self.info("Error %s set at %s" % (KEY_FULLNAMES[phase_type],
-                                                  self.time_rel2abs(pickSample).isoformat()))
+                self.info("%s error pick set at %s" % (phase_type,
+                                                       self.time_rel2abs(pickSample).isoformat()))
                 return
 
         if ev.key in (keys['setMagMin'], keys['setMagMax']):
