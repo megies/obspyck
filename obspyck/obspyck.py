@@ -1469,7 +1469,7 @@ class ObsPyck(QtGui.QMainWindow):
                                 'namespace': NAMESPACE}
                 self.updateAllItems()
                 self.redraw()
-                self.info("%s weight set to %i" % (key, value))
+                self.info("%s weight set to %i" % (phase_type, value))
                 return
 
         if ev.key in (keys['setPolU'], keys['setPolD']):
@@ -1496,7 +1496,7 @@ class ObsPyck(QtGui.QMainWindow):
                 pick.polarity = value
                 self.updateAllItems()
                 self.redraw()
-                self.info("%s polarity set to %s" % (key, value))
+                self.info("%s polarity set to %s" % (phase_type, value))
                 return
 
         if ev.key in (keys['setOnsetI'], keys['setOnsetE']):
@@ -1511,7 +1511,7 @@ class ObsPyck(QtGui.QMainWindow):
                     raise NotImplementedError()
                 self.updateAllItems()
                 self.redraw()
-                self.info("%s onset set to %s" % (key, pick.onset))
+                self.info("%s onset set to %s" % (phase_type, pick.onset))
                 return
 
         if ev.key == keys['delPick']:
