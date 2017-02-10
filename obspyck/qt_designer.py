@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'qt_designer.ui'
 #
-# Created: Fri May 15 10:11:45 2015
-#      by: PyQt4 UI code generator 4.11.3
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -26,7 +25,7 @@ except AttributeError:
 class Ui_qMainWindow_obsPyck(object):
     def setupUi(self, qMainWindow_obsPyck):
         qMainWindow_obsPyck.setObjectName(_fromUtf8("qMainWindow_obsPyck"))
-        qMainWindow_obsPyck.resize(1147, 789)
+        qMainWindow_obsPyck.resize(1225, 789)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -72,9 +71,9 @@ class Ui_qMainWindow_obsPyck(object):
         self.layoutWidgetxx = QtGui.QWidget(self.qSplitter_horizontal)
         self.layoutWidgetxx.setObjectName(_fromUtf8("layoutWidgetxx"))
         self.leftVerticalLayout = QtGui.QVBoxLayout(self.layoutWidgetxx)
-        self.leftVerticalLayout.setSpacing(0)
         self.leftVerticalLayout.setSizeConstraint(QtGui.QLayout.SetMinAndMaxSize)
         self.leftVerticalLayout.setMargin(0)
+        self.leftVerticalLayout.setSpacing(0)
         self.leftVerticalLayout.setObjectName(_fromUtf8("leftVerticalLayout"))
         self.qToolButton_clearAll = QtGui.QToolButton(self.layoutWidgetxx)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
@@ -413,7 +412,6 @@ class Ui_qMainWindow_obsPyck(object):
         self.qWidget_mpl = QtGui.QWidget(self.qSplitter_horizontal)
         self.qWidget_mpl.setObjectName(_fromUtf8("qWidget_mpl"))
         self.qVBoxLayout_mpl = QtGui.QVBoxLayout(self.qWidget_mpl)
-        self.qVBoxLayout_mpl.setMargin(0)
         self.qVBoxLayout_mpl.setObjectName(_fromUtf8("qVBoxLayout_mpl"))
         self.qMplCanvas = QMplCanvas(self.qWidget_mpl)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
@@ -441,17 +439,27 @@ class Ui_qMainWindow_obsPyck(object):
         self.xxx = QtGui.QWidget(self.qSplitter_horizontal_new)
         self.xxx.setObjectName(_fromUtf8("xxx"))
         self.horizontalLayout_2 = QtGui.QHBoxLayout(self.xxx)
-        self.horizontalLayout_2.setSpacing(6)
         self.horizontalLayout_2.setSizeConstraint(QtGui.QLayout.SetDefaultConstraint)
-        self.horizontalLayout_2.setMargin(0)
+        self.horizontalLayout_2.setSpacing(6)
         self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
         self.horizontalLayout_6 = QtGui.QHBoxLayout()
         self.horizontalLayout_6.setSizeConstraint(QtGui.QLayout.SetMinimumSize)
         self.horizontalLayout_6.setObjectName(_fromUtf8("horizontalLayout_6"))
+        self.verticalLayout_6 = QtGui.QVBoxLayout()
+        self.verticalLayout_6.setObjectName(_fromUtf8("verticalLayout_6"))
+        self.qToolButton_sort_abc = QtGui.QToolButton(self.xxx)
+        self.qToolButton_sort_abc.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.qToolButton_sort_abc.setObjectName(_fromUtf8("qToolButton_sort_abc"))
+        self.verticalLayout_6.addWidget(self.qToolButton_sort_abc)
+        self.qToolButton_sort_distance = QtGui.QToolButton(self.xxx)
+        self.qToolButton_sort_distance.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.qToolButton_sort_distance.setObjectName(_fromUtf8("qToolButton_sort_distance"))
+        self.verticalLayout_6.addWidget(self.qToolButton_sort_distance)
+        self.horizontalLayout_6.addLayout(self.verticalLayout_6)
         self.VerticalLayout = QtGui.QVBoxLayout()
-        self.VerticalLayout.setSpacing(6)
         self.VerticalLayout.setSizeConstraint(QtGui.QLayout.SetDefaultConstraint)
         self.VerticalLayout.setContentsMargins(-1, 0, -1, -1)
+        self.VerticalLayout.setSpacing(6)
         self.VerticalLayout.setObjectName(_fromUtf8("VerticalLayout"))
         self.horizontalLayout_13 = QtGui.QHBoxLayout()
         self.horizontalLayout_13.setObjectName(_fromUtf8("horizontalLayout_13"))
@@ -668,9 +676,8 @@ class Ui_qMainWindow_obsPyck(object):
         self.yyy = QtGui.QWidget(self.qSplitter_horizontal_new2)
         self.yyy.setObjectName(_fromUtf8("yyy"))
         self.horizontalLayout_2b = QtGui.QHBoxLayout(self.yyy)
-        self.horizontalLayout_2b.setSpacing(6)
         self.horizontalLayout_2b.setSizeConstraint(QtGui.QLayout.SetDefaultConstraint)
-        self.horizontalLayout_2b.setMargin(0)
+        self.horizontalLayout_2b.setSpacing(6)
         self.horizontalLayout_2b.setObjectName(_fromUtf8("horizontalLayout_2b"))
         self.verticalLayout_5 = QtGui.QVBoxLayout()
         self.verticalLayout_5.setObjectName(_fromUtf8("verticalLayout_5"))
@@ -777,9 +784,8 @@ class Ui_qMainWindow_obsPyck(object):
         self.verticalLayoutWidget = QtGui.QWidget(self.qSplitter_horizontal)
         self.verticalLayoutWidget.setObjectName(_fromUtf8("verticalLayoutWidget"))
         self.rightVerticalLayout = QtGui.QVBoxLayout(self.verticalLayoutWidget)
-        self.rightVerticalLayout.setSpacing(0)
         self.rightVerticalLayout.setSizeConstraint(QtGui.QLayout.SetDefaultConstraint)
-        self.rightVerticalLayout.setMargin(0)
+        self.rightVerticalLayout.setSpacing(0)
         self.rightVerticalLayout.setObjectName(_fromUtf8("rightVerticalLayout"))
         self.qTextEdit_qml = QtGui.QTextEdit(self.verticalLayoutWidget)
         self.qTextEdit_qml.setEnabled(True)
@@ -806,7 +812,6 @@ class Ui_qMainWindow_obsPyck(object):
         self.layoutWidget = QtGui.QWidget(self.qSplitter_vertical)
         self.layoutWidget.setObjectName(_fromUtf8("layoutWidget"))
         self.horizontalLayout = QtGui.QHBoxLayout(self.layoutWidget)
-        self.horizontalLayout.setMargin(0)
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
         self.qPlainTextEdit_stdout = QtGui.QPlainTextEdit(self.layoutWidget)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
@@ -848,7 +853,7 @@ class Ui_qMainWindow_obsPyck(object):
         self.verticalLayout_4.addLayout(self.verticalLayout)
         qMainWindow_obsPyck.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(qMainWindow_obsPyck)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1147, 23))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1225, 23))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         qMainWindow_obsPyck.setMenuBar(self.menubar)
         self.statusbar = QtGui.QStatusBar(qMainWindow_obsPyck)
@@ -936,6 +941,10 @@ class Ui_qMainWindow_obsPyck(object):
         self.qLabel_y.setText(_translate("qMainWindow_obsPyck", "y:", None))
         self.qLabel_x_abs.setText(_translate("qMainWindow_obsPyck", "x:", None))
         self.qToolButton_debug.setText(_translate("qMainWindow_obsPyck", "debug", None))
+        self.qToolButton_sort_abc.setToolTip(_translate("qMainWindow_obsPyck", "sort streams alphabetically", None))
+        self.qToolButton_sort_abc.setText(_translate("qMainWindow_obsPyck", "sort ABC", None))
+        self.qToolButton_sort_distance.setToolTip(_translate("qMainWindow_obsPyck", "sort streams by epicentral distance", None))
+        self.qToolButton_sort_distance.setText(_translate("qMainWindow_obsPyck", "sort Dist.", None))
         self.qToolButton_previousStream.setText(_translate("qMainWindow_obsPyck", "<", None))
         self.qLabel_streamNumber.setText(_translate("qMainWindow_obsPyck", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<  html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
