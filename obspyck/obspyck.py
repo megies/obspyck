@@ -274,10 +274,7 @@ class ObsPyck(QtGui.QMainWindow):
                                        color='k', linewidth=1, ls='dotted')
 
         # Initialize the stream related widgets with the right values:
-        self.widgets.qComboBox_streamName.clear()
-        labels = ["%s.%s" % (st[0].stats.network, st[0].stats.station) \
-                  for st in self.streams_bkp]
-        self.widgets.qComboBox_streamName.addItems(labels)
+        self.update_stream_name_combobox_from_streams()
 
         # set the filter/trigger default values according to command line
         # options or optionparser default values
@@ -729,6 +726,25 @@ class ObsPyck(QtGui.QMainWindow):
         if args:
             return
         self.debugger()
+
+    def on_qToolButton_sort_abc_clicked(self, *args):
+        self.streams_bkp.sort(key=lambda stream: stream[0].id)
+        if args:
+            return
+        self.stPt = 0
+        self.widgets.qComboBox_streamName.setCurrentIndex(self.stPt)
+        self.update_stream_name_combobox_from_streams()
+
+    def on_qToolButton_sort_distance_clicked(self, *args):
+        self.streams_bkp.sort(key=self.epidist_for_stream)
+        epidists = [self.epidist_for_stream(st) for st in self.streams_bkp]
+        suffixes = ['{:.1f}km'.format(dist) if dist is not None else '??km'
+                    for dist in epidists]
+        if args:
+            return
+        self.stPt = 0
+        self.widgets.qComboBox_streamName.setCurrentIndex(self.stPt)
+        self.update_stream_name_combobox_from_streams(suffixes=suffixes)
 
     def on_qToolButton_previousStream_clicked(self, *args):
         if args:
@@ -1762,6 +1778,27 @@ class ObsPyck(QtGui.QMainWindow):
         self.updateStreamNumberLabel()
         self.updateStreamNameCombobox()
 
+    def update_stream_name_combobox_from_streams(self, suffixes=None):
+        """
+        Updates the dropdown stream label list, e.g. when streams were sorted
+        by epicentral distance.
+
+        Optionally, a list of string suffixes can be supplied, to be appended to the
+        stream label (e.g. with epicentral distance info). Obviously must be
+        of same length as stream list.
+        """
+        if suffixes is not None:
+            if len(suffixes) != len(self.streams_bkp):
+                err = 'Error: suffix list must have same length as stream list!'
+                self.error(err)
+                suffixes = None
+        self.widgets.qComboBox_streamName.clear()
+        labels = ["%s.%s" % (st[0].stats.network, st[0].stats.station) \
+                  for st in self.streams_bkp]
+        if suffixes is not None:
+            labels = ["%s %s" % (l, s) for l, s in zip(labels, suffixes)]
+        self.widgets.qComboBox_streamName.addItems(labels)
+
     def doFocmec(self):
         prog_dict = PROGRAMS['focmec']
         files = prog_dict['files']
@@ -2687,6 +2724,35 @@ class ObsPyck(QtGui.QMainWindow):
         o.quality.maximum_distance = max(epidists)
         o.quality.minimum_distance = min(epidists)
         o.quality.median_distance = np.median(epidists)
+
+    def epidist_for_stream(self, stream):
+        """
+        Return epicentral distance for given stream (in kilometers), return
+        None if epicentral distance can not be computed (no origin, no
+        station coordinates, ..).
+        """
+        if not self.catalog or not self.catalog[0].origins:
+            err = 'Can not compute epicentral distance, no origin information.'
+            self.error(err)
+            return None
+        o = self.catalog[0].origins[0]
+        if not o.longitude or not o.latitude:
+            err = ('Can not compute epicentral distance, origin is missing '
+                   'latitude and/or longitude.')
+            self.error(err)
+            return None
+        tr = stream[0]
+        try:
+            sta_lon = tr.stats.coordinates['longitude']
+            sta_lat = tr.stats.coordinates['latitude']
+        except:
+            err = ('Can not compute epicentral distance, stream ({}) metadata '
+                   'is missing latitude and/or longitude.').format(tr.id)
+            self.error(err)
+            return None
+        epi_dist, _, _ = gps2dist_azimuth(o.latitude, o.longitude,
+                                          sta_lat, sta_lon)
+        return epi_dist / 1e3
 
     def hypoDist(self, coords):
         o = self.catalog[0].origins[0]

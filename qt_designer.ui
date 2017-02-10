@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1147</width>
+    <width>1225</width>
     <height>789</height>
    </rect>
   </property>
@@ -962,6 +962,36 @@
                   <enum>QLayout::SetMinimumSize</enum>
                  </property>
                  <item>
+                  <layout class="QVBoxLayout" name="verticalLayout_6">
+                   <item>
+                    <widget class="QToolButton" name="qToolButton_sort_abc">
+                     <property name="focusPolicy">
+                      <enum>Qt::NoFocus</enum>
+                     </property>
+                     <property name="toolTip">
+                      <string>sort streams alphabetically</string>
+                     </property>
+                     <property name="text">
+                      <string>sort ABC</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QToolButton" name="qToolButton_sort_distance">
+                     <property name="focusPolicy">
+                      <enum>Qt::NoFocus</enum>
+                     </property>
+                     <property name="toolTip">
+                      <string>sort streams by epicentral distance</string>
+                     </property>
+                     <property name="text">
+                      <string>sort Dist.</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
                   <layout class="QVBoxLayout" name="VerticalLayout">
                    <property name="spacing">
                     <number>6</number>
@@ -1810,7 +1840,7 @@ p, l  i { white-space: pre-wrap; }
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1147</width>
+     <width>1225</width>
      <height>23</height>
     </rect>
    </property>
