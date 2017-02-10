@@ -3008,7 +3008,9 @@ class ObsPyck(QtGui.QMainWindow):
                     continue
                 arrival = getArrivalForPick(arrivals, pick)
                 self.drawPick(ax, pick, main_axes=True)
-                self.drawPickLabel(ax, pick)
+                # don't draw pick labels because they totally clutter the
+                # stream overview otherwise..
+                # self.drawPickLabel(ax, pick)
                 if arrival is not None:
                     self.drawArrival(ax, arrival, pick, main_axes=True)
             # plot amplitudes
