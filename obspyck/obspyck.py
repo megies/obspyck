@@ -2150,6 +2150,9 @@ class ObsPyck(QtGui.QMainWindow):
 
         line = line.rstrip().split('"')[1]
         signature, nlloc_version, date, time = line.rsplit(" ", 3)
+        # new NLLoc > 6.0 seems to add prefix 'run:' before date
+        if date.startswith('run:'):
+            date = date[4:]
         saved_locale = locale.getlocale()
         try:
             locale.setlocale(locale.LC_ALL, ('en_US', 'UTF-8'))
