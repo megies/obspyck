@@ -4247,8 +4247,15 @@ class ObsPyck(QtGui.QMainWindow):
                 index = self.widgets.qComboBox_eventType.findText(event_quakeml_type.lower(), Qt.MatchExactly)
         self.widgets.qComboBox_eventType.setCurrentIndex(index)
 
-        # remove duplicate picks:
-        self.removeDuplicatePicks()
+        # remove duplicate picks (unless explicitly opted out by user, added by
+        # request in #42):
+        try:
+            allow_multiple_picks = self.config.getboolean(
+                "misc", "allow_multiple_picks_with_same_seed_id")
+        except:
+            allow_multiple_picks = False
+        if not allow_multiple_picks:
+            self.removeDuplicatePicks()
 
         # XXX TODO: do we need this!?
         # analyze amplitudes (magnitude picks):
