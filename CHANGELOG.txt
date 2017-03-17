@@ -1,0 +1,25 @@
+master
+ - add support for magnitude estimation for data fetched from an FDSN server
+   (using full response)
+ - depending on obspy >=1.1.0 now
+
+0.4.1
+ - fix minor bug that prevents 0.4.0 from running
+ - switch obspy dependency version from >=1.* to >1.0.3 (the import reroutes in
+   obspy 1.0.x break the monkey patching of event object classes in obspyck)
+
+0.4.0
+ - add support for fetching data from a seedlink server
+ - set meaningful creation info including obspyck+obspy version numbers on all
+   event objects
+ - fix a bug with beachball function naming in 0.3.0 (likely to lead to
+   RunTimeErrors)
+
+0.3.0
+ - switch obspy dependency version from 0.10.* to 1.*
+
+0.2.0
+ - packaging cleanup
+
+0.1.0
+ - initial release with proper package structure and versioning

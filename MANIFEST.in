@@ -1,0 +1,8 @@
+include CHANGELOG.txt
+include LICENSE.txt
+include Makefile
+include MANIFEST.in
+include qt_designer.ui
+include README.md
+include setup.py
+recursive-include obspyck/ *

@@ -9,55 +9,61 @@
 #
 # Copyright (C) 2010 Tobias Megies, Lion Krischer
 #---------------------------------------------------------------------
-
+import locale
+import logging
+import optparse
 import os
 import re
-import sys
-import locale
 import shutil
-import optparse
-import warnings
-import tempfile
 import socket
+import sys
+import tempfile
+import warnings
+from configparser import SafeConfigParser, NoOptionError
 from StringIO import StringIO
-import logging
-from configparser import SafeConfigParser
 
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import Qt
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.cm
 import matplotlib.transforms
+from matplotlib.cm import get_cmap
 from matplotlib.patches import Ellipse
 from matplotlib.ticker import FuncFormatter, FormatStrFormatter, MaxNLocator
 from matplotlib.backend_bases import MouseEvent as MplMouseEvent
 
 #sys.path.append('/baysoft/obspy/misc/symlink')
 #os.chdir("/baysoft/obspyck/")
-from obspy import __version__ as OBSPY_VERSION
+import obspy
+import obspy.imaging.cm as obspy_cm
 from obspy import UTCDateTime, Stream
-from obspy.core.util import NamedTemporaryFile, AttribDict
-from obspy.core.util.geodetics import gps2DistAzimuth, kilometer2degrees
-from obspy.signal.util import utlLonLat
-from obspy.signal.invsim import estimateMagnitude
-from obspy.signal.rotate import rotate_ZNE_LQT, rotate_NE_RT
-from obspy.imaging.spectrogram import spectrogram
-from obspy.imaging.beachball import Beach
-from obspy.fdsn import Client as FDSNClient
-from obspy.arclink import Client as ArcLinkClient
-from obspy.seishub import Client as SeisHubClient
-
-from qt_designer import Ui_qMainWindow_obsPyck
-from util import *
-from event_helper import Catalog, Event, Origin, Pick, Arrival, \
-    Magnitude, StationMagnitude, StationMagnitudeContribution, \
-    FocalMechanism, ResourceIdentifier, ID_ROOT, readQuakeML, Amplitude
 from obspy.core.event import CreationInfo, WaveformStreamID, \
     OriginUncertainty, OriginQuality, Comment, NodalPlane, NodalPlanes
+from obspy.core.util import NamedTemporaryFile, AttribDict
+from obspy.geodetics.base import gps2dist_azimuth, kilometer2degrees
+from obspy.signal.util import util_lon_lat
+from obspy.signal.invsim import estimate_magnitude
+from obspy.signal.rotate import rotate_zne_lqt, rotate_ne_rt
+from obspy.imaging.spectrogram import spectrogram
+from obspy.imaging.beachball import beach
+from obspy.clients.seishub import Client as SeisHubClient
+
+from . import __version__
+from .qt_designer import Ui_qMainWindow_obsPyck
+from .util import *
+from .event_helper import Catalog, Event, Origin, Pick, Arrival, \
+    Magnitude, StationMagnitude, StationMagnitudeContribution, \
+    FocalMechanism, ResourceIdentifier, ID_ROOT, readQuakeML, Amplitude
 
 NAMESPACE = "http://erdbeben-in-bayern.de/xmlns/0.1"
 NSMAP = {"edb": NAMESPACE}
+
+
+if map(int, obspy.__version__.split('.')[:2]) < [1, 1]:
+    msg = "Needing ObsPy version >= 1.1.0 (current version is: {})"
+    warnings.warn(msg.format(obspy.__version__))
 
 
 class ObsPyck(QtGui.QMainWindow):
@@ -130,24 +136,24 @@ class ObsPyck(QtGui.QMainWindow):
         sh = logging.StreamHandler(sys.stdout)
         sh.setFormatter(logging.Formatter('%(message)s'))
         log1.addHandler(sh)
-        # XXX TODO: parse verbose flag from command line
-        loglevel = LOGLEVELS.get(config.get("base", "verbosity"), None)
-        if loglevel is None:
-            loglevel = "CRITICAL"
-            self.error("unknown loglevel ('%s'), using %s." % (
-                config.get("base", "verbosity"), loglevel))
-        log1.setLevel(loglevel)
-        self.log1 = log1
         log2 = logging.getLogger("log2")
         sh = logging.StreamHandler(sys.stderr)
         sh.setFormatter(logging.Formatter('%(message)s'))
         log2.addHandler(sh)
         log2.setLevel("DEBUG")
         self.log2 = log2
+        self.error = self.log2.error
+        # XXX TODO: parse verbose flag from command line
+        loglevel = LOGLEVELS.get(config.get("base", "verbosity"), None)
+        if loglevel is None:
+            loglevel = "CRITICAL"
+            self.error("unknown loglevel ('%s'), using loglevel 'normal'." % (
+                config.get("base", "verbosity")))
+        log1.setLevel(loglevel)
+        self.log1 = log1
         self.info = self.log1.info
         self.critical = self.log1.critical
         self.debug = self.log1.debug
-        self.error = self.log2.error
         logging.getLogger().handlers = []
 
         # Matplotlib figure.
@@ -206,12 +212,22 @@ class ObsPyck(QtGui.QMainWindow):
             warnings.warn(msg)
         self.catalog = Catalog()
         event = Event()
-        event.set_creation_info(self.username)
+        event.set_creation_info_username(self.username)
         self.catalog.events = [event]
         self.setXMLEventID()
         # indicates which of the available focal mechanisms is selected
         self.focMechCurrent = None
-        self.spectrogramColormap = matplotlib.cm.jet
+        try:
+            _cmap_name = config.get("base", "spectrogram_colormap")
+            try:
+                cmap_spectrogram = getattr(
+                    obspy_cm, _cmap_name)
+            except AttributeError:
+                cmap_spectrogram = get_cmap(_cmap_name)
+        except NoOptionError:
+            _cmap_name = matplotlib.rcParams.get('image.cmap', 'jet')
+            cmap_spectrogram = get_cmap(_cmap_name)
+        self.spectrogramColormap = cmap_spectrogram
         # indicates which of the available events from seishub was loaded
         self.seishubEventCurrent = None
         # indicates how many events are available from seishub
@@ -240,7 +256,8 @@ class ObsPyck(QtGui.QMainWindow):
 
         # sort streams by station name
         streams.sort(key=lambda st: st[0].stats['station'])
-        streams = cleanup_streams(streams, config)
+        if not config.get("base", "no_metadata"):
+            streams = cleanup_streams_without_metadata(streams)
         self.streams_bkp = [st.copy() for st in streams]
         self._setup_4_letter_station_map()
         # XXX TODO replace old 'eventMapColors'
@@ -257,10 +274,7 @@ class ObsPyck(QtGui.QMainWindow):
                                        color='k', linewidth=1, ls='dotted')
 
         # Initialize the stream related widgets with the right values:
-        self.widgets.qComboBox_streamName.clear()
-        labels = ["%s.%s" % (st[0].stats.network, st[0].stats.station) \
-                  for st in self.streams_bkp]
-        self.widgets.qComboBox_streamName.addItems(labels)
+        self.update_stream_name_combobox_from_streams()
 
         # set the filter/trigger default values according to command line
         # options or optionparser default values
@@ -689,11 +703,9 @@ class ObsPyck(QtGui.QMainWindow):
         event_server = self.config.get("base", "event_server")
         passwd = str(self.widgets.qLineEdit_sysopPassword.text())
         tmp_client = SeisHubClient(
-            base_url='{}:{}'.format(
-                self.config.get(event_server, "address"),
-                self.config.get(event_server, "port")),
-                user="sysop", password=passwd)
-        if tmp_client.testAuth():
+            base_url=self.config.get(event_server, "base_url"),
+            user="sysop", password=passwd)
+        if tmp_client.test_auth():
             self.clients['__SeisHub-sysop__'] = tmp_client
             self.widgets.qCheckBox_sysop.setChecked(True)
         # if authentication test fails empty password field and uncheck sysop
@@ -714,6 +726,25 @@ class ObsPyck(QtGui.QMainWindow):
         if args:
             return
         self.debugger()
+
+    def on_qToolButton_sort_abc_clicked(self, *args):
+        self.streams_bkp.sort(key=lambda stream: stream[0].id)
+        if args:
+            return
+        self.stPt = 0
+        self.widgets.qComboBox_streamName.setCurrentIndex(self.stPt)
+        self.update_stream_name_combobox_from_streams()
+
+    def on_qToolButton_sort_distance_clicked(self, *args):
+        self.streams_bkp.sort(key=self.epidist_for_stream)
+        epidists = [self.epidist_for_stream(st) for st in self.streams_bkp]
+        suffixes = ['{:.1f}km'.format(dist) if dist is not None else '??km'
+                    for dist in epidists]
+        if args:
+            return
+        self.stPt = 0
+        self.widgets.qComboBox_streamName.setCurrentIndex(self.stPt)
+        self.update_stream_name_combobox_from_streams(suffixes=suffixes)
 
     def on_qToolButton_previousStream_clicked(self, *args):
         if args:
@@ -1017,7 +1048,7 @@ class ObsPyck(QtGui.QMainWindow):
         n = stream.select(component="N")[0].data
         e = stream.select(component="E")[0].data
         self.info("using baz, takeoff: %s, %s" % (bazim, inci))
-        l, q, t = rotate_ZNE_LQT(z, n, e, bazim, inci)
+        l, q, t = rotate_zne_lqt(z, n, e, bazim, inci)
         for comp, data in zip("ZNE", (l, q, t)):
             tr = stream.select(component=comp)[0]
             tr.data = data
@@ -1038,7 +1069,7 @@ class ObsPyck(QtGui.QMainWindow):
         n = stream.select(component="N")[0].data
         e = stream.select(component="E")[0].data
         self.info("using baz: %s" % bazim)
-        r, t = rotate_NE_RT(n, e, bazim)
+        r, t = rotate_ne_rt(n, e, bazim)
         stream.select(component="N")[0].data = r
         stream.select(component="E")[0].data = t
         for comp, data in zip("NE", (r, t)):
@@ -1422,9 +1453,9 @@ class ObsPyck(QtGui.QMainWindow):
                 #self.updateAxes(ev.inaxes)
                 self.updateAllItems()
                 self.redraw()
-                self.info("%s set at %.3f (%s)" % (KEY_FULLNAMES[phase_type],
-                                                   self.time_abs2rel(pick.time),
-                                                   pick.time.isoformat()))
+                self.info("%s pick set at %.3f (%s)" % (phase_type,
+                                                        self.time_abs2rel(pick.time),
+                                                        pick.time.isoformat()))
                 net = pick.waveform_id.network_code
                 sta = pick.waveform_id.station_code
                 phase_hint2 = {'P': 'S', 'S': 'P'}.get(pick.phase_hint, None)
@@ -1440,7 +1471,6 @@ class ObsPyck(QtGui.QMainWindow):
             if phase_type in SEISMIC_PHASES:
                 if pick is None:
                     return
-                key = phase_type + "Weight"
                 if ev.key == keys['setWeight0']:
                     value = 0
                 elif ev.key == keys['setWeight1']:
@@ -1455,14 +1485,13 @@ class ObsPyck(QtGui.QMainWindow):
                                 'namespace': NAMESPACE}
                 self.updateAllItems()
                 self.redraw()
-                self.info("%s set to %i" % (KEY_FULLNAMES[key], value))
+                self.info("%s weight set to %i" % (phase_type, value))
                 return
 
         if ev.key in (keys['setPolU'], keys['setPolD']):
             if phase_type in SEISMIC_PHASES:
                 if pick is None:
                     return
-                key = phase_type + "Pol"
                 if ev.key == keys['setPolU']:
                     value = "positive"
                 elif ev.key == keys['setPolD']:
@@ -1483,14 +1512,13 @@ class ObsPyck(QtGui.QMainWindow):
                 pick.polarity = value
                 self.updateAllItems()
                 self.redraw()
-                self.info("%s set to %s" % (KEY_FULLNAMES[key], value))
+                self.info("%s polarity set to %s" % (phase_type, value))
                 return
 
         if ev.key in (keys['setOnsetI'], keys['setOnsetE']):
             if phase_type in SEISMIC_PHASES:
                 if pick is None:
                     return
-                key = phase_type + "Onset"
                 if ev.key == keys['setOnsetI']:
                     pick.onset = "impulsive"
                 elif ev.key == keys['setOnsetE']:
@@ -1499,7 +1527,7 @@ class ObsPyck(QtGui.QMainWindow):
                     raise NotImplementedError()
                 self.updateAllItems()
                 self.redraw()
-                self.info("%s set to %s" % (KEY_FULLNAMES[key], pick.onset))
+                self.info("%s onset set to %s" % (phase_type, pick.onset))
                 return
 
         if ev.key == keys['delPick']:
@@ -1516,8 +1544,8 @@ class ObsPyck(QtGui.QMainWindow):
                 pick.setErrorTime(self.time_rel2abs(pickSample))
                 self.updateAllItems()
                 self.redraw()
-                self.info("Error %s set at %s" % (KEY_FULLNAMES[phase_type],
-                                                  self.time_rel2abs(pickSample).isoformat()))
+                self.info("%s error pick set at %s" % (phase_type,
+                                                       self.time_rel2abs(pickSample).isoformat()))
                 return
 
         if ev.key in (keys['setMagMin'], keys['setMagMax']):
@@ -1528,17 +1556,18 @@ class ObsPyck(QtGui.QMainWindow):
             if not ev.inaxes in self.axs:
                 return
             if phase_type == 'Mag':
+                picker_width = self.config.getint("base", "magnitude_picker_width")
                 ampl = self.getAmplitude(axes=ev.inaxes, setdefault=True, seed_string=tr.id)
                 ampl.set_general_info()
                 # do the actual work
                 ydata = ev.inaxes.lines[0].get_ydata() #get the first line hoping that it is the seismogram!
-                cutoffSamples = xpos - MAG_PICKWINDOW #remember, how much samples there are before our small window! We have to add this number for our MagMinT estimation!
+                cutoffSamples = xpos - picker_width #remember, how much samples there are before our small window! We have to add this number for our MagMinT estimation!
                 if ev.key == keys['setMagMin']:
-                    val = np.min(ydata[xpos-MAG_PICKWINDOW:xpos+MAG_PICKWINDOW])
-                    tmp_magtime = cutoffSamples + np.argmin(ydata[xpos-MAG_PICKWINDOW:xpos+MAG_PICKWINDOW])
+                    val = np.min(ydata[xpos-picker_width:xpos+picker_width])
+                    tmp_magtime = cutoffSamples + np.argmin(ydata[xpos-picker_width:xpos+picker_width])
                 elif ev.key == keys['setMagMax']:
-                    val = np.max(ydata[xpos-MAG_PICKWINDOW:xpos+MAG_PICKWINDOW])
-                    tmp_magtime = cutoffSamples + np.argmax(ydata[xpos-MAG_PICKWINDOW:xpos+MAG_PICKWINDOW])
+                    val = np.max(ydata[xpos-picker_width:xpos+picker_width])
+                    tmp_magtime = cutoffSamples + np.argmax(ydata[xpos-picker_width:xpos+picker_width])
                 # XXX TODO GSE calib handling! special handling for GSE2 data: apply calibration
                 if tr.stats._format == "GSE2":
                     val = val / (tr.stats.calib * 2 * np.pi / tr.stats.gse2.calper)
@@ -1703,7 +1732,8 @@ class ObsPyck(QtGui.QMainWindow):
                 self.widgets.qLabel_xdata_rel.setText(formatXTicklabels(ev.xdata))
                 label = self.time_rel2abs(ev.xdata).isoformat().replace("T", "  ")[:-3]
                 self.widgets.qLabel_xdata_abs.setText(label)
-                if self.widgets.qToolButton_ms.isChecked():
+                if self.widgets.qToolButton_ms.isChecked() \
+                        and not self.widgets.qToolButton_spectrogram.isChecked():
                     absval = abs(ev.ydata)
                     if absval >= 1:
                         text = "%.3g m/s" % ev.ydata
@@ -1747,6 +1777,27 @@ class ObsPyck(QtGui.QMainWindow):
     def updateStreamLabels(self):
         self.updateStreamNumberLabel()
         self.updateStreamNameCombobox()
+
+    def update_stream_name_combobox_from_streams(self, suffixes=None):
+        """
+        Updates the dropdown stream label list, e.g. when streams were sorted
+        by epicentral distance.
+
+        Optionally, a list of string suffixes can be supplied, to be appended to the
+        stream label (e.g. with epicentral distance info). Obviously must be
+        of same length as stream list.
+        """
+        if suffixes is not None:
+            if len(suffixes) != len(self.streams_bkp):
+                err = 'Error: suffix list must have same length as stream list!'
+                self.error(err)
+                suffixes = None
+        self.widgets.qComboBox_streamName.clear()
+        labels = ["%s.%s" % (st[0].stats.network, st[0].stats.station) \
+                  for st in self.streams_bkp]
+        if suffixes is not None:
+            labels = ["%s %s" % (l, s) for l, s in zip(labels, suffixes)]
+        self.widgets.qComboBox_streamName.addItems(labels)
 
     def doFocmec(self):
         prog_dict = PROGRAMS['focmec']
@@ -1888,20 +1939,20 @@ class ObsPyck(QtGui.QMainWindow):
         fm = fms[self.focMechCurrent]
         np1 = fm.nodal_planes.nodal_plane_1
         if hasattr(fm, "_beachball"):
-            beach = fm._beachball
+            beach_ = fm._beachball
         else:
-            beach = Beach([np1.strike, np1.dip, np1.rake],
-                          width=plot_width)
-            fm._beachball = beach
-        ax.add_collection(beach)
+            beach_ = beach([np1.strike, np1.dip, np1.rake],
+                           width=plot_width)
+            fm._beachball = beach_
+        ax.add_collection(beach_)
         # plot the alternative solutions
         if not hasattr(fm, "_beachball2"):
             for fm_ in fms:
                 _np1 = fm_.nodal_planes.nodal_plane_1
-                beach = Beach([_np1.strike, _np1.dip, _np1.rake],
-                              nofill=True, edgecolor='k', linewidth=1.,
-                              alpha=0.3, width=plot_width)
-                fm_._beachball2 = beach
+                beach_ = beach([_np1.strike, _np1.dip, _np1.rake],
+                               nofill=True, edgecolor='k', linewidth=1.,
+                               alpha=0.3, width=plot_width)
+                fm_._beachball2 = beach_
         for fm_ in fms:
             ax.add_collection(fm_._beachball2)
         text = "Focal Mechanism (%i of %i)" % \
@@ -2099,6 +2150,9 @@ class ObsPyck(QtGui.QMainWindow):
 
         line = line.rstrip().split('"')[1]
         signature, nlloc_version, date, time = line.rsplit(" ", 3)
+        # new NLLoc > 6.0 seems to add prefix 'run:' before date
+        if date.startswith('run:'):
+            date = date[4:]
         saved_locale = locale.getlocale()
         try:
             locale.setlocale(locale.LC_ALL, ('en_US', 'UTF-8'))
@@ -2218,8 +2272,10 @@ class ObsPyck(QtGui.QMainWindow):
             event.creation_info.creation_time = UTCDateTime()
         o = Origin()
         event.origins = [o]
+        self.catalog[0].set_creation_info_username(self.username)
+        # version field has 64 char maximum per QuakeML RNG schema
         o.creation_info = CreationInfo(creation_time=creation_time,
-                                       version=nlloc_version)
+                                       version=nlloc_version[:64])
 
         # assign origin info
         o.method_id = "/".join([ID_ROOT, "location_method", "nlloc", "4"])
@@ -2490,6 +2546,7 @@ class ObsPyck(QtGui.QMainWindow):
         # assign origin info
         o = Origin()
         self.catalog[0].origins = [o]
+        self.catalog[0].set_creation_info_username(self.username)
         o.clear()
         o.method_id = "/".join([ID_ROOT, "location_method", "hyp2000", "2"])
         o.origin_uncertainty = OriginUncertainty()
@@ -2630,8 +2687,6 @@ class ObsPyck(QtGui.QMainWindow):
             return
 
         m = Magnitude()
-        m.creation_info = CreationInfo(version="ObsPy %s" % OBSPY_VERSION,
-                                       creation_time=UTCDateTime())
         event.magnitudes = [m]
         m.method_id = "/".join([ID_ROOT, "magnitude_method", "obspyck", "2"])
         m.origin_id = origin.resource_id
@@ -2673,11 +2728,40 @@ class ObsPyck(QtGui.QMainWindow):
         o.quality.minimum_distance = min(epidists)
         o.quality.median_distance = np.median(epidists)
 
+    def epidist_for_stream(self, stream):
+        """
+        Return epicentral distance for given stream (in kilometers), return
+        None if epicentral distance can not be computed (no origin, no
+        station coordinates, ..).
+        """
+        if not self.catalog or not self.catalog[0].origins:
+            err = 'Can not compute epicentral distance, no origin information.'
+            self.error(err)
+            return None
+        o = self.catalog[0].origins[0]
+        if not o.longitude or not o.latitude:
+            err = ('Can not compute epicentral distance, origin is missing '
+                   'latitude and/or longitude.')
+            self.error(err)
+            return None
+        tr = stream[0]
+        try:
+            sta_lon = tr.stats.coordinates['longitude']
+            sta_lat = tr.stats.coordinates['latitude']
+        except:
+            err = ('Can not compute epicentral distance, stream ({}) metadata '
+                   'is missing latitude and/or longitude.').format(tr.id)
+            self.error(err)
+            return None
+        epi_dist, _, _ = gps2dist_azimuth(o.latitude, o.longitude,
+                                          sta_lat, sta_lon)
+        return epi_dist / 1e3
+
     def hypoDist(self, coords):
         o = self.catalog[0].origins[0]
-        epi_dist, _, _ = gps2DistAzimuth(o.latitude, o.longitude,
-                                         coords['latitude'],
-                                         coords['longitude'])
+        epi_dist, _, _ = gps2dist_azimuth(o.latitude, o.longitude,
+                                          coords['latitude'],
+                                          coords['longitude'])
         # origin depth is in m positive down,
         # station elevation is in m positive up
         if abs(o.depth) < 800:
@@ -2689,7 +2773,9 @@ class ObsPyck(QtGui.QMainWindow):
             msg = ("Calculating hypocentral distance for station "
                    "elevation '%s' meters." % coords['elevation'])
             self.error(msg)
-        z_dist = o.depth + coords['elevation']
+        # if sensor is buried or downhole, account for the specified sensor
+        # depth
+        z_dist = o.depth + coords['elevation'] - coords.get('local_depth', 0)
         return np.sqrt(epi_dist ** 2 + z_dist ** 2) / 1e3
 
     # XXX TODO maybe rename to "updateStationMagnitude"
@@ -2717,14 +2803,20 @@ class ObsPyck(QtGui.QMainWindow):
                 if timedelta is None:
                     continue
                 tr = self.getTrace(
-                    seed_string=amplitude.waveform_id.getSEEDString())
-                paz = tr.stats.get("paz")
-                self.debug("PAZ: " + str(paz))
+                    seed_string=amplitude.waveform_id.get_seed_string())
+                # either use attached PAZ or response..
+                if "paz" in tr.stats:
+                    paz = tr.stats["paz"]
+                elif "response" in tr.stats:
+                    paz = tr.stats["response"]
+                else:
+                    paz = None
+                self.debug("PAZ/response: " + str(paz))
                 if paz is None:
                     # XXX TODO we could fetch the metadata from seishub if we
                     # don't have a trace with PAZ and still use the stored info
                     msg = ("Skipping amplitude for station "
-                           "'%s': Missing PAZ metadata" % sta)
+                           "'%s': Missing PAZ/response metadata" % sta)
                     self.error(msg)
                     continue
                 amplitudes.append(amplitude)
@@ -2737,7 +2829,7 @@ class ObsPyck(QtGui.QMainWindow):
                 continue
 
             dist = self.hypoDist(tr.stats.coordinates)
-            mag = estimateMagnitude(pazs, p2ps, timedeltas, dist)
+            mag = estimate_magnitude(pazs, p2ps, timedeltas, dist)
             sm = StationMagnitude()
             event.station_magnitudes.append(sm)
             sm.origin_id = origin.resource_id
@@ -2822,8 +2914,8 @@ class ObsPyck(QtGui.QMainWindow):
         ax.axvline(x0, color="blue", ls=":",
                    label="origin time from wadati diagram")
         # origin time from event location
-        if self.origin.time:
-            otime = "%.3f" % self.origin.time.timestamp
+        if self.catalog[0].origins[0].time:
+            otime = "%.3f" % self.catalog[0].origins[0].time.timestamp
             otime = float(otime[-7:])
             ax.axvline(otime, color="red", ls=":",
                        label="origin time from event location")
@@ -2919,7 +3011,9 @@ class ObsPyck(QtGui.QMainWindow):
                     continue
                 arrival = getArrivalForPick(arrivals, pick)
                 self.drawPick(ax, pick, main_axes=True)
-                self.drawPickLabel(ax, pick)
+                # don't draw pick labels because they totally clutter the
+                # stream overview otherwise..
+                # self.drawPickLabel(ax, pick)
                 if arrival is not None:
                     self.drawArrival(ax, arrival, pick, main_axes=True)
             # plot amplitudes
@@ -2952,8 +3046,8 @@ class ObsPyck(QtGui.QMainWindow):
         #self.fig.subplots_adjust(bottom=0.07, top=0.95, left=0.07, right=0.98)
         axEM.scatter([o.longitude], [o.latitude], 30, color='red', marker='o')
         # XXX TODO handle different origin uncertainty descriptions
-        #errLon, errLat = utlLonLat(o.longitude, o.latitude, o.longitude_errors,
-        #                           o.latitude_errors)
+        #errLon, errLat = util_lon_lat(o.longitude, o.latitude, o.longitude_errors,
+        #                              o.latitude_errors)
 
         ou = o.origin_uncertainty
         errX, errY = None, None
@@ -2971,8 +3065,8 @@ class ObsPyck(QtGui.QMainWindow):
                        "degrees from North are not supported yet..")
                 self.error(msg)
             if errX and errY:
-                errLon, errLat = utlLonLat(o.longitude, o.latitude,
-                                           errX / 1e3, errY / 1e3)
+                errLon, errLat = util_lon_lat(o.longitude, o.latitude,
+                                              errX / 1e3, errY / 1e3)
                 errLon -= o.longitude
                 errLat -= o.latitude
                 if ou.preferred_description == "uncertainty ellipse":
@@ -3121,7 +3215,16 @@ class ObsPyck(QtGui.QMainWindow):
             axEMiZY.hexbin(data[2], data[1], cmap=cmap)
             stalons = [st[0].stats.coordinates.longitude for st in self.streams]
             stalats = [st[0].stats.coordinates.latitude for st in self.streams]
-            stadepths = [st[0].stats.coordinates.elevation for st in self.streams]
+            stadepths = []
+            for st in self.streams:
+                coords_ = st[0].stats.coordinates
+                elev_ = coords_.elevation
+                # if sensor is buried or downhole, account for the specified
+                # sensor depth
+                depth_ = coords_.get('local_depth')
+                if depth_:
+                    elev_ -= depth_
+                stadepths.append(elev_)
             axEMiXY.scatter(stalons, stalats, s=200, marker='v', color='k')
             axEMiXZ.scatter(stalons, stadepths, s=200, marker='v', color='k')
             axEMiZY.scatter(stadepths, stalats, s=200, marker='v', color='k')
@@ -3220,6 +3323,11 @@ class ObsPyck(QtGui.QMainWindow):
                 hem_NS = 'W'
             # hypo 71 format uses elevation in meters not kilometers
             ele = stats.coordinates.elevation
+            # if sensor is buried or downhole, account for the specified sensor
+            # depth
+            depth = stats.coordinates.get('local_depth')
+            if depth:
+                ele -= depth
             hypo71_string += fmt % (sta_map[sta], lat_deg, lat_min, hem_NS,
                                     lon_deg, lon_min, hem_EW, ele)
 
@@ -3497,6 +3605,7 @@ class ObsPyck(QtGui.QMainWindow):
         """
         cat = self.catalog
         cat.creation_info.creation_time = UTCDateTime()
+        cat.creation_info.version = VERSION_INFO
         e = cat[0]
         extra = e.setdefault("extra", AttribDict())
         public = self.widgets.qCheckBox_public.isChecked()
@@ -3598,8 +3707,8 @@ class ObsPyck(QtGui.QMainWindow):
         headers["Content-type"] = "text/xml; charset=\"UTF-8\""
         headers["Content-length"] = "%d" % len(data)
         # XXX TODO: Calculate real PGV?!
-        code, message = client.event.putResource(name, xml_string=data,
-                                                 headers=headers)
+        code, message = client.event.put_resource(name, xml_string=data,
+                                                  headers=headers)
         msg = "Seishub Account: %s" % seishub_account
         msg += "\nUser: %s" % self.username
         msg += "\nName: %s" % name
@@ -3633,8 +3742,8 @@ class ObsPyck(QtGui.QMainWindow):
             host = "localhost"
         headers["Host"] = host
         headers["User-Agent"] = "obspyck"
-        code, message = client.event.deleteResource(str(resource_name),
-                                                    headers=headers)
+        code, message = client.event.delete_resource(str(resource_name),
+                                                     headers=headers)
         msg = "Deleting Event!"
         msg += "\nSeishub Account: %s" % seishub_account
         msg += "\nUser: %s" % self.username
@@ -3647,7 +3756,7 @@ class ObsPyck(QtGui.QMainWindow):
         self.info("Clearing previous event data.")
         self.catalog = Catalog()
         event = Event()
-        event.set_creation_info(self.username)
+        event.set_creation_info_username(self.username)
         self.catalog.events = [event]
 
     def clearOriginMagnitude(self):
@@ -3696,7 +3805,7 @@ class ObsPyck(QtGui.QMainWindow):
             for _id, ax in zip(ids, self.axs):
                 self.debug(str(pick))
                 self.debug(str(_id))
-                if pick.waveform_id.getSEEDString() == _id:
+                if pick.waveform_id.get_seed_string() == _id:
                     main_axes = True
                     self.drawPickLabel(ax, pick)
                 else:
@@ -3706,7 +3815,7 @@ class ObsPyck(QtGui.QMainWindow):
                     self.drawArrival(ax, arrival, pick, main_axes=main_axes)
             # if no pick label was drawn yet.. draw it
             for _id, ax in zip(ids, self.axs):
-                if pick.waveform_id.getSEEDString() == _id:
+                if pick.waveform_id.get_seed_string() == _id:
                     break
             else:
                 self.drawPickLabel(self.axs[-1], pick, main_axes=False)
@@ -3722,7 +3831,7 @@ class ObsPyck(QtGui.QMainWindow):
                 if amplitude is None:
                     continue
                 for _id, ax in zip(ids, self.axs):
-                    if amplitude.waveform_id.getSEEDString() == _id:
+                    if amplitude.waveform_id.get_seed_string() == _id:
                         self.drawAmplitude(ax, amplitude, main_axes=True)
                         break
                 else:
@@ -3845,13 +3954,13 @@ class ObsPyck(QtGui.QMainWindow):
                 continue
             if waveform_id is not None and waveform_id != p.waveform_id:
                 continue
-            if seed_string is not None and seed_string != p.waveform_id.getSEEDString():
+            if seed_string is not None and seed_string != p.waveform_id.get_seed_string():
                 continue
             if axes is not None:
                 _i = self.axs.index(axes)
                 _id = self.getCurrentStream()[_i].id
                 phase_hint = self.getCurrentPhase()
-                if p.waveform_id.getSEEDString() != _id:
+                if p.waveform_id.get_seed_string() != _id:
                     continue
                 if p.phase_hint != phase_hint:
                     continue
@@ -3899,12 +4008,12 @@ class ObsPyck(QtGui.QMainWindow):
                 continue
             if waveform_id is not None and waveform_id != a.waveform_id:
                 continue
-            if seed_string is not None and seed_string != a.waveform_id.getSEEDString():
+            if seed_string is not None and seed_string != a.waveform_id.get_seed_string():
                 continue
             if axes is not None:
                 _i = self.axs.index(axes)
                 _id = self.getCurrentStream()[_i].id
-                if a.waveform_id.getSEEDString() != _id:
+                if a.waveform_id.get_seed_string() != _id:
                     continue
             return a
         if setdefault:
@@ -4088,7 +4197,7 @@ class ObsPyck(QtGui.QMainWindow):
         Fetch a Resource XML from SeisHub
         """
         client = self.event_server
-        resource_xml = client.event.getResource(resource_name)
+        resource_xml = client.event.get_resource(resource_name)
 
         # parse quakeml
         catalog = readQuakeML(StringIO(resource_xml))
@@ -4138,8 +4247,15 @@ class ObsPyck(QtGui.QMainWindow):
                 index = self.widgets.qComboBox_eventType.findText(event_quakeml_type.lower(), Qt.MatchExactly)
         self.widgets.qComboBox_eventType.setCurrentIndex(index)
 
-        # remove duplicate picks:
-        self.removeDuplicatePicks()
+        # remove duplicate picks (unless explicitly opted out by user, added by
+        # request in #42):
+        try:
+            allow_multiple_picks = self.config.getboolean(
+                "misc", "allow_multiple_picks_with_same_seed_id")
+        except:
+            allow_multiple_picks = False
+        if not allow_multiple_picks:
+            self.removeDuplicatePicks()
 
         # XXX TODO: do we need this!?
         # analyze amplitudes (magnitude picks):
@@ -4150,7 +4266,7 @@ class ObsPyck(QtGui.QMainWindow):
                 msg = "Skipping amplitude not set with obspyck (or with old version)."
                 self.error(msg)
                 continue
-            tr = self.getTrace(ampl.waveform_id.getSEEDString())
+            tr = self.getTrace(ampl.waveform_id.get_seed_string())
             if tr is None:
                 continue
             ampl.setFromTimeWindow(tr)
@@ -4193,8 +4309,8 @@ class ObsPyck(QtGui.QMainWindow):
         """
         self.checkForSysopEventDuplicates(self.T0, self.T1)
 
-        events = self.event_server.event.getList(min_last_pick=starttime,
-                                                 max_first_pick=endtime)
+        events = self.event_server.event.get_list(min_last_pick=starttime,
+                                                  max_first_pick=endtime)
         events.sort(key=lambda x: x['resource_name'])
         self.seishubEventList = events
         self.seishubEventCount = len(events)
@@ -4219,8 +4335,8 @@ class ObsPyck(QtGui.QMainWindow):
         at the moment this check is conducted for the current timewindow when
         submitting a sysop event.
         """
-        events = self.event_server.event.getList(min_last_pick=starttime,
-                                                 max_first_pick=endtime)
+        events = self.event_server.event.get_list(min_last_pick=starttime,
+                                                  max_first_pick=endtime)
         # XXX TODO: we don't have sysop as author anymore!
         # all controlled by public tag now.
         sysop_events = []
@@ -4304,6 +4420,11 @@ def main():
     for opt_args, opt_kwargs in COMMANDLINE_OPTIONS:
         parser.add_option(*opt_args, **opt_kwargs)
     (options, args) = parser.parse_args()
+    if options.time is None:
+        msg = 'Time option ("-t", "--time") must be specified.'
+        raise Exception(msg)
+    print "Running ObsPyck version {} (location: {})".format(__version__,
+                                                             __file__)
     # read config file
     if options.config_file:
         config_file = os.path.expanduser(options.config_file)
@@ -4331,10 +4452,4 @@ def main():
 
 
 if __name__ == "__main__":
-    try:
-        import obspy.io  # NOQA
-    except ImportError:
-        pass
-    else:
-        raise Exception("ObsPy >= 0.11 not supported.")
     main()

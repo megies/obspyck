@@ -1,4 +1,5 @@
-#-------------------------------------------------------------------
+# -*- coding: utf-8 -*-
+# -------------------------------------------------------------------
 # Filename: util.py
 #  Purpose: Helper functions for ObsPyck
 #   Author: Tobias Megies, Lion Krischer
@@ -6,18 +7,16 @@
 #  License: GPLv2
 #
 # Copyright (C) 2010 Tobias Megies, Lion Krischer
-#---------------------------------------------------------------------
-
-import os
-import sys
+# -------------------------------------------------------------------
+import copy
+import glob
 import math
+import os
 import platform
 import shutil
 import subprocess
-import copy
+import sys
 import tempfile
-import glob
-import fnmatch
 import warnings
 from StringIO import StringIO
 
@@ -30,27 +29,32 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as QFigureCanva
 from matplotlib.widgets import MultiCursor as MplMultiCursor
 
 import obspy
-obspy.arclink.client.MAX_REQUESTS = 200
+import obspy.clients.arclink
 from obspy import UTCDateTime, read_inventory, read, Stream
-try:
-    from obspy.core.util import gps2DistAzimuth
-except:
-    from obspy.signal import gps2DistAzimuth
+from obspy.clients.arclink import Client as ArcLinkClient
+from obspy.clients.fdsn import Client as FDSNClient
+from obspy.clients.filesystem.sds import Client as SDSClient
+from obspy.clients.seedlink import Client as SeedlinkClient
+from obspy.clients.seishub import Client as SeisHubClient
+from obspy.core.util import get_matplotlib_version
+from obspy.geodetics.base import gps2dist_azimuth
+from obspy.io.xseed import Parser
 
-from obspy.core.util import getMatplotlibVersion, locations2degrees
-from obspy.taup.taup import getTravelTimes
-from obspy.fdsn import Client as FDSNClient
-from obspy.arclink import Client as ArcLinkClient
-from obspy.seishub import Client as SeisHubClient
-from obspy.xseed import Parser
-
-from rotate_to_zne import (
+from . import __version__
+from .rotate_to_zne import (
     _rotate_specific_channels_to_zne, get_orientation_from_parser,
     get_orientation)
+
+obspy.clients.arclink.client.MAX_REQUESTS = 200
 
 mpl.rc('figure.subplot', left=0.05, right=0.98, bottom=0.10, top=0.92,
        hspace=0.28)
 mpl.rcParams['font.size'] = 10
+
+
+# restrict to 64 characters to fit in allowed QuakeML maximum version field
+# length
+VERSION_INFO = 'ObsPyck {}, ObsPy {}'.format(__version__, obspy.__version__)[:64]
 
 
 COMMANDLINE_OPTIONS = (
@@ -65,10 +69,19 @@ COMMANDLINE_OPTIONS = (
                     "configuration will be created if the file does not "
                     "exist)."}),
         (("-s", "--station-combination"), {
-            'dest': "station_combination", "type": "str", "default": None,
+            'dest': "station_combinations", "action": "append", "default": [],
             'help': "Station combination to fetch data for (which must be "
-                    "defined in config file). If not specified, the default "
-                    "station combination specified in config file is used."}),
+                    "defined in config file). Can be specified multiple times "
+                    "to combine station combinations."}),
+        (("-i", "--id"), {
+            'dest': "seed_ids", "action": "append", "default": [],
+            'help': "Additional SEED ID to fetch. The ID should be specified "
+                    "as a full SEED ID with a '?' for the component code "
+                    "(e.g. 'GR.FUR..HH?'). The server to use for fetching the "
+                    "specified SEED ID is looked up in the config file "
+                    "section '[seed_id_lookup]' same as for SEED IDs "
+                    "specified in station combinations. Can be specified "
+                    "multiple times."}),
         (("-t", "--time"), {
             'dest': "time", "default": None,
             'help': "Starttime of seismogram to retrieve. It takes a "
@@ -108,21 +121,6 @@ PROGRAMS = {
 SEISMIC_PHASES = ('P', 'S')
 PHASE_COLORS = {'P': "red", 'S': "blue", 'Mag': "green"}
 COMPONENT_COLORS = {'Z': "k", 'N': "b", 'E': "r"}
-PHASE_LINESTYLES = {'P': "-", 'S': "-", 'Psynth': "--", 'Ssynth': "--",
-        'PErr1': "-", 'PErr2': "-", 'SErr1': "-", 'SErr2': "-"}
-PHASE_LINEHEIGHT_PERC = {'P': 1, 'S': 1, 'Psynth': 1, 'Ssynth': 1,
-        'PErr1': 0.75, 'PErr2': 0.75, 'SErr1': 0.75, 'SErr2': 0.75}
-KEY_FULLNAMES = {'P': "P pick", 'Psynth': "synthetic P pick",
-        'PWeight': "P pick weight", 'PPol': "P pick polarity",
-        'POnset': "P pick onset", 'PErr1': "left P error pick",
-        'PErr2': "right P error pick", 'S': "S pick",
-        'Ssynth': "synthetic S pick", 'SWeight': "S pick weight",
-        'SPol': "S pick polarity", 'SOnset': "S pick onset",
-        'SErr1': "left S error pick", 'SErr2': "right S error pick",
-        'MagMin1': "Magnitude minimum estimation pick",
-        'MagMax1': "Magnitude maximum estimation pick",
-        'MagMin2': "Magnitude minimum estimation pick",
-        'MagMax2': "Magnitude maximum estimation pick"}
 WIDGET_NAMES = ("qToolButton_clearAll", "qToolButton_clearOrigMag",
         "qToolButton_clearFocMec", "qToolButton_doHyp2000",
         "qToolButton_doNlloc", "qComboBox_nllocModel",
@@ -133,6 +131,7 @@ WIDGET_NAMES = ("qToolButton_clearAll", "qToolButton_clearOrigMag",
         "qToolButton_replaceEvent",
         "qToolButton_deleteEvent", "qCheckBox_public",
         "qCheckBox_sysop", "qLineEdit_sysopPassword", "qComboBox_eventType",
+        "qToolButton_sort_abc", "qToolButton_sort_distance",
         "qToolButton_previousStream", "qLabel_streamNumber",
         "qComboBox_streamName", "qToolButton_nextStream",
         "qToolButton_overview", "qComboBox_phaseType", "qToolButton_rotateLQT",
@@ -148,8 +147,6 @@ WIDGET_NAMES = ("qToolButton_clearAll", "qToolButton_clearOrigMag",
         "qCheckBox_spectrogramLog", "qLabel_wlen", "qDoubleSpinBox_wlen",
         "qLabel_perlap", "qDoubleSpinBox_perlap", "qPlainTextEdit_stdout",
         "qPlainTextEdit_stderr")
-#Estimating the maximum/minimum in a sample-window around click
-MAG_PICKWINDOW = 10
 MAG_MARKER = {'marker': (8, 2, 0), 'edgewidth': 1.8, 'size': 20}
 AXVLINEWIDTH = 1.5
 # dictionary for key-bindings.
@@ -245,43 +242,50 @@ def fetch_waveforms_with_metadata(options, args, config):
     :returns: (dictionary with clients,
                list(:class:`obspy.core.stream.Stream`s))
     """
-    if options.station_combination is None:
-        station_combination = config.get("base", "station_combination")
-    else:
-        station_combination = options.station_combination
+    if not options.station_combinations and not options.seed_ids and not args:
+        msg = ('No data to use specified. At least use one of option "-s", '
+               '"-i" or specify local waveform/metadata files to load.')
+        raise Exception(msg)
 
     no_metadata = config.getboolean("base", "no_metadata")
 
-    if options.time is None:
-        time_ = UTCDateTime(config.get("base", "time"))
+    time_ = UTCDateTime(options.time)
+
+    if options.starttime_offset is None:
+        t1 = time_ + config.getfloat("base", "starttime_offset")
     else:
-        time_ = UTCDateTime(options.time)
-    t1 = time_ + config.getfloat("base", "starttime_offset")
+        t1 = time_ + options.starttime_offset
     if options.duration is None:
         t2 = t1 + config.getfloat("base", "duration")
     else:
         t2 = t1 + options.duration
 
-    seed_ids_to_fetch = {}
-    seed_ids = config.get("station_combinations", station_combination)
+    seed_ids_to_fetch = set()
+    for station_combination_key in options.station_combinations:
+        seed_ids = config.get("station_combinations", station_combination_key)
+        for seed_id in seed_ids.split(","):
+            seed_ids_to_fetch.add(seed_id)
+    for seed_id in options.seed_ids:
+        seed_ids_to_fetch.add(seed_id)
+
+    seed_id_lookup = {}
     seed_id_lookup_keys = config.options("seed_id_lookup")
-    for seed_id in seed_ids.split(","):
+    for seed_id in seed_ids_to_fetch:
         netstaloc = seed_id.rsplit(".", 1)[0]
         netsta = seed_id.rsplit(".", 2)[0]
         net = seed_id.rsplit(".", 3)[0]
         # look up by exact SEED ID:
         if seed_id in seed_id_lookup_keys:
-            seed_ids_to_fetch[seed_id] = config.get("seed_id_lookup", seed_id)
+            seed_id_lookup[seed_id] = config.get("seed_id_lookup", seed_id)
         # look up by SEED ID down to location code
         elif netstaloc in seed_id_lookup_keys:
-            seed_ids_to_fetch[seed_id] = config.get("seed_id_lookup",
-                                                    netstaloc)
+            seed_id_lookup[seed_id] = config.get("seed_id_lookup", netstaloc)
         # look up by SEED ID down to station code
         elif netsta in seed_id_lookup_keys:
-            seed_ids_to_fetch[seed_id] = config.get("seed_id_lookup", netsta)
+            seed_id_lookup[seed_id] = config.get("seed_id_lookup", netsta)
         # look up by network code
         elif net in seed_id_lookup_keys:
-            seed_ids_to_fetch[seed_id] = config.get("seed_id_lookup", net)
+            seed_id_lookup[seed_id] = config.get("seed_id_lookup", net)
 
     clients = {}
 
@@ -327,8 +331,9 @@ def fetch_waveforms_with_metadata(options, args, config):
             print msg
             stream_tmp += st
         if len(parsers + inventories) == 0:
-            msg = "No station metadata for waveforms from local files."
-            raise Exception(msg)
+            if not no_metadata:
+                msg = "No station metadata for waveforms from local files."
+                raise Exception(msg)
         for tr in stream_tmp:
             if not no_metadata:
                 has_metadata = False
@@ -346,15 +351,15 @@ def fetch_waveforms_with_metadata(options, args, config):
                 if not has_metadata:
                     for parser in parsers:
                         try:
-                            tr.stats.paz = parser.getPAZ(tr.id, tr.stats.starttime)
-                            tr.stats.coordinates = parser.getCoordinates(tr.id, tr.stats.starttime)
+                            tr.stats.paz = parser.get_paz(tr.id, tr.stats.starttime)
+                            tr.stats.coordinates = parser.get_coordinates(tr.id, tr.stats.starttime)
                             tr.stats.orientation = get_orientation_from_parser(parser, tr.id, tr.stats.starttime)
                             has_metadata = True
                             break
                         except:
                             continue
                 if not has_metadata:
-                    print "found no metadata for %s!!!" % file
+                    print "found no metadata for %s!!!" % tr.id
             if tr.stats._format == 'GSE2':
                 apply_gse2_calib(tr)
         ids = set([(tr.stats.network, tr.stats.station, tr.stats.location) for tr in stream_tmp])
@@ -365,15 +370,16 @@ def fetch_waveforms_with_metadata(options, args, config):
             if config.has_section("rotate_channels"):
                 net_sta_loc = ".".join((net, sta, loc))
                 if net_sta_loc in config.options("rotate_channels"):
-                    rotate_channels(st, net, sta, loc, config)
+                    rotate_channels(stream_tmp_, net, sta, loc, config)
             streams.append(stream_tmp_)
 
     print "=" * 80
     print "Fetching waveforms and metadata from servers:"
     print "-" * 80
-    for seed_id, server in sorted(seed_ids_to_fetch.items()):
+    for seed_id, server in sorted(seed_id_lookup.items()):
         server_type = config.get(server, "type")
-        if server_type not in ("seishub", "fdsn", "jane", "arclink"):
+        if server_type not in ("seishub", "fdsn", "jane", "arclink",
+                               "seedlink", "sds"):
             msg = ("Unknown server type '{}' in server definition section "
                    "'{}' in config file.").format(server_type, server)
             raise NotImplementedError(msg)
@@ -396,26 +402,26 @@ def fetch_waveforms_with_metadata(options, args, config):
             sys.stdout.flush()
             # SeisHub
             if server_type == "seishub":
-                st = client.waveform.getWaveform(
+                st = client.waveform.get_waveforms(
                     net, sta, loc, cha, t1, t2, apply_filter=True)
                 if not no_metadata:
-                    data = client.station.getList(
+                    data = client.station.get_list(
                         network=net, station=sta, datetime=t1)
                     if len(data) == 0:
                         msg = "No station metadata on server."
                         raise Exception(msg)
                     parsers = [
-                        Parser(client.station.getResource(d['resource_name']))
+                        Parser(client.station.get_resource(d['resource_name']))
                         for d in data]
                     for tr in st:
                         orientation = [
                             get_orientation_from_parser(p_, tr.id, datetime=t1)
                             for p_ in parsers]
                         coordinates = [
-                            p_.getCoordinates(tr.id, datetime=t1)
+                            p_.get_coordinates(tr.id, datetime=t1)
                             for p_ in parsers]
                         paz = [
-                            p_.getPAZ(tr.id, datetime=t1) for p_ in parsers]
+                            p_.get_paz(tr.id, datetime=t1) for p_ in parsers]
                         # check for clashing multiple station metadata
                         for list_ in (orientation, coordinates, paz):
                             for i in range(1, len(list_))[::-1]:
@@ -434,7 +440,7 @@ def fetch_waveforms_with_metadata(options, args, config):
                         tr.stats.paz = paz[0]
             # ArcLink
             elif server_type == "arclink":
-                st = client.getWaveform(
+                st = client.get_waveforms(
                     network=net, station=sta, location=loc, channel=cha,
                     starttime=t1, endtime=t2)
                 if not no_metadata:
@@ -442,8 +448,8 @@ def fetch_waveforms_with_metadata(options, args, config):
                     for net_, sta_, loc_, cha_ in set([
                             tuple(tr.id.split(".")) for tr in st]):
                         sio = StringIO()
-                        client.saveResponse(sio, net_, sta_, loc_, cha_,
-                                            t1-10, t2+10)
+                        client.save_response(sio, net_, sta_, loc_, cha_,
+                                             t1-10, t2+10)
                         sio.seek(0)
                         id_ = ".".join((net_, sta_, loc_, cha_))
                         parsers[id_] = Parser(sio)
@@ -472,6 +478,88 @@ def fetch_waveforms_with_metadata(options, args, config):
                             tr.id, tr.stats.starttime)
                         tr.stats.orientation = get_orientation(
                             inventory, tr.id, tr.stats.starttime)
+            # Seedlink
+            elif server_type == "seedlink":
+                # XXX I think the wild card checks for net/sta/loc can be
+                # XXX removed, are already done earlier..
+                for wc in "*?":
+                    for code in (net, sta, loc):
+                        if wc in code:
+                            msg = ("Wildcards are not allowed for network/"
+                                   "station/location when fetching data via "
+                                   "seedlink ('{}')")
+                            raise ValueError(msg.format(code))
+                if '*' in cha:
+                    msg = ("Wildcard '*' not allowed for channel code "
+                           "when fetching data via seedlink ('{}')")
+                    raise ValueError(msg.format(cha))
+                st = client.get_waveform(
+                    network=net, station=sta, location=loc, channel=cha,
+                    starttime=t1, endtime=t2)
+                if not st:
+                    msg = "Server returned no data."
+                    raise Exception(msg)
+                if not no_metadata:
+                    meta_server = config.get(server, "metadata_server")
+                    meta_server_type = config.get(meta_server, "type")
+                    meta_client = connect_to_server(meta_server,
+                                                    config, clients)
+                    if meta_server_type in ('fdsn', 'jane'):
+                        inventory = meta_client.get_stations(
+                            network=net, station=sta, location=loc,
+                            level="response")
+                        failed = st.attach_response(inventory)
+                        if failed:
+                            msg = "Failed to get response for {}!"
+                            raise Exception(msg.format(failed))
+                        for tr in st:
+                            tr.stats.coordinates = inventory.get_coordinates(
+                                tr.id, tr.stats.starttime)
+                            tr.stats.orientation = get_orientation(
+                                inventory, tr.id, tr.stats.starttime)
+                    else:
+                        raise NotImplementedError()
+            # SDS
+            elif server_type == "sds":
+                # XXX I think the wild card checks for net/sta/loc can be
+                # XXX removed, are already done earlier..
+                for wc in "*?":
+                    for code in (net, sta, loc):
+                        if wc in code:
+                            msg = ("Wildcards are not allowed for network/"
+                                   "station/location when fetching data via "
+                                   "SDS client ('{}')")
+                            raise ValueError(msg.format(code))
+                if '*' in cha:
+                    msg = ("Wildcard '*' not allowed for channel code "
+                           "when fetching data via SDS client ('{}')")
+                    raise ValueError(msg.format(cha))
+                st = client.get_waveforms(
+                    network=net, station=sta, location=loc, channel=cha,
+                    starttime=t1, endtime=t2)
+                if not st:
+                    msg = "Server returned no data."
+                    raise Exception(msg)
+                if not no_metadata:
+                    meta_server = config.get(server, "metadata_server")
+                    meta_server_type = config.get(meta_server, "type")
+                    meta_client = connect_to_server(meta_server,
+                                                    config, clients)
+                    if meta_server_type in ('fdsn', 'jane'):
+                        inventory = meta_client.get_stations(
+                            network=net, station=sta, location=loc,
+                            level="response")
+                        failed = st.attach_response(inventory)
+                        if failed:
+                            msg = "Failed to get response for {}!"
+                            raise Exception(msg.format(failed))
+                        for tr in st:
+                            tr.stats.coordinates = inventory.get_coordinates(
+                                tr.id, tr.stats.starttime)
+                            tr.stats.orientation = get_orientation(
+                                inventory, tr.id, tr.stats.starttime)
+                    else:
+                        raise NotImplementedError()
             sta_fetched.add(net_sta_loc)
             sys.stdout.write("\r%s (%s: %s) fetched.\n" % (
                 seed_id.ljust(15), server_type, server))
@@ -501,6 +589,14 @@ def fetch_waveforms_with_metadata(options, args, config):
         elif server_type in ("fdsn", "jane"):
             for tr in st:
                 tr.stats['_format'] = "FDSN"
+        # seedlink
+        elif server_type == "seedlink":
+            for tr in st:
+                tr.stats['_format'] = "SeedLink"
+        # SDS
+        elif server_type == "sds":
+            for tr in st:
+                tr.stats['_format'] = "SDS"
         streams.append(st)
     print "=" * 80
     return (clients, streams)
@@ -549,7 +645,10 @@ def connect_to_server(server_name, config, clients):
         "arclink": ArcLinkClient,
         "fdsn": FDSNClient,
         "jane": FDSNClient,
-        "seishub": SeisHubClient}
+        "seishub": SeisHubClient,
+        "seedlink": SeedlinkClient,
+        "sds": SDSClient,
+        }
 
     if server_type not in client_classes.keys():
         msg = ("Unknown server type '{}' in server definition section "
@@ -566,11 +665,19 @@ def connect_to_server(server_name, config, clients):
             "base_url", "user", "password", "user_agent", "debug", "timeout"),
         "seishub": (
             "base_url", "user", "password", "timeout", "debug", "retries"),
+        "seedlink": (
+            "server", "port", "timeout", "debug"),
+        "sds": (
+            "sds_root", "sds_type", "format", "fileborder_seconds",
+            "fileborder_samples"),
         }
     config_getters = {
         "port": config.getint, "timeout": config.getfloat,
         "debug": config.getboolean, "command_delay": config.getfloat,
-        "status_delay": config.getfloat, "retries": config.getint}
+        "status_delay": config.getfloat, "retries": config.getint,
+        "fileborder_seconds": config.getfloat,
+        "fileborder_samples": config.getint,
+        }
 
     kwargs = {}
     for key in config_keys[server_type]:
@@ -609,7 +716,7 @@ def merge_check_and_cleanup_streams(streams, options, config):
                 st.merge(method=0)
         elif merge_type == "overwrite":
             for st in streams:
-                if st.getGaps() and max([gap[-1] for gap in st.getGaps()]) < 5:
+                if st.get_gaps() and max([gap[-1] for gap in st.get_gaps()]) < 5:
                     msg = 'Interpolated over gap(s) with less than 5 ' + \
                           'samples for station: %s.%s'
                     msg = msg % (st[0].stats.network, st[0].stats.station)
@@ -624,7 +731,7 @@ def merge_check_and_cleanup_streams(streams, options, config):
 
     # Sort streams again, if there was a merge this could be necessary 
     for st in streams:
-        st.sort(reverse=True)
+        st.traces = sorted(st.traces, key=_seed_id_keyfunction)
     sta_list = set()
     # XXX we need the list() because otherwise the iterator gets garbled if
     # XXX removing streams inside the for loop!!
@@ -649,72 +756,6 @@ def merge_check_and_cleanup_streams(streams, options, config):
             warn_msg += msg + "\n"
             streams.remove(st)
             continue
-        if len(st) not in [1, 3]:
-            msg = 'Warning: All streams must have either one Z trace ' + \
-                  'or a set of three ZNE traces.'
-            print msg
-            warn_msg += msg + "\n"
-            # remove all unknown channels ending with something other than
-            # Z/N/E and try again...
-            removed_channels = ""
-            for tr in st:
-                if tr.stats.channel[-1] not in ["Z", "N", "E"]:
-                    removed_channels += " " + tr.stats.channel
-                    st.remove(tr)
-            if len(st.traces) in [1, 3]:
-                msg = 'Warning: deleted some unknown channels in ' + \
-                      'stream %s.%s' % (net_sta, removed_channels)
-                print msg
-                warn_msg += msg + "\n"
-                continue
-            else:
-                msg = 'Stream %s discarded.\n' % net_sta + \
-                      'Reason: Number of traces != (1 or 3)'
-                print msg
-                warn_msg += msg + "\n"
-                #for j, tr in enumerate(st.traces):
-                #    msg = 'Trace no. %i in Stream: %s\n%s' % \
-                #            (j + 1, tr.stats.channel, tr.stats)
-                msg = str(st)
-                print msg
-                warn_msg += msg + "\n"
-                streams.remove(st)
-                merge_msg = '\nIMPORTANT:\nYou can try the command line ' + \
-                        'option merge (-m safe or -m overwrite) to ' + \
-                        'avoid losing streams due gaps/overlaps.'
-                continue
-        if len(st) == 1 and st[0].stats.channel[-1] != 'Z':
-            msg = 'Warning: All streams must have either one Z trace ' + \
-                  'or a set of three ZNE traces.'
-            msg += 'Stream %s discarded. Reason: ' % net_sta + \
-                   'Exactly one trace present but this is no Z trace'
-            print msg
-            warn_msg += msg + "\n"
-            #for j, tr in enumerate(st.traces):
-            #    msg = 'Trace no. %i in Stream: %s\n%s' % \
-            #            (j + 1, tr.stats.channel, tr.stats)
-            msg = str(st)
-            print msg
-            warn_msg += msg + "\n"
-            streams.remove(st)
-            continue
-        if len(st) == 3 and (st[0].stats.channel[-1] != 'Z' or
-                             st[1].stats.channel[-1] != 'N' or
-                             st[2].stats.channel[-1] != 'E'):
-            msg = 'Warning: All streams must have either one Z trace ' + \
-                  'or a set of three ZNE traces.'
-            msg += 'Stream %s discarded. Reason: ' % net_sta + \
-                   'Exactly three traces present but they are not ZNE'
-            print msg
-            warn_msg += msg + "\n"
-            #for j, tr in enumerate(st.traces):
-            #    msg = 'Trace no. %i in Stream: %s\n%s' % \
-            #            (j + 1, tr.stats.channel, tr.stats)
-            msg = str(st)
-            print msg
-            warn_msg += msg + "\n"
-            streams.remove(st)
-            continue
         sta_list.add(net_sta)
     # demean traces if not explicitly deactivated on command line
     if config.getboolean("base", "zero_mean"):
@@ -732,37 +773,28 @@ def merge_check_and_cleanup_streams(streams, options, config):
     return (warn_msg, merge_msg, streams)
 
 
-def cleanup_streams(streams, config):
+def cleanup_streams_without_metadata(streams):
     """
     Function to remove streams that do not provide the necessary metadata.
 
-    :returns: (list(:class:`obspy.core.stream.Stream`s),
-               list(dict))
+    :returns: list of streams
     """
     # we need to go through streams/dicts backwards in order not to get
     # problems because of the pop() statement
     for i in range(len(streams))[::-1]:
-        st = streams[i]
-        trZ = st.select(component="Z")[0]
-        if len(st) == 3:
-            trN = st.select(component="N")[0]
-            trE = st.select(component="E")[0]
-        sta = trZ.stats.station.strip()
-        net = trZ.stats.network.strip()
-        if not config.get("base", "no_metadata"):
-            try:
-                trZ.stats.coordinates.get("longitude")
-                trZ.stats.coordinates.get("latitude")
-                trZ.stats.coordinates.get("elevation")
-                trZ.stats.get("paz")
-                if len(st) == 3:
-                    trN.stats.get("paz")
-                    trE.stats.get("paz")
-            except:
-                print 'Error: Missing metadata for %s.%s. Discarding stream.' \
-                    % (net, sta)
+        ok = True
+        for tr in streams[i]:
+            for key in ('orientation', 'coordinates'):
+                if key not in tr.stats:
+                    ok = False
+            # for dataless we have paz, for stationxml/fdsnws we have response
+            if "paz" not in tr.stats and "response" not in tr.stats:
+                ok = False
+            if not ok:
+                print 'Error: Missing metadata for "%s". Discarding stream.' \
+                    % tr.id
                 streams.pop(i)
-                continue
+                break
     return streams
 
 def setup_external_programs(options, config):
@@ -903,14 +935,14 @@ class MultiCursor(MplMultiCursor):
 
     @property
     def lines(self):
-        if getMatplotlibVersion() < [1, 3, 0]:
+        if get_matplotlib_version() < [1, 3, 0]:
             return self.__dict__["lines"]
         else:
             return self.vlines
 
     @lines.setter
     def lines(self, value):
-        if getMatplotlibVersion() < [1, 3, 0]:
+        if get_matplotlib_version() < [1, 3, 0]:
             self.__dict__["lines"] = value
         else:
             self.vlines = value
@@ -1013,7 +1045,7 @@ def coords2azbazinc(stream, origin):
     dictionary.
     """
     sta_coords = stream[0].stats.coordinates
-    dist, bazim, azim = gps2DistAzimuth(sta_coords.latitude,
+    dist, bazim, azim = gps2dist_azimuth(sta_coords.latitude,
             sta_coords.longitude, float(origin.latitude),
             float(origin.longitude))
     elev_diff = sta_coords.elevation - float(origin.depth)
@@ -1075,30 +1107,34 @@ def get_event_info(starttime, endtime, streams):
     events = []
     arrivals = {}
     try:
-        client = FDSNClient("NERIES")
-        events = client.get_events(starttime=starttime - 20 * 60,
-                                   endtime=endtime)
-        for ev in events[::-1]:
-            has_arrivals = False
-            origin = ev.origins[0]
-            origin_time = origin.time
-            lon1 = origin.longitude
-            lat1 = origin.latitude
-            depth = abs(origin.depth / 1e3)
-            for st in streams:
-                sta = st[0].stats.station
-                lon2 = st[0].stats.coordinates['longitude']
-                lat2 = st[0].stats.coordinates['latitude']
-                dist = locations2degrees(lat1, lon1, lat2, lon2)
-                tts = getTravelTimes(dist, depth)
-                list_ = arrivals.setdefault(sta, [])
-                for tt in tts:
-                    tt['time'] = origin_time + tt['time']
-                    if starttime < tt['time'] < endtime:
-                        has_arrivals = True
-                        list_.append(tt)
-            if not has_arrivals:
-                events[:] = events[:-1]
+        msg = ('getTravelTimes not available in obspy.taup in newer obspy '
+               'versions anymore, so this functionality is currently not '
+               'implemented.')
+        raise NotImplementedError(msg)
+        # client = FDSNClient("NERIES")
+        # events = client.get_events(starttime=starttime - 20 * 60,
+        #                            endtime=endtime)
+        # for ev in events[::-1]:
+        #     has_arrivals = False
+        #     origin = ev.origins[0]
+        #     origin_time = origin.time
+        #     lon1 = origin.longitude
+        #     lat1 = origin.latitude
+        #     depth = abs(origin.depth / 1e3)
+        #     for st in streams:
+        #         sta = st[0].stats.station
+        #         lon2 = st[0].stats.coordinates['longitude']
+        #         lat2 = st[0].stats.coordinates['latitude']
+        #         dist = locations2degrees(lat1, lon1, lat2, lon2)
+        #         tts = getTravelTimes(dist, depth)
+        #         list_ = arrivals.setdefault(sta, [])
+        #         for tt in tts:
+        #             tt['time'] = origin_time + tt['time']
+        #             if starttime < tt['time'] < endtime:
+        #                 has_arrivals = True
+        #                 list_.append(tt)
+        #     if not has_arrivals:
+        #         events[:] = events[:-1]
     except Exception as e:
         msg = ("Problem while fetching events or determining theoretical "
                "phases: %s: %s" % (e.__class__.__name__, str(e)))
@@ -1142,3 +1178,61 @@ def map_rotated_channel_code(channel, rotation):
     elif rotation is None:
         pass
     return channel
+
+
+# copied from obspy master pre 1.1.0
+def _seed_id_keyfunction(tr):
+    """
+    Keyfunction to use in sorting two Traces by SEED ID
+
+    Assumes that the last (or only) "."-separated part is a channel code.
+    Assumes the last character is a the component code and sorts it
+    "Z"-"N"-"E"-others_lexical.
+    """
+    x = tr.id
+    # for comparison we build a list of 5 SEED code pieces:
+    # [network, station, location, band+instrument, component]
+    # with partial codes (i.e. not 4 fields after splitting at dots),
+    # we go with the following assumptions (these seem a bit random, but that's
+    # what can be encountered in string representations of the Inventory object
+    # hierarchy):
+    #  - no dot means network code only (e.g. "IU")
+    #  - one dot means network.station code only (e.g. "IU.ANMO")
+    #  - two dots means station.location.channel code only (e.g. "ANMO.10.BHZ")
+    #  - three dots: full SEED ID (e.g. "IU.ANMO.10.BHZ")
+    #  - more dots: sort after any of the previous, plain lexical sort
+    # if no "." in the string: assume it's a network code
+
+    # split to get rid of the description that that is added to networks and
+    # stations which might also contain dots.
+    number_of_dots = x.strip().split()[0].count(".")
+
+    x = x.upper()
+    if number_of_dots == 0:
+        x = [x] + [""] * 4
+    elif number_of_dots == 1:
+        x = x.split(".") + [""] * 3
+    elif number_of_dots in (2, 3):
+        x = x.split(".")
+        if number_of_dots == 2:
+            x = [""] + x
+        # split channel code into band+instrument code and component code
+        x = x[:-1] + [x[-1][:-1], x[-1] and x[-1][-1] or '']
+        # special comparison for component code, convert "ZNE" to integers
+        # which compare less than any character
+        comp = "ZNE".find(x[-1])
+        # last item is component code, either the original 1-char string, or an
+        # int from 0-2 if any of "ZNE". Python3 does not allow comparison of
+        # int and string anymore (Python 2 always compares ints smaller than
+        # any string), so we need to work around this by making this last item
+        # a tuple with first item False for ints and True for strings.
+        if comp >= 0:
+            x[-1] = (False, comp)
+        else:
+            x[-1] = (True, x[-1])
+    # all other cases, just convert the upper case string to a single item
+    # list - it will compare greater than any of the split lists.
+    else:
+        x = [x, ]
+
+    return x

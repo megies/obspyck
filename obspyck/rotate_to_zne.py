@@ -1,8 +1,11 @@
+# -*- coding: utf-8 -*-
 """
 Rotation routines backported from obspy/obspy#1310
 """
 import warnings
+
 import numpy as np
+
 from obspy import UTCDateTime
 
 
@@ -48,7 +51,7 @@ def _get_common_channels_info(self):
                 [cha_dict_["start"] for cha_dict_ in channels_.values()])
             end = min(
                 [cha_dict_["end"] for cha_dict_ in channels_.values()])
-            gaps = st__.getGaps()
+            gaps = st__.get_gaps()
             all_channels[(net, sta, loc, cha_pattern)] = {
                 "start": start, "end": end, "gaps": gaps,
                 "channels": channels_}
@@ -90,7 +93,7 @@ def _rotate_specific_channels_to_zne(
     :param channels: The three channel codes of channels that should be
         rotated.
     """
-    from obspy.signal.rotate import rotate2ZNE as rotate2zne
+    from obspy.signal.rotate import rotate2zne
     # build temporary stream that has only those traces that are supposed
     # to be used in rotation
     st = self.select(network=network, station=station, location=location)
