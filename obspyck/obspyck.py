@@ -3330,7 +3330,7 @@ class ObsPyck(QtGui.QMainWindow):
             if lat < 0:
                 hem_NS = 'S'
             if lon < 0:
-                hem_NS = 'W'
+                hem_EW = 'W'
             # hypo 71 format uses elevation in meters not kilometers
             ele = stats.coordinates.elevation
             # if sensor is buried or downhole, account for the specified sensor
