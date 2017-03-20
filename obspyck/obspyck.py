@@ -1593,7 +1593,7 @@ class ObsPyck(QtGui.QMainWindow):
         # End of key events related to picking                                #
         #######################################################################
 
-        if ev.key == keys['switchWheelZoomAxis']:
+        if ev.key in (keys['switchWheelZoomAxis'], keys['scrollWheelZoom']):
             return
 
         # iterate the phase type combobox
@@ -1667,6 +1667,25 @@ class ObsPyck(QtGui.QMainWindow):
                 elif ev.delta() > 0:
                     top /= 2
                     bottom /= 2
+        # Still able to use the dictionary.
+        elif ev.modifiers() == getattr(
+                QtCore.Qt,
+                '%sModifier' % self.keys['scrollWheelZoom'].capitalize()):
+            direction = (self.config.getboolean('misc', 'scrollWheelInvert')
+                         and 1 or -1)
+            shift = ((right - left) *
+                     self.config.getfloat('misc', 'scrollWheelPercentage'))
+            if self.widgets.qToolButton_showMap.isChecked():
+                pass
+            else:
+                # scroll left
+                if ev.delta() * direction < 0:
+                    left -= shift
+                    right -= shift
+                # scroll right
+                elif ev.delta() * direction > 0:
+                    left += shift
+                    right += shift
         ax.set_xbound(lower=left, upper=right)
         ax.set_ybound(lower=bottom, upper=top)
         self.redraw()

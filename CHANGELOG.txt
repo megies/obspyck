@@ -2,6 +2,8 @@ master
  - add support for magnitude estimation for data fetched from an FDSN server
    (using full response)
  - depending on obspy >=1.1.0 now
+ - add support for scrolling along time axis with mouse wheel + modifier
+   (by default "alt" key, see #45)
 
 0.4.1
  - fix minor bug that prevents 0.4.0 from running
