@@ -3320,8 +3320,8 @@ class ObsPyck(QtGui.QMainWindow):
             stats = st[0].stats
             sta = stats.station
             lon = stats.coordinates.longitude
-            lon_deg = int(lon)
-            lon_min = (lon - lon_deg) * 60.
+            lon_deg = int(abs(lon))
+            lon_min = (abs(lon) - abs(lon_deg)) * 60.
             lat = stats.coordinates.latitude
             lat_deg = int(abs(lat))
             lat_min = (abs(lat) - abs(lat_deg)) * 60.
