@@ -201,9 +201,6 @@ class ObsPyck(QtGui.QMainWindow):
         facecolor = self.qMain.palette().color(QtGui.QPalette.Window).getRgb()
         self.fig.set_facecolor([value / 255.0 for value in facecolor])
 
-        #Define some flags, dictionaries and plotting options
-        #this next flag indicates if we zoom on time or amplitude axis
-        self.flagWheelZoomAmplitude = False
         try:
             self.tmp_dir = setup_external_programs(options, config)
         except IOError:
@@ -301,7 +298,6 @@ class ObsPyck(QtGui.QMainWindow):
         # XXX MAYBE rename the event handles again so that they DONT get
         # XXX autoconnected via Qt?!?!?
         self.canv.mpl_connect('key_press_event', self.__mpl_keyPressEvent)
-        self.canv.mpl_connect('key_release_event', self.__mpl_keyReleaseEvent)
         self.canv.mpl_connect('button_release_event', self.__mpl_mouseButtonReleaseEvent)
         # The scroll event is handled using Qt.
         #self.canv.mpl_connect('scroll_event', self.__mpl_wheelEvent)
@@ -1598,7 +1594,6 @@ class ObsPyck(QtGui.QMainWindow):
         #######################################################################
 
         if ev.key == keys['switchWheelZoomAxis']:
-            self.flagWheelZoomAmplitude = True
             return
 
         # iterate the phase type combobox
@@ -1620,10 +1615,6 @@ class ObsPyck(QtGui.QMainWindow):
                 return
             self.on_qToolButton_nextStream_clicked()
             return
-
-    def __mpl_keyReleaseEvent(self, ev):
-        if ev.key == self.keys['switchWheelZoomAxis']:
-            self.flagWheelZoomAmplitude = False
 
     # Define zooming for the mouse wheel wheel
     def __mpl_wheelEvent(self, ev):
