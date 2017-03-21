@@ -2798,7 +2798,8 @@ class ObsPyck(QtGui.QMainWindow):
             p2ps = []
             for amplitude in self.getAmplitudes(net, sta, loc):
                 self.debug(str(amplitude))
-                timedelta = amplitude.get_timedelta()
+                # timedelta = amplitude.get_timedelta()
+                timedelta = None
                 self.debug("Timedelta: " + str(timedelta))
                 if timedelta is None:
                     continue
@@ -2820,7 +2821,7 @@ class ObsPyck(QtGui.QMainWindow):
                     self.error(msg)
                     continue
                 amplitudes.append(amplitude)
-                p2ps.append(amplitude.get_p2p())
+                # p2ps.append(amplitude.get_p2p())
                 timedeltas.append(timedelta)
                 pazs.append(paz)
                 channels.append(tr.stats.channel)
@@ -3912,12 +3913,12 @@ class ObsPyck(QtGui.QMainWindow):
             color = "gray"
 
         x, y = [], []
-        if amplitude.low is not None:
-            x.append(self.time_abs2rel(amplitude.low_time))
-            y.append(amplitude.low)
-        if amplitude.high is not None:
-            x.append(self.time_abs2rel(amplitude.high_time))
-            y.append(amplitude.high)
+        # if amplitude.low is not None:
+        #     x.append(self.time_abs2rel(amplitude.low_time))
+        #     y.append(amplitude.low)
+        # if amplitude.high is not None:
+        #     x.append(self.time_abs2rel(amplitude.high_time))
+        #     y.append(amplitude.high)
         if scaling is not None:
             y = [y_ * scaling for y_ in y]
         if x:

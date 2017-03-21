@@ -1,0 +1,1585 @@
+<?xml version='1.0' encoding='utf-8'?>
+<q:quakeml xmlns:ns0="http://geofon.gfz-potsdam.de/ns/seiscomp3-schema/0.7" xmlns:ns1="http://erdbeben-in-bayern.de/xmlns/0.1" xmlns:q="http://quakeml.org/xmlns/quakeml/1.2" xmlns="http://quakeml.org/xmlns/bed/1.2">
+  <eventParameters publicID="smi:local/4387dad4-689e-40fd-93ee-b55b08d3e407">
+    <event publicID="smi:de.erdbeben-in-bayern/event/2012sora815714">
+      <preferredOriginID>smi:de.erdbeben-in-bayern/origin/Origin/20160518064448.298378.6276</preferredOriginID>
+      <preferredMagnitudeID>smi:de.erdbeben-in-bayern/magnitude/Origin/20160518064448.298378.6276/netMag.M</preferredMagnitudeID>
+      <description>
+        <text>Rotorua</text>
+        <type>region name</type>
+      </description>
+      <creationInfo>
+        <agencyID>SORA</agencyID>
+        <author>scevent@hase</author>
+        <creationTime>2016-05-18T06:44:17.282101Z</creationTime>
+        <ns0:modificationTime>2016-05-18T06:45:45.130622Z</ns0:modificationTime>
+      </creationInfo>
+      <origin publicID="smi:de.erdbeben-in-bayern/origin/Origin/20160518064448.298378.6276">
+        <time>
+          <value>2012-10-28T19:32:46.960000Z</value>
+        </time>
+        <latitude>
+          <value>-38.48716667</value>
+          <uncertainty>1.697056275</uncertainty>
+        </latitude>
+        <longitude>
+          <value>176.3733333</value>
+          <uncertainty>1.697056275</uncertainty>
+        </longitude>
+        <depth>
+          <value>2850.0</value>
+          <uncertainty>2400.0</uncertainty>
+        </depth>
+        <methodID>smi:de.erdbeben-in-bayern/location_method/Hypo71</methodID>
+        <earthModelID>smi:de.erdbeben-in-bayern/earth_model/ROTNGA</earthModelID>
+        <quality>
+          <associatedPhaseCount>29</associatedPhaseCount>
+          <usedPhaseCount>29</usedPhaseCount>
+          <usedStationCount>28</usedStationCount>
+          <depthPhaseCount>0</depthPhaseCount>
+          <standardError>0.35</standardError>
+          <azimuthalGap>163.0</azimuthalGap>
+          <groundTruthLevel>C</groundTruthLevel>
+          <minimumDistance>0.0188962919</minimumDistance>
+          <maximumDistance>0.2429523245</maximumDistance>
+          <medianDistance>19.9</medianDistance>
+        </quality>
+        <evaluationMode>automatic</evaluationMode>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>screloc@hase</author>
+          <creationTime>2016-05-18T06:44:48.298465Z</creationTime>
+        </creationInfo>
+        <arrival publicID="smi:de.erdbeben-in-bayern/arrival/20121028.193248.50-AIC-NZ.PRRZ.10.EHZ">
+          <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193248.50-AIC-NZ.PRRZ.10.EHZ</pickID>
+          <phase>P</phase>
+          <azimuth>127.0</azimuth>
+          <distance>0.0188962919</distance>
+          <timeResidual>-0.06</timeResidual>
+          <timeWeight>1.0</timeWeight>
+          <creationInfo>
+            <author>Hypo71</author>
+            <creationTime>2016-05-18T06:44:48.298857Z</creationTime>
+            <ns0:modificationTime>2016-05-18T06:44:48.298859Z</ns0:modificationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="smi:de.erdbeben-in-bayern/arrival/20121028.193249.95-AIC-NZ.ALRZ.10.EHZ">
+          <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193249.95-AIC-NZ.ALRZ.10.EHZ</pickID>
+          <phase>P</phase>
+          <azimuth>198.0</azimuth>
+          <distance>0.07828463788</distance>
+          <timeResidual>-0.04</timeResidual>
+          <timeWeight>1.0</timeWeight>
+          <creationInfo>
+            <author>Hypo71</author>
+            <creationTime>2016-05-18T06:44:48.298532Z</creationTime>
+            <ns0:modificationTime>2016-05-18T06:44:48.298535Z</ns0:modificationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="smi:de.erdbeben-in-bayern/arrival/20121028.193251.02-AIC-NZ.HRRZ.10.EHZ">
+          <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193251.02-AIC-NZ.HRRZ.10.EHZ</pickID>
+          <phase>P</phase>
+          <azimuth>324.0</azimuth>
+          <distance>0.1196765154</distance>
+          <timeResidual>0.01</timeResidual>
+          <timeWeight>1.0</timeWeight>
+          <creationInfo>
+            <author>Hypo71</author>
+            <creationTime>2016-05-18T06:44:48.298632Z</creationTime>
+            <ns0:modificationTime>2016-05-18T06:44:48.298635Z</ns0:modificationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="smi:de.erdbeben-in-bayern/arrival/20121028.193251.56-AIC-NZ.NS04.10.EHZ">
+          <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193251.56-AIC-NZ.NS04.10.EHZ</pickID>
+          <phase>P</phase>
+          <azimuth>245.0</azimuth>
+          <distance>0.1286747496</distance>
+          <timeResidual>0.5</timeResidual>
+          <timeWeight>1.0</timeWeight>
+          <creationInfo>
+            <author>Hypo71</author>
+            <creationTime>2016-05-18T06:44:48.298713Z</creationTime>
+            <ns0:modificationTime>2016-05-18T06:44:48.298715Z</ns0:modificationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="smi:de.erdbeben-in-bayern/arrival/20121028.193251.62-AIC-NZ.NS03.10.EHZ">
+          <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193251.62-AIC-NZ.NS03.10.EHZ</pickID>
+          <phase>P</phase>
+          <azimuth>254.0</azimuth>
+          <distance>0.1340736902</distance>
+          <timeResidual>0.46</timeResidual>
+          <timeWeight>1.0</timeWeight>
+          <creationInfo>
+            <author>Hypo71</author>
+            <creationTime>2016-05-18T06:44:48.298674Z</creationTime>
+            <ns0:modificationTime>2016-05-18T06:44:48.298677Z</ns0:modificationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="smi:de.erdbeben-in-bayern/arrival/20121028.193251.71-AIC-NZ.NS07.10.EHZ">
+          <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193251.71-AIC-NZ.NS07.10.EHZ</pickID>
+          <phase>P</phase>
+          <azimuth>237.0</azimuth>
+          <distance>0.1367731604</distance>
+          <timeResidual>0.48</timeResidual>
+          <timeWeight>1.0</timeWeight>
+          <creationInfo>
+            <author>Hypo71</author>
+            <creationTime>2016-05-18T06:44:48.298743Z</creationTime>
+            <ns0:modificationTime>2016-05-18T06:44:48.298746Z</ns0:modificationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="smi:de.erdbeben-in-bayern/arrival/20121028.193252.07-AIC-NZ.NS08.10.EHZ">
+          <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193252.07-AIC-NZ.NS08.10.EHZ</pickID>
+          <phase>P</phase>
+          <azimuth>254.0</azimuth>
+          <distance>0.1538698055</distance>
+          <timeResidual>0.48</timeResidual>
+          <timeWeight>1.0</timeWeight>
+          <creationInfo>
+            <author>Hypo71</author>
+            <creationTime>2016-05-18T06:44:48.298782Z</creationTime>
+            <ns0:modificationTime>2016-05-18T06:44:48.298784Z</ns0:modificationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="smi:de.erdbeben-in-bayern/arrival/20121028.193252.18-AIC-NZ.RT12.10.EHZ">
+          <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193252.18-AIC-NZ.RT12.10.EHZ</pickID>
+          <phase>P</phase>
+          <azimuth>223.0</azimuth>
+          <distance>0.1727660974</distance>
+          <timeResidual>0.14</timeResidual>
+          <timeWeight>1.0</timeWeight>
+          <creationInfo>
+            <author>Hypo71</author>
+            <creationTime>2016-05-18T06:44:48.299097Z</creationTime>
+            <ns0:modificationTime>2016-05-18T06:44:48.299099Z</ns0:modificationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="smi:de.erdbeben-in-bayern/arrival/20121028.193252.27-AIC-NZ.WPRZ.10.EHZ">
+          <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193252.27-AIC-NZ.WPRZ.10.EHZ</pickID>
+          <phase>P</phase>
+          <azimuth>259.0</azimuth>
+          <distance>0.1691668037</distance>
+          <timeResidual>0.26</timeResidual>
+          <timeWeight>1.0</timeWeight>
+          <creationInfo>
+            <author>Hypo71</author>
+            <creationTime>2016-05-18T06:44:48.299137Z</creationTime>
+            <ns0:modificationTime>2016-05-18T06:44:48.29914Z</ns0:modificationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="smi:de.erdbeben-in-bayern/arrival/20121028.193252.29-AIC-NZ.RT07.10.EHZ">
+          <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193252.29-AIC-NZ.RT07.10.EHZ</pickID>
+          <phase>P</phase>
+          <azimuth>228.0</azimuth>
+          <distance>0.1754655677</distance>
+          <timeResidual>0.26</timeResidual>
+          <timeWeight>1.0</timeWeight>
+          <creationInfo>
+            <author>Hypo71</author>
+            <creationTime>2016-05-18T06:44:48.299003Z</creationTime>
+            <ns0:modificationTime>2016-05-18T06:44:48.299006Z</ns0:modificationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="smi:de.erdbeben-in-bayern/arrival/20121028.193252.35-AIC-NZ.RT11.10.EHZ">
+          <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193252.35-AIC-NZ.RT11.10.EHZ</pickID>
+          <phase>P</phase>
+          <azimuth>231.0</azimuth>
+          <distance>0.1799646848</distance>
+          <timeResidual>0.23</timeResidual>
+          <timeWeight>1.0</timeWeight>
+          <creationInfo>
+            <author>Hypo71</author>
+            <creationTime>2016-05-18T06:44:48.299178Z</creationTime>
+            <ns0:modificationTime>2016-05-18T06:44:48.29918Z</ns0:modificationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="smi:de.erdbeben-in-bayern/arrival/20121028.193252.49-AIC-NZ.RT08.10.EHZ">
+          <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193252.49-AIC-NZ.RT08.10.EHZ</pickID>
+          <phase>P</phase>
+          <azimuth>227.0</azimuth>
+          <distance>0.1853636253</distance>
+          <timeResidual>0.26</timeResidual>
+          <timeWeight>1.0</timeWeight>
+          <creationInfo>
+            <author>Hypo71</author>
+            <creationTime>2016-05-18T06:44:48.299031Z</creationTime>
+            <ns0:modificationTime>2016-05-18T06:44:48.299034Z</ns0:modificationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="smi:de.erdbeben-in-bayern/arrival/20121028.193252.53-AIC-NZ.NS02.10.EHZ">
+          <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193252.53-AIC-NZ.NS02.10.EHZ</pickID>
+          <phase>P</phase>
+          <azimuth>248.0</azimuth>
+          <distance>0.1790648614</distance>
+          <timeResidual>0.41</timeResidual>
+          <timeWeight>1.0</timeWeight>
+          <creationInfo>
+            <author>Hypo71</author>
+            <creationTime>2016-05-18T06:44:48.299234Z</creationTime>
+            <ns0:modificationTime>2016-05-18T06:44:48.299237Z</ns0:modificationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="smi:de.erdbeben-in-bayern/arrival/20121028.193252.55-AIC-NZ.RT02.10.EHZ">
+          <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193252.55-AIC-NZ.RT02.10.EHZ</pickID>
+          <phase>P</phase>
+          <azimuth>233.0</azimuth>
+          <distance>0.1925622127</distance>
+          <timeResidual>0.2</timeResidual>
+          <timeWeight>1.0</timeWeight>
+          <creationInfo>
+            <author>Hypo71</author>
+            <creationTime>2016-05-18T06:44:48.298915Z</creationTime>
+            <ns0:modificationTime>2016-05-18T06:44:48.298917Z</ns0:modificationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="smi:de.erdbeben-in-bayern/arrival/20121028.193252.57-S-AIC-NZ.NS03.10.EHN">
+          <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193252.57-S-AIC-NZ.NS03.10.EHN</pickID>
+          <phase>S</phase>
+          <azimuth>254.0</azimuth>
+          <distance>0.1340736902</distance>
+          <timeResidual>-1.66</timeResidual>
+          <timeWeight>1.0</timeWeight>
+          <creationInfo>
+            <author>Hypo71</author>
+            <creationTime>2016-05-18T06:44:48.298674Z</creationTime>
+            <ns0:modificationTime>2016-05-18T06:44:48.298677Z</ns0:modificationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="smi:de.erdbeben-in-bayern/arrival/20121028.193252.63-AIC-NZ.RT06.10.EHZ">
+          <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193252.63-AIC-NZ.RT06.10.EHZ</pickID>
+          <phase>P</phase>
+          <azimuth>228.0</azimuth>
+          <distance>0.1943618596</distance>
+          <timeResidual>0.23</timeResidual>
+          <timeWeight>1.0</timeWeight>
+          <creationInfo>
+            <author>Hypo71</author>
+            <creationTime>2016-05-18T06:44:48.298972Z</creationTime>
+            <ns0:modificationTime>2016-05-18T06:44:48.298974Z</ns0:modificationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="smi:de.erdbeben-in-bayern/arrival/20121028.193252.74-AIC-NZ.RT05.10.EHZ">
+          <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193252.74-AIC-NZ.RT05.10.EHZ</pickID>
+          <phase>P</phase>
+          <azimuth>224.0</azimuth>
+          <distance>0.2006606235</distance>
+          <timeResidual>0.21</timeResidual>
+          <timeWeight>1.0</timeWeight>
+          <creationInfo>
+            <author>Hypo71</author>
+            <creationTime>2016-05-18T06:44:48.298942Z</creationTime>
+            <ns0:modificationTime>2016-05-18T06:44:48.298945Z</ns0:modificationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="smi:de.erdbeben-in-bayern/arrival/20121028.193252.77-AIC-NZ.NS09.10.EHZ">
+          <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193252.77-AIC-NZ.NS09.10.EHZ</pickID>
+          <phase>P</phase>
+          <azimuth>242.0</azimuth>
+          <distance>0.1871632722</distance>
+          <timeResidual>0.44</timeResidual>
+          <timeWeight>1.0</timeWeight>
+          <creationInfo>
+            <author>Hypo71</author>
+            <creationTime>2016-05-18T06:44:48.298820Z</creationTime>
+            <ns0:modificationTime>2016-05-18T06:44:48.298822Z</ns0:modificationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="smi:de.erdbeben-in-bayern/arrival/20121028.193252.77-AIC-NZ.RT09.10.EHZ">
+          <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193252.77-AIC-NZ.RT09.10.EHZ</pickID>
+          <phase>P</phase>
+          <azimuth>231.0</azimuth>
+          <distance>0.1997608001</distance>
+          <timeResidual>0.28</timeResidual>
+          <timeWeight>1.0</timeWeight>
+          <creationInfo>
+            <author>Hypo71</author>
+            <creationTime>2016-05-18T06:44:48.299059Z</creationTime>
+            <ns0:modificationTime>2016-05-18T06:44:48.299062Z</ns0:modificationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="smi:de.erdbeben-in-bayern/arrival/20121028.193253.02-AIC-NZ.RT01.10.EHZ">
+          <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193253.02-AIC-NZ.RT01.10.EHZ</pickID>
+          <phase>P</phase>
+          <azimuth>229.0</azimuth>
+          <distance>0.2078592109</distance>
+          <timeResidual>0.36</timeResidual>
+          <timeWeight>1.0</timeWeight>
+          <creationInfo>
+            <author>Hypo71</author>
+            <creationTime>2016-05-18T06:44:48.298887Z</creationTime>
+            <ns0:modificationTime>2016-05-18T06:44:48.298889Z</ns0:modificationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="smi:de.erdbeben-in-bayern/arrival/20121028.193253.21-S-AIC-NZ.RT12.10.EHN">
+          <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193253.21-S-AIC-NZ.RT12.10.EHN</pickID>
+          <phase>S</phase>
+          <azimuth>223.0</azimuth>
+          <distance>0.1727660974</distance>
+          <timeResidual>-2.54</timeResidual>
+          <timeWeight>1.0</timeWeight>
+          <creationInfo>
+            <author>Hypo71</author>
+            <creationTime>2016-05-18T06:44:48.299097Z</creationTime>
+            <ns0:modificationTime>2016-05-18T06:44:48.299099Z</ns0:modificationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="smi:de.erdbeben-in-bayern/arrival/20121028.193253.65-S-AIC-NZ.NS07.10.EHN">
+          <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193253.65-S-AIC-NZ.NS07.10.EHN</pickID>
+          <phase>S</phase>
+          <azimuth>237.0</azimuth>
+          <distance>0.1367731604</distance>
+          <timeResidual>-0.69</timeResidual>
+          <timeWeight>1.0</timeWeight>
+          <creationInfo>
+            <author>Hypo71</author>
+            <creationTime>2016-05-18T06:44:48.298743Z</creationTime>
+            <ns0:modificationTime>2016-05-18T06:44:48.298746Z</ns0:modificationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="smi:de.erdbeben-in-bayern/arrival/20121028.193253.74-S-AIC-NZ.NS08.10.EHN">
+          <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193253.74-S-AIC-NZ.NS08.10.EHN</pickID>
+          <phase>S</phase>
+          <azimuth>254.0</azimuth>
+          <distance>0.1538698055</distance>
+          <timeResidual>-1.23</timeResidual>
+          <timeWeight>1.0</timeWeight>
+          <creationInfo>
+            <author>Hypo71</author>
+            <creationTime>2016-05-18T06:44:48.298782Z</creationTime>
+            <ns0:modificationTime>2016-05-18T06:44:48.298784Z</ns0:modificationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="smi:de.erdbeben-in-bayern/arrival/20121028.193253.78-AIC-NZ.ARAZ.10.EHZ">
+          <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193253.78-AIC-NZ.ARAZ.10.EHZ</pickID>
+          <phase>P</phase>
+          <azimuth>235.0</azimuth>
+          <distance>0.2429523245</distance>
+          <timeResidual>0.44</timeResidual>
+          <timeWeight>1.0</timeWeight>
+          <creationInfo>
+            <author>Hypo71</author>
+            <creationTime>2016-05-18T06:44:48.298597Z</creationTime>
+            <ns0:modificationTime>2016-05-18T06:44:48.2986Z</ns0:modificationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="smi:de.erdbeben-in-bayern/arrival/20121028.193253.81-S-AIC-NZ.NS09.10.EHN">
+          <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193253.81-S-AIC-NZ.NS09.10.EHN</pickID>
+          <phase>S</phase>
+          <azimuth>242.0</azimuth>
+          <distance>0.1871632722</distance>
+          <timeResidual>-2.44</timeResidual>
+          <timeWeight>1.0</timeWeight>
+          <creationInfo>
+            <author>Hypo71</author>
+            <creationTime>2016-05-18T06:44:48.298820Z</creationTime>
+            <ns0:modificationTime>2016-05-18T06:44:48.298822Z</ns0:modificationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="smi:de.erdbeben-in-bayern/arrival/20121028.193253.89-S-AIC-NZ.HRRZ.10.EHN">
+          <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193253.89-S-AIC-NZ.HRRZ.10.EHN</pickID>
+          <phase>S</phase>
+          <azimuth>324.0</azimuth>
+          <distance>0.1196765154</distance>
+          <timeResidual>-0.08</timeResidual>
+          <timeWeight>1.0</timeWeight>
+          <creationInfo>
+            <author>Hypo71</author>
+            <creationTime>2016-05-18T06:44:48.298632Z</creationTime>
+            <ns0:modificationTime>2016-05-18T06:44:48.298635Z</ns0:modificationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="smi:de.erdbeben-in-bayern/arrival/20121028.193255.69-S-AIC-NZ.WPRZ.10.EHN">
+          <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193255.69-S-AIC-NZ.WPRZ.10.EHN</pickID>
+          <phase>S</phase>
+          <azimuth>259.0</azimuth>
+          <distance>0.1691668037</distance>
+          <timeResidual>-0.01</timeResidual>
+          <timeWeight>1.0</timeWeight>
+          <creationInfo>
+            <author>Hypo71</author>
+            <creationTime>2016-05-18T06:44:48.299137Z</creationTime>
+            <ns0:modificationTime>2016-05-18T06:44:48.29914Z</ns0:modificationTime>
+          </creationInfo>
+        </arrival>
+        <arrival publicID="smi:de.erdbeben-in-bayern/arrival/20121028.193256.64-S-AIC-NZ.RT09.10.EHN">
+          <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193256.64-S-AIC-NZ.RT09.10.EHN</pickID>
+          <phase>S</phase>
+          <azimuth>231.0</azimuth>
+          <distance>0.1997608001</distance>
+          <timeResidual>0.11</timeResidual>
+          <timeWeight>1.0</timeWeight>
+          <creationInfo>
+            <author>Hypo71</author>
+            <creationTime>2016-05-18T06:44:48.299059Z</creationTime>
+            <ns0:modificationTime>2016-05-18T06:44:48.299062Z</ns0:modificationTime>
+          </creationInfo>
+        </arrival>
+      </origin>
+      <magnitude publicID="smi:de.erdbeben-in-bayern/magnitude/Origin/20160518064448.298378.6276/netMag.M">
+        <mag>
+          <value>2.15242009</value>
+        </mag>
+        <type>M</type>
+        <methodID>smi:de.erdbeben-in-bayern/magnitude_method/weighted_average</methodID>
+        <stationCount>16</stationCount>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scmag@hase</author>
+          <creationTime>2016-05-18T06:45:28.180805Z</creationTime>
+        </creationInfo>
+      </magnitude>
+      <stationMagnitude publicID="smi:de.erdbeben-in-bayern/station_magnitude/Origin/20160518064448.298378.6276/staMag.MLv/NZ.ALRZ">
+        <originID>smi:de.erdbeben-in-bayern/origin/Origin/20160518064448.298378.6276</originID>
+        <mag>
+          <value>2.101094801</value>
+        </mag>
+        <type>MLv</type>
+        <amplitudeID>smi:de.erdbeben-in-bayern/amplitude/20121028.193249.95-AIC-NZ.ALRZ.10.EHZ.MLv</amplitudeID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="ALRZ"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scmag@hase</author>
+          <creationTime>2016-05-18T06:45:28.177056Z</creationTime>
+        </creationInfo>
+      </stationMagnitude>
+      <stationMagnitude publicID="smi:de.erdbeben-in-bayern/station_magnitude/Origin/20160518064448.298378.6276/staMag.MLv/NZ.ARAZ">
+        <originID>smi:de.erdbeben-in-bayern/origin/Origin/20160518064448.298378.6276</originID>
+        <mag>
+          <value>1.723380909</value>
+        </mag>
+        <type>MLv</type>
+        <amplitudeID>smi:de.erdbeben-in-bayern/amplitude/20121028.193253.78-AIC-NZ.ARAZ.10.EHZ.MLv</amplitudeID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="ARAZ"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scmag@hase</author>
+          <creationTime>2016-05-18T06:45:28.177259Z</creationTime>
+        </creationInfo>
+      </stationMagnitude>
+      <stationMagnitude publicID="smi:de.erdbeben-in-bayern/station_magnitude/Origin/20160518064448.298378.6276/staMag.MLv/NZ.HRRZ">
+        <originID>smi:de.erdbeben-in-bayern/origin/Origin/20160518064448.298378.6276</originID>
+        <mag>
+          <value>1.85351944</value>
+        </mag>
+        <type>MLv</type>
+        <amplitudeID>smi:de.erdbeben-in-bayern/amplitude/20121028.193251.02-AIC-NZ.HRRZ.10.EHZ.MLv</amplitudeID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="HRRZ"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scmag@hase</author>
+          <creationTime>2016-05-18T06:45:28.177443Z</creationTime>
+        </creationInfo>
+      </stationMagnitude>
+      <stationMagnitude publicID="smi:de.erdbeben-in-bayern/station_magnitude/Origin/20160518064448.298378.6276/staMag.MLv/NZ.NS02">
+        <originID>smi:de.erdbeben-in-bayern/origin/Origin/20160518064448.298378.6276</originID>
+        <mag>
+          <value>2.208106565</value>
+        </mag>
+        <type>MLv</type>
+        <amplitudeID>smi:de.erdbeben-in-bayern/amplitude/20121028.193252.53-AIC-NZ.NS02.10.EHZ.MLv</amplitudeID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="NS02"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scmag@hase</author>
+          <creationTime>2016-05-18T06:45:28.177645Z</creationTime>
+        </creationInfo>
+      </stationMagnitude>
+      <stationMagnitude publicID="smi:de.erdbeben-in-bayern/station_magnitude/Origin/20160518064448.298378.6276/staMag.MLv/NZ.NS03">
+        <originID>smi:de.erdbeben-in-bayern/origin/Origin/20160518064448.298378.6276</originID>
+        <mag>
+          <value>2.339762108</value>
+        </mag>
+        <type>MLv</type>
+        <amplitudeID>smi:de.erdbeben-in-bayern/amplitude/20121028.193251.62-AIC-NZ.NS03.10.EHZ.MLv</amplitudeID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="NS03"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scmag@hase</author>
+          <creationTime>2016-05-18T06:45:28.177905Z</creationTime>
+        </creationInfo>
+      </stationMagnitude>
+      <stationMagnitude publicID="smi:de.erdbeben-in-bayern/station_magnitude/Origin/20160518064448.298378.6276/staMag.MLv/NZ.NS04">
+        <originID>smi:de.erdbeben-in-bayern/origin/Origin/20160518064448.298378.6276</originID>
+        <mag>
+          <value>2.072661644</value>
+        </mag>
+        <type>MLv</type>
+        <amplitudeID>smi:de.erdbeben-in-bayern/amplitude/20121028.193251.56-AIC-NZ.NS04.10.EHZ.MLv</amplitudeID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="NS04"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scmag@hase</author>
+          <creationTime>2016-05-18T06:45:28.178180Z</creationTime>
+        </creationInfo>
+      </stationMagnitude>
+      <stationMagnitude publicID="smi:de.erdbeben-in-bayern/station_magnitude/Origin/20160518064448.298378.6276/staMag.MLv/NZ.NS07">
+        <originID>smi:de.erdbeben-in-bayern/origin/Origin/20160518064448.298378.6276</originID>
+        <mag>
+          <value>2.328076332</value>
+        </mag>
+        <type>MLv</type>
+        <amplitudeID>smi:de.erdbeben-in-bayern/amplitude/20121028.193251.71-AIC-NZ.NS07.10.EHZ.MLv</amplitudeID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="NS07"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scmag@hase</author>
+          <creationTime>2016-05-18T06:45:28.178449Z</creationTime>
+        </creationInfo>
+      </stationMagnitude>
+      <stationMagnitude publicID="smi:de.erdbeben-in-bayern/station_magnitude/Origin/20160518064448.298378.6276/staMag.MLv/NZ.NS08">
+        <originID>smi:de.erdbeben-in-bayern/origin/Origin/20160518064448.298378.6276</originID>
+        <mag>
+          <value>2.153283593</value>
+        </mag>
+        <type>MLv</type>
+        <amplitudeID>smi:de.erdbeben-in-bayern/amplitude/20121028.193252.07-AIC-NZ.NS08.10.EHZ.MLv</amplitudeID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="NS08"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scmag@hase</author>
+          <creationTime>2016-05-18T06:45:28.178716Z</creationTime>
+        </creationInfo>
+      </stationMagnitude>
+      <stationMagnitude publicID="smi:de.erdbeben-in-bayern/station_magnitude/Origin/20160518064448.298378.6276/staMag.MLv/NZ.NS09">
+        <originID>smi:de.erdbeben-in-bayern/origin/Origin/20160518064448.298378.6276</originID>
+        <mag>
+          <value>2.300951886</value>
+        </mag>
+        <type>MLv</type>
+        <amplitudeID>smi:de.erdbeben-in-bayern/amplitude/20121028.193252.77-AIC-NZ.NS09.10.EHZ.MLv</amplitudeID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="NS09"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scmag@hase</author>
+          <creationTime>2016-05-18T06:45:28.178980Z</creationTime>
+        </creationInfo>
+      </stationMagnitude>
+      <stationMagnitude publicID="smi:de.erdbeben-in-bayern/station_magnitude/Origin/20160518064448.298378.6276/staMag.MLv/NZ.PRRZ">
+        <originID>smi:de.erdbeben-in-bayern/origin/Origin/20160518064448.298378.6276</originID>
+        <mag>
+          <value>1.673886756</value>
+        </mag>
+        <type>MLv</type>
+        <amplitudeID>smi:de.erdbeben-in-bayern/amplitude/20121028.193248.50-AIC-NZ.PRRZ.10.EHZ.MLv</amplitudeID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="PRRZ"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scmag@hase</author>
+          <creationTime>2016-05-18T06:45:28.179302Z</creationTime>
+        </creationInfo>
+      </stationMagnitude>
+      <stationMagnitude publicID="smi:de.erdbeben-in-bayern/station_magnitude/Origin/20160518064448.298378.6276/staMag.MLv/NZ.RT01">
+        <originID>smi:de.erdbeben-in-bayern/origin/Origin/20160518064448.298378.6276</originID>
+        <mag>
+          <value>2.171217239</value>
+        </mag>
+        <type>MLv</type>
+        <amplitudeID>smi:de.erdbeben-in-bayern/amplitude/20121028.193253.02-AIC-NZ.RT01.10.EHZ.MLv</amplitudeID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="RT01"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scmag@hase</author>
+          <creationTime>2016-05-18T06:45:28.179417Z</creationTime>
+        </creationInfo>
+      </stationMagnitude>
+      <stationMagnitude publicID="smi:de.erdbeben-in-bayern/station_magnitude/Origin/20160518064448.298378.6276/staMag.MLv/NZ.RT02">
+        <originID>smi:de.erdbeben-in-bayern/origin/Origin/20160518064448.298378.6276</originID>
+        <mag>
+          <value>2.326589156</value>
+        </mag>
+        <type>MLv</type>
+        <amplitudeID>smi:de.erdbeben-in-bayern/amplitude/20121028.193252.55-AIC-NZ.RT02.10.EHZ.MLv</amplitudeID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="RT02"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scmag@hase</author>
+          <creationTime>2016-05-18T06:45:28.179530Z</creationTime>
+        </creationInfo>
+      </stationMagnitude>
+      <stationMagnitude publicID="smi:de.erdbeben-in-bayern/station_magnitude/Origin/20160518064448.298378.6276/staMag.MLv/NZ.RT05">
+        <originID>smi:de.erdbeben-in-bayern/origin/Origin/20160518064448.298378.6276</originID>
+        <mag>
+          <value>1.989022418</value>
+        </mag>
+        <type>MLv</type>
+        <amplitudeID>smi:de.erdbeben-in-bayern/amplitude/20121028.193252.74-AIC-NZ.RT05.10.EHZ.MLv</amplitudeID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="RT05"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scmag@hase</author>
+          <creationTime>2016-05-18T06:45:28.179641Z</creationTime>
+        </creationInfo>
+      </stationMagnitude>
+      <stationMagnitude publicID="smi:de.erdbeben-in-bayern/station_magnitude/Origin/20160518064448.298378.6276/staMag.MLv/NZ.RT06">
+        <originID>smi:de.erdbeben-in-bayern/origin/Origin/20160518064448.298378.6276</originID>
+        <mag>
+          <value>2.161125816</value>
+        </mag>
+        <type>MLv</type>
+        <amplitudeID>smi:de.erdbeben-in-bayern/amplitude/20121028.193252.63-AIC-NZ.RT06.10.EHZ.MLv</amplitudeID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="RT06"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scmag@hase</author>
+          <creationTime>2016-05-18T06:45:28.179754Z</creationTime>
+        </creationInfo>
+      </stationMagnitude>
+      <stationMagnitude publicID="smi:de.erdbeben-in-bayern/station_magnitude/Origin/20160518064448.298378.6276/staMag.MLv/NZ.RT07">
+        <originID>smi:de.erdbeben-in-bayern/origin/Origin/20160518064448.298378.6276</originID>
+        <mag>
+          <value>2.19456551</value>
+        </mag>
+        <type>MLv</type>
+        <amplitudeID>smi:de.erdbeben-in-bayern/amplitude/20121028.193252.29-AIC-NZ.RT07.10.EHZ.MLv</amplitudeID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="RT07"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scmag@hase</author>
+          <creationTime>2016-05-18T06:45:28.179866Z</creationTime>
+        </creationInfo>
+      </stationMagnitude>
+      <stationMagnitude publicID="smi:de.erdbeben-in-bayern/station_magnitude/Origin/20160518064448.298378.6276/staMag.MLv/NZ.RT08">
+        <originID>smi:de.erdbeben-in-bayern/origin/Origin/20160518064448.298378.6276</originID>
+        <mag>
+          <value>2.288339921</value>
+        </mag>
+        <type>MLv</type>
+        <amplitudeID>smi:de.erdbeben-in-bayern/amplitude/20121028.193252.49-AIC-NZ.RT08.10.EHZ.MLv</amplitudeID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="RT08"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scmag@hase</author>
+          <creationTime>2016-05-18T06:45:28.179978Z</creationTime>
+        </creationInfo>
+      </stationMagnitude>
+      <stationMagnitude publicID="smi:de.erdbeben-in-bayern/station_magnitude/Origin/20160518064448.298378.6276/staMag.MLv/NZ.RT09">
+        <originID>smi:de.erdbeben-in-bayern/origin/Origin/20160518064448.298378.6276</originID>
+        <mag>
+          <value>2.106175516</value>
+        </mag>
+        <type>MLv</type>
+        <amplitudeID>smi:de.erdbeben-in-bayern/amplitude/20121028.193252.77-AIC-NZ.RT09.10.EHZ.MLv</amplitudeID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="RT09"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scmag@hase</author>
+          <creationTime>2016-05-18T06:45:28.180091Z</creationTime>
+        </creationInfo>
+      </stationMagnitude>
+      <stationMagnitude publicID="smi:de.erdbeben-in-bayern/station_magnitude/Origin/20160518064448.298378.6276/staMag.MLv/NZ.RT11">
+        <originID>smi:de.erdbeben-in-bayern/origin/Origin/20160518064448.298378.6276</originID>
+        <mag>
+          <value>2.510387557</value>
+        </mag>
+        <type>MLv</type>
+        <amplitudeID>smi:de.erdbeben-in-bayern/amplitude/20121028.193252.35-AIC-NZ.RT11.10.EHZ.MLv</amplitudeID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="RT11"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scmag@hase</author>
+          <creationTime>2016-05-18T06:45:28.180206Z</creationTime>
+        </creationInfo>
+      </stationMagnitude>
+      <stationMagnitude publicID="smi:de.erdbeben-in-bayern/station_magnitude/Origin/20160518064448.298378.6276/staMag.MLv/NZ.RT12">
+        <originID>smi:de.erdbeben-in-bayern/origin/Origin/20160518064448.298378.6276</originID>
+        <mag>
+          <value>2.453925481</value>
+        </mag>
+        <type>MLv</type>
+        <amplitudeID>smi:de.erdbeben-in-bayern/amplitude/20121028.193252.18-AIC-NZ.RT12.10.EHZ.MLv</amplitudeID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="RT12"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scmag@hase</author>
+          <creationTime>2016-05-18T06:45:28.180319Z</creationTime>
+        </creationInfo>
+      </stationMagnitude>
+      <stationMagnitude publicID="smi:de.erdbeben-in-bayern/station_magnitude/Origin/20160518064448.298378.6276/staMag.MLv/NZ.WPRZ">
+        <originID>smi:de.erdbeben-in-bayern/origin/Origin/20160518064448.298378.6276</originID>
+        <mag>
+          <value>1.686029255</value>
+        </mag>
+        <type>MLv</type>
+        <amplitudeID>smi:de.erdbeben-in-bayern/amplitude/20121028.193252.27-AIC-NZ.WPRZ.10.EHZ.MLv</amplitudeID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="WPRZ"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scmag@hase</author>
+          <creationTime>2016-05-18T06:45:28.180446Z</creationTime>
+        </creationInfo>
+      </stationMagnitude>
+      <pick publicID="smi:de.erdbeben-in-bayern/pick/20121028.193248.50-AIC-NZ.PRRZ.10.EHZ">
+        <time>
+          <value>2012-10-28T19:32:48.508393Z</value>
+        </time>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="PRRZ"></waveformID>
+        <methodID>smi:de.erdbeben-in-bayern/pick_method/AIC</methodID>
+        <phaseHint>P</phaseHint>
+        <evaluationMode>automatic</evaluationMode>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.383552Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="smi:de.erdbeben-in-bayern/pick/20121028.193249.95-AIC-NZ.ALRZ.10.EHZ">
+        <time>
+          <value>2012-10-28T19:32:49.958385Z</value>
+        </time>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="ALRZ"></waveformID>
+        <methodID>smi:de.erdbeben-in-bayern/pick_method/AIC</methodID>
+        <phaseHint>P</phaseHint>
+        <evaluationMode>automatic</evaluationMode>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.412326Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="smi:de.erdbeben-in-bayern/pick/20121028.193251.02-AIC-NZ.HRRZ.10.EHZ">
+        <time>
+          <value>2012-10-28T19:32:51.028393Z</value>
+        </time>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="HRRZ"></waveformID>
+        <methodID>smi:de.erdbeben-in-bayern/pick_method/AIC</methodID>
+        <phaseHint>P</phaseHint>
+        <evaluationMode>automatic</evaluationMode>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.435642Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="smi:de.erdbeben-in-bayern/pick/20121028.193251.56-AIC-NZ.NS04.10.EHZ">
+        <time>
+          <value>2012-10-28T19:32:51.564999Z</value>
+        </time>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="NS04"></waveformID>
+        <methodID>smi:de.erdbeben-in-bayern/pick_method/AIC</methodID>
+        <phaseHint>P</phaseHint>
+        <evaluationMode>automatic</evaluationMode>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.420758Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="smi:de.erdbeben-in-bayern/pick/20121028.193251.71-AIC-NZ.NS07.10.EHZ">
+        <time>
+          <value>2012-10-28T19:32:51.710000Z</value>
+        </time>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="NS07"></waveformID>
+        <methodID>smi:de.erdbeben-in-bayern/pick_method/AIC</methodID>
+        <phaseHint>P</phaseHint>
+        <evaluationMode>automatic</evaluationMode>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.429901Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="smi:de.erdbeben-in-bayern/pick/20121028.193252.30-AIC-NZ.RT07.10.EHZ">
+        <time>
+          <value>2012-10-28T19:32:52.300000Z</value>
+        </time>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="RT07"></waveformID>
+        <methodID>smi:de.erdbeben-in-bayern/pick_method/AIC</methodID>
+        <phaseHint>P</phaseHint>
+        <evaluationMode>automatic</evaluationMode>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.425373Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="smi:de.erdbeben-in-bayern/pick/20121028.193252.08-AIC-NZ.RT03.10.EHZ">
+        <time>
+          <value>2012-10-28T19:32:52.080000Z</value>
+        </time>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="RT03"></waveformID>
+        <methodID>smi:de.erdbeben-in-bayern/pick_method/AIC</methodID>
+        <phaseHint>P</phaseHint>
+        <evaluationMode>automatic</evaluationMode>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.443113Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="smi:de.erdbeben-in-bayern/pick/20121028.193252.09-AIC-NZ.NS01.10.EHZ">
+        <time>
+          <value>2012-10-28T19:32:52.095000Z</value>
+        </time>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="NS01"></waveformID>
+        <methodID>smi:de.erdbeben-in-bayern/pick_method/AIC</methodID>
+        <phaseHint>P</phaseHint>
+        <evaluationMode>automatic</evaluationMode>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.445897Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="smi:de.erdbeben-in-bayern/pick/20121028.193252.18-AIC-NZ.RT12.10.EHZ">
+        <time>
+          <value>2012-10-28T19:32:52.180000Z</value>
+        </time>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="RT12"></waveformID>
+        <methodID>smi:de.erdbeben-in-bayern/pick_method/AIC</methodID>
+        <phaseHint>P</phaseHint>
+        <evaluationMode>automatic</evaluationMode>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.438917Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="smi:de.erdbeben-in-bayern/pick/20121028.193252.27-AIC-NZ.WPRZ.10.EHZ">
+        <time>
+          <value>2012-10-28T19:32:52.278393Z</value>
+        </time>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="WPRZ"></waveformID>
+        <methodID>smi:de.erdbeben-in-bayern/pick_method/AIC</methodID>
+        <phaseHint>P</phaseHint>
+        <evaluationMode>automatic</evaluationMode>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.446919Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="smi:de.erdbeben-in-bayern/pick/20121028.193252.55-AIC-NZ.RT02.10.EHZ">
+        <time>
+          <value>2012-10-28T19:32:52.555000Z</value>
+        </time>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="RT02"></waveformID>
+        <methodID>smi:de.erdbeben-in-bayern/pick_method/AIC</methodID>
+        <phaseHint>P</phaseHint>
+        <evaluationMode>automatic</evaluationMode>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.458128Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="smi:de.erdbeben-in-bayern/pick/20121028.193252.74-AIC-NZ.RT05.10.EHZ">
+        <time>
+          <value>2012-10-28T19:32:52.744999Z</value>
+        </time>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="RT05"></waveformID>
+        <methodID>smi:de.erdbeben-in-bayern/pick_method/AIC</methodID>
+        <phaseHint>P</phaseHint>
+        <evaluationMode>automatic</evaluationMode>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.450522Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="smi:de.erdbeben-in-bayern/pick/20121028.193252.49-AIC-NZ.RT08.10.EHZ">
+        <time>
+          <value>2012-10-28T19:32:52.494999Z</value>
+        </time>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="RT08"></waveformID>
+        <methodID>smi:de.erdbeben-in-bayern/pick_method/AIC</methodID>
+        <phaseHint>P</phaseHint>
+        <evaluationMode>automatic</evaluationMode>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.464182Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="smi:de.erdbeben-in-bayern/pick/20121028.193252.77-AIC-NZ.RT09.10.EHZ">
+        <time>
+          <value>2012-10-28T19:32:52.770000Z</value>
+        </time>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="RT09"></waveformID>
+        <methodID>smi:de.erdbeben-in-bayern/pick_method/AIC</methodID>
+        <phaseHint>P</phaseHint>
+        <evaluationMode>automatic</evaluationMode>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.482026Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="smi:de.erdbeben-in-bayern/pick/20121028.193253.02-AIC-NZ.RT01.10.EHZ">
+        <time>
+          <value>2012-10-28T19:32:53.029999Z</value>
+        </time>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="RT01"></waveformID>
+        <methodID>smi:de.erdbeben-in-bayern/pick_method/AIC</methodID>
+        <phaseHint>P</phaseHint>
+        <evaluationMode>automatic</evaluationMode>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.487626Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="smi:de.erdbeben-in-bayern/pick/20121028.193251.62-AIC-NZ.NS03.10.EHZ">
+        <time>
+          <value>2012-10-28T19:32:51.629999Z</value>
+        </time>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="NS03"></waveformID>
+        <methodID>smi:de.erdbeben-in-bayern/pick_method/AIC</methodID>
+        <phaseHint>P</phaseHint>
+        <evaluationMode>automatic</evaluationMode>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.511122Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="smi:de.erdbeben-in-bayern/pick/20121028.193253.78-AIC-NZ.ARAZ.10.EHZ">
+        <time>
+          <value>2012-10-28T19:32:53.788389Z</value>
+        </time>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="ARAZ"></waveformID>
+        <methodID>smi:de.erdbeben-in-bayern/pick_method/AIC</methodID>
+        <phaseHint>P</phaseHint>
+        <evaluationMode>automatic</evaluationMode>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.504276Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="smi:de.erdbeben-in-bayern/pick/20121028.193252.07-AIC-NZ.NS08.10.EHZ">
+        <time>
+          <value>2012-10-28T19:32:52.079999Z</value>
+        </time>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="NS08"></waveformID>
+        <methodID>smi:de.erdbeben-in-bayern/pick_method/AIC</methodID>
+        <phaseHint>P</phaseHint>
+        <evaluationMode>automatic</evaluationMode>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.492522Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="smi:de.erdbeben-in-bayern/pick/20121028.193252.57-S-AIC-NZ.NS03.10.EHN">
+        <time>
+          <value>2012-10-28T19:32:52.574999Z</value>
+        </time>
+        <waveformID channelCode="EHN" locationCode="10" networkCode="NZ" stationCode="NS03"></waveformID>
+        <filterID>smi:local/BW(3,4,20)</filterID>
+        <methodID>smi:de.erdbeben-in-bayern/pick_method/L2-AIC-GRID</methodID>
+        <phaseHint>S</phaseHint>
+        <evaluationMode>automatic</evaluationMode>
+        <comment>
+          <text>20121028.193251.62-AIC-NZ.NS03.10.EHZ</text>
+        </comment>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.512297Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="smi:de.erdbeben-in-bayern/pick/20121028.193252.63-AIC-NZ.RT06.10.EHZ">
+        <time>
+          <value>2012-10-28T19:32:52.639999Z</value>
+        </time>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="RT06"></waveformID>
+        <methodID>smi:de.erdbeben-in-bayern/pick_method/AIC</methodID>
+        <phaseHint>P</phaseHint>
+        <evaluationMode>automatic</evaluationMode>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.497744Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="smi:de.erdbeben-in-bayern/pick/20121028.193252.77-AIC-NZ.NS09.10.EHZ">
+        <time>
+          <value>2012-10-28T19:32:52.775000Z</value>
+        </time>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="NS09"></waveformID>
+        <methodID>smi:de.erdbeben-in-bayern/pick_method/AIC</methodID>
+        <phaseHint>P</phaseHint>
+        <evaluationMode>automatic</evaluationMode>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.471245Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="smi:de.erdbeben-in-bayern/pick/20121028.193253.21-S-AIC-NZ.RT12.10.EHN">
+        <time>
+          <value>2012-10-28T19:32:53.210000Z</value>
+        </time>
+        <waveformID channelCode="EHN" locationCode="10" networkCode="NZ" stationCode="RT12"></waveformID>
+        <filterID>smi:local/BW(3,4,20)</filterID>
+        <methodID>smi:de.erdbeben-in-bayern/pick_method/L2-AIC-GRID</methodID>
+        <phaseHint>S</phaseHint>
+        <evaluationMode>automatic</evaluationMode>
+        <comment>
+          <text>20121028.193252.18-AIC-NZ.RT12.10.EHZ</text>
+        </comment>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.440384Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="smi:de.erdbeben-in-bayern/pick/20121028.193253.65-S-AIC-NZ.NS07.10.EHN">
+        <time>
+          <value>2012-10-28T19:32:53.655000Z</value>
+        </time>
+        <waveformID channelCode="EHN" locationCode="10" networkCode="NZ" stationCode="NS07"></waveformID>
+        <filterID>smi:local/BW(3,4,20)</filterID>
+        <methodID>smi:de.erdbeben-in-bayern/pick_method/L2-AIC-GRID</methodID>
+        <phaseHint>S</phaseHint>
+        <evaluationMode>automatic</evaluationMode>
+        <comment>
+          <text>20121028.193251.71-AIC-NZ.NS07.10.EHZ</text>
+        </comment>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.432344Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="smi:de.erdbeben-in-bayern/pick/20121028.193253.74-S-AIC-NZ.NS08.10.EHN">
+        <time>
+          <value>2012-10-28T19:32:53.749998Z</value>
+        </time>
+        <waveformID channelCode="EHN" locationCode="10" networkCode="NZ" stationCode="NS08"></waveformID>
+        <filterID>smi:local/BW(3,4,20)</filterID>
+        <methodID>smi:de.erdbeben-in-bayern/pick_method/L2-AIC-GRID</methodID>
+        <phaseHint>S</phaseHint>
+        <evaluationMode>automatic</evaluationMode>
+        <comment>
+          <text>20121028.193252.07-AIC-NZ.NS08.10.EHZ</text>
+        </comment>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.494896Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="smi:de.erdbeben-in-bayern/pick/20121028.193253.81-S-AIC-NZ.NS09.10.EHN">
+        <time>
+          <value>2012-10-28T19:32:53.815000Z</value>
+        </time>
+        <waveformID channelCode="EHN" locationCode="10" networkCode="NZ" stationCode="NS09"></waveformID>
+        <filterID>smi:local/BW(3,4,20)</filterID>
+        <methodID>smi:de.erdbeben-in-bayern/pick_method/L2-AIC-GRID</methodID>
+        <phaseHint>S</phaseHint>
+        <evaluationMode>automatic</evaluationMode>
+        <comment>
+          <text>20121028.193252.77-AIC-NZ.NS09.10.EHZ</text>
+        </comment>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.472532Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="smi:de.erdbeben-in-bayern/pick/20121028.193253.89-S-AIC-NZ.HRRZ.10.EHN">
+        <time>
+          <value>2012-10-28T19:32:53.898393Z</value>
+        </time>
+        <waveformID channelCode="EHN" locationCode="10" networkCode="NZ" stationCode="HRRZ"></waveformID>
+        <filterID>smi:local/BW(3,4,20)</filterID>
+        <methodID>smi:de.erdbeben-in-bayern/pick_method/L2-AIC-GRID</methodID>
+        <phaseHint>S</phaseHint>
+        <evaluationMode>automatic</evaluationMode>
+        <comment>
+          <text>20121028.193251.02-AIC-NZ.HRRZ.10.EHZ</text>
+        </comment>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.437109Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="smi:de.erdbeben-in-bayern/pick/20121028.193255.69-S-AIC-NZ.WPRZ.10.EHN">
+        <time>
+          <value>2012-10-28T19:32:55.698392Z</value>
+        </time>
+        <waveformID channelCode="EHN" locationCode="10" networkCode="NZ" stationCode="WPRZ"></waveformID>
+        <filterID>smi:local/BW(3,4,20)</filterID>
+        <methodID>smi:de.erdbeben-in-bayern/pick_method/L2-AIC-GRID</methodID>
+        <phaseHint>S</phaseHint>
+        <evaluationMode>automatic</evaluationMode>
+        <comment>
+          <text>20121028.193252.27-AIC-NZ.WPRZ.10.EHZ</text>
+        </comment>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.448479Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="smi:de.erdbeben-in-bayern/pick/20121028.193256.64-S-AIC-NZ.RT09.10.EHN">
+        <time>
+          <value>2012-10-28T19:32:56.640000Z</value>
+        </time>
+        <waveformID channelCode="EHN" locationCode="10" networkCode="NZ" stationCode="RT09"></waveformID>
+        <filterID>smi:local/BW(3,4,20)</filterID>
+        <methodID>smi:de.erdbeben-in-bayern/pick_method/L2-AIC-GRID</methodID>
+        <phaseHint>S</phaseHint>
+        <evaluationMode>automatic</evaluationMode>
+        <comment>
+          <text>20121028.193252.77-AIC-NZ.RT09.10.EHZ</text>
+        </comment>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.484468Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="smi:de.erdbeben-in-bayern/pick/20121028.193252.35-AIC-NZ.RT11.10.EHZ">
+        <time>
+          <value>2012-10-28T19:32:52.355000Z</value>
+        </time>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="RT11"></waveformID>
+        <methodID>smi:de.erdbeben-in-bayern/pick_method/AIC</methodID>
+        <phaseHint>P</phaseHint>
+        <evaluationMode>automatic</evaluationMode>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.526098Z</creationTime>
+        </creationInfo>
+      </pick>
+      <pick publicID="smi:de.erdbeben-in-bayern/pick/20121028.193252.53-AIC-NZ.NS02.10.EHZ">
+        <time>
+          <value>2012-10-28T19:32:52.535000Z</value>
+        </time>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="NS02"></waveformID>
+        <methodID>smi:de.erdbeben-in-bayern/pick_method/AIC</methodID>
+        <phaseHint>P</phaseHint>
+        <evaluationMode>automatic</evaluationMode>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.537517Z</creationTime>
+        </creationInfo>
+      </pick>
+      <amplitude publicID="smi:de.erdbeben-in-bayern/amplitude/20121028.193249.95-AIC-NZ.ALRZ.10.EHZ.MLv">
+        <genericAmplitude>
+          <value>12.61004977</value>
+        </genericAmplitude>
+        <type>MLv</type>
+        <snr>98.71761511</snr>
+        <timeWindow>
+          <reference>2012-10-28T19:32:52.448383Z</reference>
+          <begin>3.49</begin>
+          <end>5.51</end>
+        </timeWindow>
+        <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193249.95-AIC-NZ.ALRZ.10.EHZ</pickID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="ALRZ"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.536089Z</creationTime>
+        </creationInfo>
+      </amplitude>
+      <amplitude publicID="smi:de.erdbeben-in-bayern/amplitude/20121028.193251.02-AIC-NZ.HRRZ.10.EHZ.MLv">
+        <genericAmplitude>
+          <value>4.598703827</value>
+        </genericAmplitude>
+        <type>MLv</type>
+        <snr>18.24780214</snr>
+        <timeWindow>
+          <reference>2012-10-28T19:32:53.768393Z</reference>
+          <begin>3.74</begin>
+          <end>5.26</end>
+        </timeWindow>
+        <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193251.02-AIC-NZ.HRRZ.10.EHZ</pickID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="HRRZ"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.519178Z</creationTime>
+        </creationInfo>
+      </amplitude>
+      <amplitude publicID="smi:de.erdbeben-in-bayern/amplitude/20121028.193251.56-AIC-NZ.NS04.10.EHZ.MLv">
+        <genericAmplitude>
+          <value>3.558751345</value>
+        </genericAmplitude>
+        <type>MLv</type>
+        <snr>1.903900269</snr>
+        <timeWindow>
+          <reference>2012-10-28T19:32:51.740000Z</reference>
+          <begin>1.175</begin>
+          <end>7.825</end>
+        </timeWindow>
+        <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193251.56-AIC-NZ.NS04.10.EHZ</pickID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="NS04"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.593328Z</creationTime>
+        </creationInfo>
+      </amplitude>
+      <amplitude publicID="smi:de.erdbeben-in-bayern/amplitude/20121028.193251.71-AIC-NZ.NS07.10.EHZ.MLv">
+        <genericAmplitude>
+          <value>6.270184678</value>
+        </genericAmplitude>
+        <type>MLv</type>
+        <snr>4.56496631</snr>
+        <timeWindow>
+          <reference>2012-10-28T19:32:58.440000Z</reference>
+          <begin>7.73</begin>
+          <end>1.27</end>
+        </timeWindow>
+        <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193251.71-AIC-NZ.NS07.10.EHZ</pickID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="NS07"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.622620Z</creationTime>
+        </creationInfo>
+      </amplitude>
+      <amplitude publicID="smi:de.erdbeben-in-bayern/amplitude/20121028.193248.50-AIC-NZ.PRRZ.10.EHZ.MLv">
+        <genericAmplitude>
+          <value>29.18184567</value>
+        </genericAmplitude>
+        <type>MLv</type>
+        <snr>331.0067037</snr>
+        <timeWindow>
+          <reference>2012-10-28T19:32:48.568393Z</reference>
+          <begin>1.06</begin>
+          <end>7.94</end>
+        </timeWindow>
+        <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193248.50-AIC-NZ.PRRZ.10.EHZ</pickID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="PRRZ"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.480484Z</creationTime>
+        </creationInfo>
+      </amplitude>
+      <amplitude publicID="smi:de.erdbeben-in-bayern/amplitude/20121028.193252.30-AIC-NZ.RT07.10.EHZ.MLv">
+        <genericAmplitude>
+          <value>4.156286815</value>
+        </genericAmplitude>
+        <type>MLv</type>
+        <snr>6.609982123</snr>
+        <timeWindow>
+          <reference>2012-10-28T19:32:56.960000Z</reference>
+          <begin>5.66</begin>
+          <end>3.34</end>
+        </timeWindow>
+        <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193252.30-AIC-NZ.RT07.10.EHZ</pickID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="RT07"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.634073Z</creationTime>
+        </creationInfo>
+      </amplitude>
+      <amplitude publicID="smi:de.erdbeben-in-bayern/amplitude/20121028.193252.55-AIC-NZ.RT02.10.EHZ.MLv">
+        <genericAmplitude>
+          <value>5.380432115</value>
+        </genericAmplitude>
+        <type>MLv</type>
+        <snr>1.900862911</snr>
+        <timeWindow>
+          <reference>2012-10-28T19:32:52.670000Z</reference>
+          <begin>1.115</begin>
+          <end>7.885</end>
+        </timeWindow>
+        <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193252.55-AIC-NZ.RT02.10.EHZ</pickID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="RT02"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.757607Z</creationTime>
+        </creationInfo>
+      </amplitude>
+      <amplitude publicID="smi:de.erdbeben-in-bayern/amplitude/20121028.193252.74-AIC-NZ.RT05.10.EHZ.MLv">
+        <genericAmplitude>
+          <value>2.420017008</value>
+        </genericAmplitude>
+        <type>MLv</type>
+        <snr>6.187627166</snr>
+        <timeWindow>
+          <reference>2012-10-28T19:32:52.879999Z</reference>
+          <begin>1.135</begin>
+          <end>7.865</end>
+        </timeWindow>
+        <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193252.74-AIC-NZ.RT05.10.EHZ</pickID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="RT05"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.735010Z</creationTime>
+        </creationInfo>
+      </amplitude>
+      <amplitude publicID="smi:de.erdbeben-in-bayern/amplitude/20121028.193252.18-AIC-NZ.RT12.10.EHZ.MLv">
+        <genericAmplitude>
+          <value>7.606931063</value>
+        </genericAmplitude>
+        <type>MLv</type>
+        <snr>4.301904105</snr>
+        <timeWindow>
+          <reference>2012-10-28T19:32:59.020000Z</reference>
+          <begin>7.84</begin>
+          <end>1.16</end>
+        </timeWindow>
+        <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193252.18-AIC-NZ.RT12.10.EHZ</pickID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="RT12"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.700829Z</creationTime>
+        </creationInfo>
+      </amplitude>
+      <amplitude publicID="smi:de.erdbeben-in-bayern/amplitude/20121028.193252.27-AIC-NZ.WPRZ.10.EHZ.MLv">
+        <genericAmplitude>
+          <value>2.738452771</value>
+        </genericAmplitude>
+        <type>MLv</type>
+        <snr>9.884245278</snr>
+        <timeWindow>
+          <reference>2012-10-28T19:32:58.088393Z</reference>
+          <begin>6.81</begin>
+          <end>2.19</end>
+        </timeWindow>
+        <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193252.27-AIC-NZ.WPRZ.10.EHZ</pickID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="WPRZ"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.611401Z</creationTime>
+        </creationInfo>
+      </amplitude>
+      <amplitude publicID="smi:de.erdbeben-in-bayern/amplitude/20121028.193253.02-AIC-NZ.RT01.10.EHZ.MLv">
+        <genericAmplitude>
+          <value>3.611014555</value>
+        </genericAmplitude>
+        <type>MLv</type>
+        <snr>2.138175391</snr>
+        <timeWindow>
+          <reference>2012-10-28T19:32:53.185000Z</reference>
+          <begin>1.155</begin>
+          <end>7.845</end>
+        </timeWindow>
+        <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193253.02-AIC-NZ.RT01.10.EHZ</pickID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="RT01"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.689690Z</creationTime>
+        </creationInfo>
+      </amplitude>
+      <amplitude publicID="smi:de.erdbeben-in-bayern/amplitude/20121028.193252.49-AIC-NZ.RT08.10.EHZ.MLv">
+        <genericAmplitude>
+          <value>5.0228698</value>
+        </genericAmplitude>
+        <type>MLv</type>
+        <snr>6.301439383</snr>
+        <timeWindow>
+          <reference>2012-10-28T19:32:57.165000Z</reference>
+          <begin>5.67</begin>
+          <end>3.33</end>
+        </timeWindow>
+        <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193252.49-AIC-NZ.RT08.10.EHZ</pickID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="RT08"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.746386Z</creationTime>
+        </creationInfo>
+      </amplitude>
+      <amplitude publicID="smi:de.erdbeben-in-bayern/amplitude/20121028.193252.77-AIC-NZ.RT09.10.EHZ.MLv">
+        <genericAmplitude>
+          <value>3.177016836</value>
+        </genericAmplitude>
+        <type>MLv</type>
+        <snr>6.304706675</snr>
+        <timeWindow>
+          <reference>2012-10-28T19:32:52.904999Z</reference>
+          <begin>1.135</begin>
+          <end>7.865</end>
+        </timeWindow>
+        <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193252.77-AIC-NZ.RT09.10.EHZ</pickID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="RT09"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.723136Z</creationTime>
+        </creationInfo>
+      </amplitude>
+      <amplitude publicID="smi:de.erdbeben-in-bayern/amplitude/20121028.193253.78-AIC-NZ.ARAZ.10.EHZ.MLv">
+        <genericAmplitude>
+          <value>2.448617275</value>
+        </genericAmplitude>
+        <type>MLv</type>
+        <snr>3.25947563</snr>
+        <timeWindow>
+          <reference>2012-10-28T19:32:58.108387Z</reference>
+          <begin>5.32</begin>
+          <end>3.68</end>
+        </timeWindow>
+        <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193253.78-AIC-NZ.ARAZ.10.EHZ</pickID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="ARAZ"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.788438Z</creationTime>
+        </creationInfo>
+      </amplitude>
+      <amplitude publicID="smi:de.erdbeben-in-bayern/amplitude/20121028.193251.62-AIC-NZ.NS03.10.EHZ.MLv">
+        <genericAmplitude>
+          <value>6.487989046</value>
+        </genericAmplitude>
+        <type>MLv</type>
+        <snr>6.836890408</snr>
+        <timeWindow>
+          <reference>2012-10-28T19:32:59.535000Z</reference>
+          <begin>8.905</begin>
+          <end>0.095</end>
+        </timeWindow>
+        <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193251.62-AIC-NZ.NS03.10.EHZ</pickID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="NS03"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.605492Z</creationTime>
+        </creationInfo>
+      </amplitude>
+      <amplitude publicID="smi:de.erdbeben-in-bayern/amplitude/20121028.193252.17-AIC-NZ.RT12.10.EHZ.MLv">
+        <genericAmplitude>
+          <value>7.607383884</value>
+        </genericAmplitude>
+        <type>MLv</type>
+        <snr>4.304071353</snr>
+        <timeWindow>
+          <reference>2012-10-28T19:32:59.020000Z</reference>
+          <begin>7.845</begin>
+          <end>1.155</end>
+        </timeWindow>
+        <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193252.17-AIC-NZ.RT12.10.EHZ</pickID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="RT12"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.711854Z</creationTime>
+        </creationInfo>
+      </amplitude>
+      <amplitude publicID="smi:de.erdbeben-in-bayern/amplitude/20121028.193252.07-AIC-NZ.NS08.10.EHZ.MLv">
+        <genericAmplitude>
+          <value>4.00475169</value>
+        </genericAmplitude>
+        <type>MLv</type>
+        <snr>5.561383168</snr>
+        <timeWindow>
+          <reference>2012-10-28T19:32:57.844999Z</reference>
+          <begin>6.765</begin>
+          <end>2.235</end>
+        </timeWindow>
+        <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193252.07-AIC-NZ.NS08.10.EHZ</pickID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="NS08"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.667618Z</creationTime>
+        </creationInfo>
+      </amplitude>
+      <amplitude publicID="smi:de.erdbeben-in-bayern/amplitude/20121028.193252.77-AIC-NZ.NS09.10.EHZ.MLv">
+        <genericAmplitude>
+          <value>5.145977538</value>
+        </genericAmplitude>
+        <type>MLv</type>
+        <snr>7.830929382</snr>
+        <timeWindow>
+          <reference>2012-10-28T19:32:53.710000Z</reference>
+          <begin>1.935</begin>
+          <end>7.065</end>
+        </timeWindow>
+        <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193252.77-AIC-NZ.NS09.10.EHZ</pickID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="NS09"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.779979Z</creationTime>
+        </creationInfo>
+      </amplitude>
+      <amplitude publicID="smi:de.erdbeben-in-bayern/amplitude/20121028.193252.63-AIC-NZ.RT06.10.EHZ.MLv">
+        <genericAmplitude>
+          <value>3.658118886</value>
+        </genericAmplitude>
+        <type>MLv</type>
+        <snr>2.149488147</snr>
+        <timeWindow>
+          <reference>2012-10-28T19:32:53.460000Z</reference>
+          <begin>1.82</begin>
+          <end>7.18</end>
+        </timeWindow>
+        <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193252.63-AIC-NZ.RT06.10.EHZ</pickID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="RT06"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.768846Z</creationTime>
+        </creationInfo>
+      </amplitude>
+      <amplitude publicID="smi:de.erdbeben-in-bayern/amplitude/20121028.193252.29-AIC-NZ.RT07.10.EHZ.MLv">
+        <genericAmplitude>
+          <value>4.156286815</value>
+        </genericAmplitude>
+        <type>MLv</type>
+        <snr>6.609982123</snr>
+        <timeWindow>
+          <reference>2012-10-28T19:32:56.960000Z</reference>
+          <begin>5.66</begin>
+          <end>3.34</end>
+        </timeWindow>
+        <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193252.29-AIC-NZ.RT07.10.EHZ</pickID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="RT07"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.645359Z</creationTime>
+        </creationInfo>
+      </amplitude>
+      <amplitude publicID="smi:de.erdbeben-in-bayern/amplitude/20121028.193252.53-AIC-NZ.NS02.10.EHZ.MLv">
+        <genericAmplitude>
+          <value>4.246729167</value>
+        </genericAmplitude>
+        <type>MLv</type>
+        <snr>5.419407593</snr>
+        <timeWindow>
+          <reference>2012-10-28T19:33:00.334999Z</reference>
+          <begin>8.8</begin>
+          <end>0.2</end>
+        </timeWindow>
+        <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193252.53-AIC-NZ.NS02.10.EHZ</pickID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="NS02"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.678643Z</creationTime>
+        </creationInfo>
+      </amplitude>
+      <amplitude publicID="smi:de.erdbeben-in-bayern/amplitude/20121028.193252.35-AIC-NZ.RT11.10.EHZ.MLv">
+        <genericAmplitude>
+          <value>8.497429246</value>
+        </genericAmplitude>
+        <type>MLv</type>
+        <snr>3.03564799</snr>
+        <timeWindow>
+          <reference>2012-10-28T19:32:58.554999Z</reference>
+          <begin>7.2</begin>
+          <end>1.8</end>
+        </timeWindow>
+        <pickID>smi:de.erdbeben-in-bayern/pick/20121028.193252.35-AIC-NZ.RT11.10.EHZ</pickID>
+        <waveformID channelCode="EHZ" locationCode="10" networkCode="NZ" stationCode="RT11"></waveformID>
+        <creationInfo>
+          <agencyID>SORA</agencyID>
+          <author>scautopick@hase</author>
+          <creationTime>2016-05-18T06:43:55.656485Z</creationTime>
+        </creationInfo>
+      </amplitude>
+      <ns1:public>false</ns1:public>
+      <ns1:evaluationMode>automatic</ns1:evaluationMode>
+    </event>
+  </eventParameters>
+</q:quakeml>
