@@ -2179,7 +2179,7 @@ class ObsPyck(QtGui.QMainWindow):
         y = float(line[4])
         depth = - float(line[6]) # depth: negative down!
 
-        lon, lat = gk2lonlat(x, y)
+        lon, lat = merc_grd2lonlat(x, y, m_to_km=True)
 
         # goto origin time info line
         try:

@@ -948,6 +948,16 @@ class MultiCursor(MplMultiCursor):
             self.vlines = value
 
 
+def merc_grd2lonlat(x, y, m_to_km):
+    origin = [-38.3724, 175.9577]
+    if m_to_km:
+        x = x * 1000.
+        y = y * 1000.
+    new_y = origin[0] + (y / 111111)
+    new_x = origin[1] + (x / (111111 * np.cos(origin[0] * (np.pi/180))))
+    return (new_x, new_y)
+
+
 def gk2lonlat(x, y, m_to_km=True):
     """
     This function converts X/Y Gauss-Krueger coordinates (zone 4, central
