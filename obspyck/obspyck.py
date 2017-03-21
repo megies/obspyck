@@ -3912,12 +3912,12 @@ class ObsPyck(QtGui.QMainWindow):
             color = "gray"
 
         x, y = [], []
-        if amplitude.low is not None:
-            x.append(self.time_abs2rel(amplitude.low_time))
-            y.append(amplitude.low)
-        if amplitude.high is not None:
-            x.append(self.time_abs2rel(amplitude.high_time))
-            y.append(amplitude.high)
+        # if amplitude.low is not None:
+        #     x.append(self.time_abs2rel(amplitude.low_time))
+        #     y.append(amplitude.low)
+        # if amplitude.high is not None:
+        #     x.append(self.time_abs2rel(amplitude.high_time))
+        #     y.append(amplitude.high)
         if scaling is not None:
             y = [y_ * scaling for y_ in y]
         if x:
