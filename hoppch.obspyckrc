@@ -1,0 +1,193 @@
+[base]
+# station_combination: str
+# must be defined in section <station_combinations>
+station_combination = NS_eg
+# time: UTCDateTime compatible string
+# usually overridden on command line
+time = 2015-11-01T00:23:00
+# duration: int or float
+duration = 240
+# starttime_offset: int or float
+starttime_offset = 0
+pluginpath = /home/chet/obspyck/plugin_dir
+# merge: <empty> or "safe" or "overwrite"
+merge =
+# event_server: server for event information pull/push
+# currently only a seishub server is supported
+# server details must be specified in separate server section below
+event_server = server_seishub
+ignore_gse2_chksum_error = true
+verbosity = normal
+zero_mean = true
+normalization = true
+no_metadata = false
+
+[base]
+# duration: int or float
+duration = 240
+# starttime_offset: int or float
+starttime_offset = 0
+pluginpath = /home/chet/obspyck/plugin_dir
+# merge: <empty> or "safe" or "overwrite"
+merge =
+# event_server: server for event information pull/push
+# currently only a seishub server is supported
+# server details must be specified in separate server section below
+event_server = server_seishub
+ignore_gse2_chksum_error = true
+# verbosity: one of 'normal', 'verbose', 'debug' or 'quiet'
+verbosity = normal
+zero_mean = true
+normalization = true
+no_metadata = false
+# colormaps are being looked up by name:
+#   - first: if possible as `from obspy.imaging.cm import <name>`
+#   - if that fails: using `matplotlib.cm.get_cmap(name=<name>)`
+# undefined colormaps fall back to current matplotlib default colormap
+# (matplotlibrc, key 'image.cmap', usually defaulting to 'jet')
+spectrogram_colormap = viridis
+magnitude_pick_color = green
+# determines the (left-right) search window around the mouse pick for the
+# highest/lowest amplitude value when setting a magnitude pick (in number of
+# samples of the time series)
+magnitude_picker_width = 10
+
+# special purpose / edge use case switches, not widely tested..
+[misc]
+# allow reading files with multiple picks of same phase type and same SEED ID,
+# experimental, not sure what happens when modifying/deleting/saving to
+# QuakeML, use at your own risk!
+allow_multiple_picks_with_same_seed_id = false
+
+
+[station_combinations]
+#EXAMPLE1 = II.PFO.00.LH?,GE.APE..LH?,GE.PSZ..LH?,CI.BBR..LH*,IV.PRMA..LH?,G.RER..LH*
+#EXAMPLE2 = 7A.W01..LH?,CI.BBR..LH*
+NS_eg = NZ.ALRZ.10.EH*,NZ.ARAZ.10.EH*,NZ.HRRZ.10.EH*,NZ.NS01.10.EH*,NZ.RT23.10.EH*,NZ.NS03.10.EH*
+NS = NZ.ALRZ.10.EH*,NZ.ARAZ.10.EH*,NZ.HRRZ.10.EH*,NZ.NS01.10.EH*,NZ.NS02.10.EH*,NZ.NS03.10.EH*,\
+     NZ.NS04.10.EH*,NZ.NS05.10.EH*,NZ.NS06.10.EH*,NZ.NS07.10.EH*,NZ.NS08.10.EH*,NZ.NS09.10.EH*,\
+     NZ.NS10.10.EH*,NZ.NS11.10.EH*,NZ.NS12.10.EH*,NZ.NS13.10.EH*,NZ.NS14.10.EH*,NZ.NS15.10.EH*,\
+     NZ.NS16.10.EH*,NZ.NS18.10.EH*,NZ.PRRZ.10.EH*,NZ.RT01.10.EH*,NZ.RT02.10.EH*,NZ.RT03.10.EH*,\
+     NZ.RT05.10.EH*,NZ.RT06.10.EH*,NZ.RT07.10.EH*,NZ.RT08.10.EH*,NZ.RT09.10.EH*,NZ.RT10.10.EH*,\
+     NZ.RT11.10.EH*,NZ.RT12.10.EH*,NZ.RT13.10.EH*,NZ.RT14.10.EH*,NZ.RT15.10.EH*,NZ.RT16.10.EH*,\
+     NZ.RT17.10.EH*,NZ.RT18.10.EH*,NZ.RT19.10.EH*,NZ.RT20.10.EH*,NZ.RT21.10.EH*,NZ.RT22.10.EH*,\
+     NZ.RT23.10.EH*,NZ.THQ2.10.EH*,NZ.WPRZ.10.EH*
+
+[seed_id_lookup]
+# wildcards ("?", "*") and regex (e.g. "[EH]*") are only allowed in channel!
+# lookup of id can be specified by (and is performed in exactly this order):
+#   - complete SEED ID exactly as it appears in station_combination
+#II.PFO.00.LH? = server_fdsn_iris
+#IV.PRMA..LH? = server_fdsn_ingv
+#G.NOUC..LH* = server_fdsn_ipgp
+#   - SEED ID down to location code level
+#GE.APE. = server_arclink_webdc
+#   - SEED ID down to station code level
+#CI.BBR = server_fdsn_iris
+#   - network code
+#GE = server_arclink_webdc
+#7A = server_fdsn_iris
+NZ = server_seishub
+
+[rotate_channels]
+# WARNING: rotated channels use the response of the first
+# channel used in rotation on all three components after
+# rotation!
+# Currently only works with jane/fdsn (because uses inventory)
+#7A.W01. = LHZ,LH1,LH2
+#BW.FFB1. = HHZ,HH1,HH2
+
+[gui_defaults]
+filter = false
+filter_type = bandpass
+filter_highpass = 1.0
+filter_lowpass = 20.0
+sta = 0.5
+lta = 10.0
+ar_f1 = 1.0
+ar_f2 = 20.0
+ar_sta_p = 0.1
+ar_lta_p = 1.0
+ar_sta_s = 1.0
+ar_lta_s = 4.0
+ar_m_p = 2
+ar_m_s = 8
+ar_l_p = 0.1
+ar_l_s = 0.2
+
+[keys]
+setPick = a
+setPickError = s
+delPick = q
+setMagMin = a
+setMagMax = s
+delMagMinMax = q
+switchPhase = control
+prevStream = y
+nextStream = x
+switchWheelZoomAxis = shift
+setWeight0 = 0
+setWeight1 = 1
+setWeight2 = 2
+setWeight3 = 3
+setPolU = +
+setPolD = -
+setOnsetI = i
+setOnsetE = e
+
+[server_fdsn_iris]
+type = fdsn
+# FDSN short URLS understood by ObsPy FDSN Client are OK
+base_url = IRIS
+user =
+password =
+timeout = 30
+user_agent = obspyck
+debug = false
+
+[server_fdsn_ingv]
+type = fdsn
+# FDSN short URLS understood by ObsPy FDSN Client are OK
+base_url = INGV
+user =
+password =
+timeout = 30
+user_agent = obspyck
+debug = false
+
+[server_fdsn_ipgp]
+type = fdsn
+base_url = http://eida.ipgp.fr
+user =
+password =
+timeout = 30
+user_agent = obspyck
+debug = false
+
+[server_arclink_webdc]
+type = arclink
+host = webdc.eu
+port = 18001
+user = Anonymous
+password =
+institution = ObsPyck example configuration
+timeout = 30
+dcid_key_file =
+debug = false
+command_delay = 0.0
+status_delay = 1.0
+
+[server_seishub]
+# not used in the examples, local network server only
+type = seishub
+# http port = 8180 and https port 8543
+base_url = http://sgees017.geo.vuw.ac.nz:8180
+user = mercury
+password = MercuryIsThePlanet
+timeout = 50
+debug = false
+retries = 5
+
+[nonlinloc]
+# default pick uncertainty used in nonlinloc if no pick errors are set
+default_pick_uncertainty = 0.05

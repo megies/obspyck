@@ -1,0 +1,18 @@
+Metadata-Version: 1.1
+Name: obspyck
+Version: 0.4.1.post0
+Summary: A GUI application for seismogram analysis
+Home-page: https://github.com/megies/obspyck
+Author: Tobias Megies
+Author-email: megies@geophysik.uni-muenchen.de
+License: UNKNOWN
+Download-URL: https://github.com/megies/obspyck.git
+Description: ObsPyck is a GUI application that is intended to cover the tasks in a standard analysis workflow for seismic events in seismological observatory practice.
+Keywords: obspy,github,seismology,earthquake,seismogram
+Platform: UNKNOWN
+Classifier: Programming Language :: Python
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)
+Classifier: Operating System :: OS Independent
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
