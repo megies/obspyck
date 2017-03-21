@@ -201,9 +201,6 @@ class ObsPyck(QtGui.QMainWindow):
         facecolor = self.qMain.palette().color(QtGui.QPalette.Window).getRgb()
         self.fig.set_facecolor([value / 255.0 for value in facecolor])
 
-        #Define some flags, dictionaries and plotting options
-        #this next flag indicates if we zoom on time or amplitude axis
-        self.flagWheelZoomAmplitude = False
         try:
             self.tmp_dir = setup_external_programs(options, config)
         except IOError:
@@ -301,7 +298,6 @@ class ObsPyck(QtGui.QMainWindow):
         # XXX MAYBE rename the event handles again so that they DONT get
         # XXX autoconnected via Qt?!?!?
         self.canv.mpl_connect('key_press_event', self.__mpl_keyPressEvent)
-        self.canv.mpl_connect('key_release_event', self.__mpl_keyReleaseEvent)
         self.canv.mpl_connect('button_release_event', self.__mpl_mouseButtonReleaseEvent)
         # The scroll event is handled using Qt.
         #self.canv.mpl_connect('scroll_event', self.__mpl_wheelEvent)
@@ -1597,8 +1593,7 @@ class ObsPyck(QtGui.QMainWindow):
         # End of key events related to picking                                #
         #######################################################################
 
-        if ev.key == keys['switchWheelZoomAxis']:
-            self.flagWheelZoomAmplitude = True
+        if ev.key in (keys['switchWheelZoomAxis'], keys['scrollWheelZoom']):
             return
 
         # iterate the phase type combobox
@@ -1620,10 +1615,6 @@ class ObsPyck(QtGui.QMainWindow):
                 return
             self.on_qToolButton_nextStream_clicked()
             return
-
-    def __mpl_keyReleaseEvent(self, ev):
-        if ev.key == self.keys['switchWheelZoomAxis']:
-            self.flagWheelZoomAmplitude = False
 
     # Define zooming for the mouse wheel wheel
     def __mpl_wheelEvent(self, ev):
@@ -1676,6 +1667,25 @@ class ObsPyck(QtGui.QMainWindow):
                 elif ev.delta() > 0:
                     top /= 2
                     bottom /= 2
+        # Still able to use the dictionary.
+        elif ev.modifiers() == getattr(
+                QtCore.Qt,
+                '%sModifier' % self.keys['scrollWheelZoom'].capitalize()):
+            direction = (self.config.getboolean('misc', 'scrollWheelInvert')
+                         and 1 or -1)
+            shift = ((right - left) *
+                     self.config.getfloat('misc', 'scrollWheelPercentage'))
+            if self.widgets.qToolButton_showMap.isChecked():
+                pass
+            else:
+                # scroll left
+                if ev.delta() * direction < 0:
+                    left -= shift
+                    right -= shift
+                # scroll right
+                elif ev.delta() * direction > 0:
+                    left += shift
+                    right += shift
         ax.set_xbound(lower=left, upper=right)
         ax.set_ybound(lower=bottom, upper=top)
         self.redraw()
@@ -2548,7 +2558,7 @@ class ObsPyck(QtGui.QMainWindow):
         self.catalog[0].origins = [o]
         self.catalog[0].set_creation_info_username(self.username)
         o.clear()
-        o.method_id = "/".join([ID_ROOT, "location_method", "hyp2000", "2"])
+        o.method_id = "/".join([ID_ROOT, "location_method", "hyp2000", "3"])
         o.origin_uncertainty = OriginUncertainty()
         o.quality = OriginQuality()
         ou = o.origin_uncertainty
@@ -2556,7 +2566,8 @@ class ObsPyck(QtGui.QMainWindow):
         o.longitude = lon
         o.latitude = lat
         o.depth = depth * (-1e3)  # meters positive down!
-        ou.horizontal_uncertainty = errXY
+        # all errors are given in km!
+        ou.horizontal_uncertainty = errXY * 1e3
         ou.preferred_description = "horizontal uncertainty"
         o.depth_errors.uncertainty = errZ * 1e3
         oq.standard_error = rms #XXX stimmt diese Zuordnung!!!?!
@@ -3310,8 +3321,8 @@ class ObsPyck(QtGui.QMainWindow):
             stats = st[0].stats
             sta = stats.station
             lon = stats.coordinates.longitude
-            lon_deg = int(lon)
-            lon_min = (lon - lon_deg) * 60.
+            lon_deg = int(abs(lon))
+            lon_min = (abs(lon) - abs(lon_deg)) * 60.
             lat = stats.coordinates.latitude
             lat_deg = int(abs(lat))
             lat_min = (abs(lat) - abs(lat_deg)) * 60.
@@ -3320,7 +3331,7 @@ class ObsPyck(QtGui.QMainWindow):
             if lat < 0:
                 hem_NS = 'S'
             if lon < 0:
-                hem_NS = 'W'
+                hem_EW = 'W'
             # hypo 71 format uses elevation in meters not kilometers
             ele = stats.coordinates.elevation
             # if sensor is buried or downhole, account for the specified sensor
