@@ -3791,7 +3791,7 @@ class ObsPyck(QtGui.QMainWindow):
         # seiscomp does not store location code with picks, so allow to
         # match any location code in that case..
         if event.get("creation_info", {}).get("author", "").startswith("scevent"):
-            loc = None
+            loc = '10'
         picks = self.getPicks(network=net, station=sta, location=loc)
         try:
             arrivals = event.origins[0].arrivals
