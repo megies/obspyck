@@ -2558,7 +2558,7 @@ class ObsPyck(QtGui.QMainWindow):
         self.catalog[0].origins = [o]
         self.catalog[0].set_creation_info_username(self.username)
         o.clear()
-        o.method_id = "/".join([ID_ROOT, "location_method", "hyp2000", "2"])
+        o.method_id = "/".join([ID_ROOT, "location_method", "hyp2000", "3"])
         o.origin_uncertainty = OriginUncertainty()
         o.quality = OriginQuality()
         ou = o.origin_uncertainty
