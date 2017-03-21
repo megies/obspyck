@@ -2566,7 +2566,8 @@ class ObsPyck(QtGui.QMainWindow):
         o.longitude = lon
         o.latitude = lat
         o.depth = depth * (-1e3)  # meters positive down!
-        ou.horizontal_uncertainty = errXY
+        # all errors are given in km!
+        ou.horizontal_uncertainty = errXY * 1e3
         ou.preferred_description = "horizontal uncertainty"
         o.depth_errors.uncertainty = errZ * 1e3
         oq.standard_error = rms #XXX stimmt diese Zuordnung!!!?!

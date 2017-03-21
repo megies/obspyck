@@ -6,6 +6,8 @@ master
    (by default "alt" key, see #45)
  - fix station metadata output in hypo71 format (for location routines)
    for longitude <0 (see #47)
+ - fix horizontal errors read after hyp2000 location (conversion from km to m
+   was missing, see #48)
 
 0.4.1
  - fix minor bug that prevents 0.4.0 from running
