@@ -1156,7 +1156,7 @@ p, l  i { white-space: pre-wrap; }
                    <item>
                     <layout class="QHBoxLayout" name="horizontalLayout_16aa">
                      <item>
-                      <widget class="QToolButton" name="qToolButton_ms">
+                      <widget class="QToolButton" name="qToolButton_physical_units">
                        <property name="sizePolicy">
                         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                          <horstretch>0</horstretch>
@@ -1166,8 +1166,11 @@ p, l  i { white-space: pre-wrap; }
                        <property name="focusPolicy">
                         <enum>Qt::NoFocus</enum>
                        </property>
+                       <property name="toolTip">
+                        <string>Convert to physical units doing instrument correction (config: section &quot;main&quot;, option &quot;physical_units&quot;; either &quot;velocity&quot;, &quot;displacement&quot; or &quot;acceleration&quot;)</string>
+                       </property>
                        <property name="text">
-                        <string>m/s</string>
+                        <string>physical units</string>
                        </property>
                        <property name="checkable">
                         <bool>true</bool>
