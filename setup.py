@@ -4,7 +4,7 @@ import re
 from setuptools import setup
 
 INSTALL_REQUIRES = [
-    'obspy>=1.1.0',
+    #'obspy>=1.1.0',
     # pyqt can not be declared as a dependency cleanly it seems, see
     # http://stackoverflow.com/questions/4628519/
     # 'PyQt4',

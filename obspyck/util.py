@@ -242,6 +242,8 @@ def fetch_waveforms_with_metadata(options, args, config):
     :returns: (dictionary with clients,
                list(:class:`obspy.core.stream.Stream`s))
     """
+
+    print options.station_combinations
     if not options.station_combinations and not options.seed_ids and not args:
         msg = ('No data to use specified. At least use one of option "-s", '
                '"-i" or specify local waveform/metadata files to load.')
@@ -263,6 +265,9 @@ def fetch_waveforms_with_metadata(options, args, config):
     seed_ids_to_fetch = set()
     for station_combination_key in options.station_combinations:
         seed_ids = config.get("station_combinations", station_combination_key)
+	print seed_ids
+	print station_combination_key 
+	print config
         for seed_id in seed_ids.split(","):
             seed_ids_to_fetch.add(seed_id)
     for seed_id in options.seed_ids:

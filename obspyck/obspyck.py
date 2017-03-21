@@ -61,9 +61,9 @@ NAMESPACE = "http://erdbeben-in-bayern.de/xmlns/0.1"
 NSMAP = {"edb": NAMESPACE}
 
 
-if map(int, obspy.__version__.split('.')[:2]) < [1, 1]:
-    msg = "Needing ObsPy version >= 1.1.0 (current version is: {})"
-    warnings.warn(msg.format(obspy.__version__))
+#if map(int, obspy.__version__.split('.')[:2]) < [1, 1]:
+#    msg = "Needing ObsPy version >= 1.1.0 (current version is: {})"
+#    warnings.warn(msg.format(obspy.__version__))
 
 
 class ObsPyck(QtGui.QMainWindow):
