@@ -3320,8 +3320,8 @@ class ObsPyck(QtGui.QMainWindow):
             stats = st[0].stats
             sta = stats.station
             lon = stats.coordinates.longitude
-            lon_deg = int(lon)
-            lon_min = (lon - lon_deg) * 60.
+            lon_deg = int(abs(lon))
+            lon_min = (abs(lon) - abs(lon_deg)) * 60.
             lat = stats.coordinates.latitude
             lat_deg = int(abs(lat))
             lat_min = (abs(lat) - abs(lat_deg)) * 60.
@@ -3330,7 +3330,7 @@ class ObsPyck(QtGui.QMainWindow):
             if lat < 0:
                 hem_NS = 'S'
             if lon < 0:
-                hem_NS = 'W'
+                hem_EW = 'W'
             # hypo 71 format uses elevation in meters not kilometers
             ele = stats.coordinates.elevation
             # if sensor is buried or downhole, account for the specified sensor
