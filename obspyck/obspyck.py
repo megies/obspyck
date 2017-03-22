@@ -19,7 +19,7 @@ import socket
 import sys
 import tempfile
 import warnings
-from configparser import SafeConfigParser, NoOptionError
+from ConfigParser import SafeConfigParser, NoOptionError
 from StringIO import StringIO
 
 from PyQt4 import QtGui, QtCore
