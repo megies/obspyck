@@ -3012,6 +3012,9 @@ class ObsPyck(QtGui.QMainWindow):
             st = st.copy()
             for j, tr in enumerate(st):
                 net, sta, loc, cha = tr.id.split(".")
+		if loc=='':
+			loc=None
+		
                 color = COMPONENT_COLORS.get(cha[-1], "gray")
                 alpha = alphas.get(cha[-1], 0.4)
                 # make sure that the relative x-axis times start with 0 at the time
@@ -3058,9 +3061,13 @@ class ObsPyck(QtGui.QMainWindow):
             # plot picks and arrivals
             # seiscomp does not store location code with picks, so allow to
             # match any location code in that case..
-            if str(event.get("creation_info", {}).get("author", "")).startswith("scevent"):
-                loc = None
-            picks = self.getPicks(network=net, station=sta, location=loc)
+		try:
+			if event.get("creation_info", {}).get("author", "").startswith("scevent"):
+				loc = None
+		except:
+	    		pass
+
+	    picks = self.getPicks(network=net, station=sta, location=loc)
             try:
                 arrivals = event.origins[0].arrivals
             except:
@@ -3836,6 +3843,9 @@ class ObsPyck(QtGui.QMainWindow):
         net = st[0].stats.network
         sta = st[0].stats.station
         loc = st[0].stats.location
+	if loc=='':
+		loc=None
+
         xlims = [list(ax.get_xlim()) for ax in self.axs]
         ylims = [list(ax.get_ylim()) for ax in self.axs]
         for _i, ax in enumerate(self.axs):
@@ -3849,8 +3859,11 @@ class ObsPyck(QtGui.QMainWindow):
         # plot picks and arrivals
         # seiscomp does not store location code with picks, so allow to
         # match any location code in that case..
-        if event.get("creation_info", {}).get("author", "").startswith("scevent"):
-            loc = None
+        try:
+	    if event.get("creation_info", {}).get("author", "").startswith("scevent"):
+            	loc = None
+	except:
+	    pass
         picks = self.getPicks(network=net, station=sta, location=loc)
         try:
             arrivals = event.origins[0].arrivals
@@ -3954,7 +3967,10 @@ class ObsPyck(QtGui.QMainWindow):
 
         color = "k"
         time = self.time_abs2rel(pick.time)
-        reltime = time - arrival.time_residual
+        if arrival.time_residual is not None:
+        	reltime = time - arrival.time_residual
+	else:
+		reltime=time
         ax.axvline(reltime, color=color,
                    linewidth=AXVLINEWIDTH,
                    ymin=0, ymax=1, alpha=alpha_line)
