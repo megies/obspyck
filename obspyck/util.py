@@ -995,7 +995,9 @@ def readNLLocScatter(scat_filename, textviewStdErrImproved):
     # read data, omit the first 4 values (header information) and reshape
     data = np.fromfile(scat_filename, dtype="<f4").astype("float")[4:]
     data = data.reshape((len(data)/4, 4)).swapaxes(0, 1)
-    lon, lat = gk2lonlat(data[0], data[1])
+    # lon, lat = gk2lonlat(data[0], data[1])
+    lon, lat = merc_grd2lonlat(data[0], data[1], m_to_km=True)
+
     return np.vstack((lon, lat, data[2]))
 
 def errorEllipsoid2CartesianErrors(azimuth1, dip1, len1, azimuth2, dip2, len2,
