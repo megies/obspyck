@@ -136,7 +136,7 @@ WIDGET_NAMES = ("qToolButton_clearAll", "qToolButton_clearOrigMag",
         "qComboBox_streamName", "qToolButton_nextStream",
         "qToolButton_overview", "qComboBox_phaseType", "qToolButton_rotateLQT",
         "qToolButton_rotateZRT", "qToolButton_filter", "qToolButton_trigger",
-        "qToolButton_ms", "qDoubleSpinBox_waterlevel",
+        "qToolButton_physical_units", "qDoubleSpinBox_waterlevel",
         "qToolButton_arpicker", "qComboBox_filterType", "qCheckBox_zerophase",
         "qLabel_highpass", "qDoubleSpinBox_highpass", "qLabel_lowpass",
         "qDoubleSpinBox_lowpass",
@@ -242,6 +242,8 @@ def fetch_waveforms_with_metadata(options, args, config):
     :returns: (dictionary with clients,
                list(:class:`obspy.core.stream.Stream`s))
     """
+
+    print options.station_combinations
     if not options.station_combinations and not options.seed_ids and not args:
         msg = ('No data to use specified. At least use one of option "-s", '
                '"-i" or specify local waveform/metadata files to load.')
@@ -263,6 +265,9 @@ def fetch_waveforms_with_metadata(options, args, config):
     seed_ids_to_fetch = set()
     for station_combination_key in options.station_combinations:
         seed_ids = config.get("station_combinations", station_combination_key)
+	print seed_ids
+	print station_combination_key 
+	print config
         for seed_id in seed_ids.split(","):
             seed_ids_to_fetch.add(seed_id)
     for seed_id in options.seed_ids:
@@ -351,7 +356,11 @@ def fetch_waveforms_with_metadata(options, args, config):
                 if not has_metadata:
                     for parser in parsers:
                         try:
-                            tr.stats.paz = parser.get_paz(tr.id, tr.stats.starttime)
+                            # the following line is only to find out if the
+                            # Parser contains the metadata for given time of
+                            # Trace..
+                            parser.get_paz(tr.id, tr.stats.starttime)
+                            tr.stats.parser = parser
                             tr.stats.coordinates = parser.get_coordinates(tr.id, tr.stats.starttime)
                             tr.stats.orientation = get_orientation_from_parser(parser, tr.id, tr.stats.starttime)
                             has_metadata = True
@@ -420,16 +429,14 @@ def fetch_waveforms_with_metadata(options, args, config):
                         coordinates = [
                             p_.get_coordinates(tr.id, datetime=t1)
                             for p_ in parsers]
-                        paz = [
-                            p_.get_paz(tr.id, datetime=t1) for p_ in parsers]
                         # check for clashing multiple station metadata
-                        for list_ in (orientation, coordinates, paz):
+                        for list_ in (orientation, coordinates, parsers):
                             for i in range(1, len(list_))[::-1]:
                                 if list_[i] == list_[0]:
                                     list_.pop(i)
                         for list_, name in zip(
-                                (orientation, coordinates, paz),
-                                ("orientation", "coordinates", "paz")):
+                                (orientation, coordinates, parsers),
+                                ("orientation", "coordinates", "parsers")):
                             if len(list_) > 1:
                                 msg = ("Multiple matching station metadata "
                                        "({}) on server: {}.").format(
@@ -437,7 +444,7 @@ def fetch_waveforms_with_metadata(options, args, config):
                                 raise Exception(msg)
                         tr.stats.orientation = orientation[0]
                         tr.stats.coordinates = coordinates[0]
-                        tr.stats.paz = paz[0]
+                        tr.stats.parser = parsers[0]
             # ArcLink
             elif server_type == "arclink":
                 st = client.get_waveforms(
@@ -459,7 +466,7 @@ def fetch_waveforms_with_metadata(options, args, config):
                             get_orientation_from_parser(p_, tr.id, datetime=t1)
                         tr.stats.coordinates = \
                             p_.getCoordinates(tr.id, datetime=t1)
-                        tr.stats.paz = p_.getPAZ(tr.id, datetime=t1)
+                        tr.stats.parser = p_
             # FDSN (or JANE)
             elif server_type in ("fdsn", "jane"):
                 st = client.get_waveforms(
@@ -606,14 +613,14 @@ def rotate_channels(st, net, sta, loc, config):
     net_sta_loc = ".".join((net, sta, loc))
     channels = config.get("rotate_channels", net_sta_loc).split(",")
     tr = st.select(id=".".join((net_sta_loc, channels[0])))[0]
-    paz = tr.stats.get("paz")
+    parser = tr.stats.get("parser")
     coordinates = tr.stats.get("coordinates")
     response = tr.stats.get("response")
     st = _rotate_specific_channels_to_zne(
         st, net, sta, loc, channels)
     for tr in st:
-        if paz is not None:
-            tr.stats.paz = copy.deepcopy(paz)
+        if parser is not None:
+            tr.stats.parser = copy.deepcopy(parser)
         if coordinates is not None:
             tr.stats.coordinates = copy.deepcopy(coordinates)
         if response is not None:
@@ -787,8 +794,8 @@ def cleanup_streams_without_metadata(streams):
             for key in ('orientation', 'coordinates'):
                 if key not in tr.stats:
                     ok = False
-            # for dataless we have paz, for stationxml/fdsnws we have response
-            if "paz" not in tr.stats and "response" not in tr.stats:
+            # for dataless we have parser, for stationxml/fdsnws we have response
+            if "parser" not in tr.stats and "response" not in tr.stats:
                 ok = False
             if not ok:
                 print 'Error: Missing metadata for "%s". Discarding stream.' \
@@ -1149,7 +1156,10 @@ def apply_gse2_calib(tr):
     """
     try:
         calibration = tr.stats.calib * ((2.0 * np.pi / tr.stats.gse2.calper) ** 1) * 1e-9
-        tr.stats.paz.sensitivity = tr.stats.paz.sensitivity / calibration
+        # tr.stats.paz.sensitivity = tr.stats.paz.sensitivity / calibration
+        # XXX this is not implemented anymore after switching to use parser in
+        # Trace.simulate() with evalresp
+        raise NotImplementedError()
     except Exception as e:
         msg = ("Warning: Failed to apply GSE2 calibration factor to overall "
                "sensitivity (%s, %s). Continuing anyway.")

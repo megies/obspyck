@@ -6,8 +6,13 @@ master
    (by default "alt" key, see #45)
  - fix station metadata output in hypo71 format (for location routines)
    for longitude <0 (see #47)
+<<<<<<< HEAD
  - fix horizontal errors read after hyp2000 location (conversion from km to m
    was missing, see #48)
+=======
+ - enable opting for physical unit conversion switch to go to displacement and
+   acceleration (so far always was converting to velocity; see #43)
+>>>>>>> 3a50cb63b7ee7052c1787cfd57b7805004e7a5a7
 
 0.4.1
  - fix minor bug that prevents 0.4.0 from running

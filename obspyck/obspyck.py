@@ -38,7 +38,7 @@ from matplotlib.backend_bases import MouseEvent as MplMouseEvent
 #os.chdir("/baysoft/obspyck/")
 import obspy
 import obspy.imaging.cm as obspy_cm
-from obspy import UTCDateTime, Stream
+from obspy import UTCDateTime, Stream, Trace
 from obspy.core.event import CreationInfo, WaveformStreamID, \
     OriginUncertainty, OriginQuality, Comment, NodalPlane, NodalPlanes
 from obspy.core.util import NamedTemporaryFile, AttribDict
@@ -61,9 +61,9 @@ NAMESPACE = "http://erdbeben-in-bayern.de/xmlns/0.1"
 NSMAP = {"edb": NAMESPACE}
 
 
-if map(int, obspy.__version__.split('.')[:2]) < [1, 1]:
-    msg = "Needing ObsPy version >= 1.1.0 (current version is: {})"
-    warnings.warn(msg.format(obspy.__version__))
+#if map(int, obspy.__version__.split('.')[:2]) < [1, 1]:
+#    msg = "Needing ObsPy version >= 1.1.0 (current version is: {})"
+#    warnings.warn(msg.format(obspy.__version__))
 
 
 class ObsPyck(QtGui.QMainWindow):
@@ -775,12 +775,12 @@ class ObsPyck(QtGui.QMainWindow):
         except AttributeError:
             pass
 
-    def on_qToolButton_ms_toggled(self):
+    def on_qToolButton_physical_units_toggled(self):
         self.streams[self.stPt] = self.streams_bkp[self.stPt].copy()
         self.drawStream()
 
     def on_qDoubleSpinBox_waterlevel_valueChanged(self, newvalue):
-        if not self.widgets.qToolButton_ms.isChecked():
+        if not self.widgets.qToolButton_physical_units.isChecked():
             self.canv.setFocus() # XXX needed??
             return
         self.updateCurrentStream()
@@ -920,7 +920,7 @@ class ObsPyck(QtGui.QMainWindow):
 
     def on_qToolButton_spectrogram_toggled(self):
         state = self.widgets.qToolButton_spectrogram.isChecked()
-        widgets_deactivate = ("qToolButton_ms", "qDoubleSpinBox_waterlevel", "qToolButton_filter", "qToolButton_overview",
+        widgets_deactivate = ("qToolButton_physical_units", "qDoubleSpinBox_waterlevel", "qToolButton_filter", "qToolButton_overview",
                 "qComboBox_filterType", "qCheckBox_zerophase",
                 "qCheckBox_50Hz", "qDoubleSpinBox_corners",
                 "qLabel_highpass", "qLabel_lowpass", "qDoubleSpinBox_highpass",
@@ -1012,22 +1012,63 @@ class ObsPyck(QtGui.QMainWindow):
             err = "Error during filtering. Showing unfiltered data."
             self.error(err)
 
-    def _ms(self, stream):
+    def _physical_units(self, stream):
         """
-        Corrects to m/s.
+        Corrects to physical units (m/s or m or m/s**2), as specified by
+        configuration file.
         """
+        if isinstance(stream, Trace):
+            stream = Stream(traces=[stream])
+
         w = self.widgets
         water_level = float(w.qDoubleSpinBox_waterlevel.value())
-        msg = "Correcting to m/s (water_level=%.1f)." % water_level
         try:
-            try:
-                stream.simulate(paz_remove="self", paz_simulate=None,
-                                remove_sensitivity=True, water_level=water_level)
-            except:
-                stream.remove_response(output="VEL", water_level=water_level)
+            output_units = self.config.get('base', 'physical_units')
+        except NoOptionError:
+            msg = ('No configuration option "physical_units" in section '
+                   '"base". Defaulting to m/s for physical units switch.')
+            self.error(msg)
+            output_units = 'velocity'
+        if output_units == 'velocity':
+            output_units = 'VEL'
+            label = '[m/s]'
+        elif output_units == 'displacement':
+            output_units = 'DISP'
+            label = '[m]'
+        elif output_units == 'acceleration':
+            output_units = 'ACC'
+            label = '[m/s**2]'
+        else:
+            msg = ('Unrecognized physical units in configuration option '
+                   '"physical_units" in section "base": "{}". Defaulting '
+                   'to m/s for physical units switch.').format(output_units)
+            self.error(msg)
+            output_units = 'VEL'
+            label = '[m/s]'
+        self.widgets.qToolButton_physical_units.setText(label)
+        msg = "Correcting to {} (water_level={:.1f}).".format(label,
+                                                              water_level)
+
+        try:
+            if 'parser' in stream[0].stats:
+                # metadata from SEED
+                for tr in stream:
+                    tr.simulate(seedresp={'filename': tr.stats.parser,
+                                          'units': output_units},
+                                remove_sensitivity=True,
+                                water_level=water_level)
+            elif 'response' in stream[0].stats:
+                # metadata from StationXML
+                stream.remove_response(output=output_units,
+                                       water_level=water_level)
+            else:
+                msg = ('No SEED Parser or Response object attached to trace, '
+                       'can not convert to physical units:\n')
+                self.error(msg + str(stream[0].stats))
             self.info(msg)
-        except:
-            err = "Error during filtering. Showing unfiltered data."
+        except Exception as e:
+            err = ("Error during instrument correction. Showing uncorrected "
+                   "data.\n" + str(e))
             self.error(err)
 
     def _rotateLQT(self, stream, origin):
@@ -1276,7 +1317,7 @@ class ObsPyck(QtGui.QMainWindow):
                 # if not explicitly deactivated on command line
                 if self.config.getboolean("base", "normalization") and not self.config.getboolean("base", "no_metadata"):
                     try:
-                        sensitivity = tr.stats.paz.sensitivity
+                        sensitivity = tr.stats.parser.get_paz(tr.id, tr.stats.starttime)['sensitivity']
                     except AttributeError:
                         sensitivity = tr.stats.response.instrument_sensitivity.value
                     plts.append(ax.plot(sampletimes, tr.data / sensitivity * 1e9, color='k', zorder=1000)[0])
@@ -1315,8 +1356,8 @@ class ObsPyck(QtGui.QMainWindow):
         st = self.streams[self.stPt]
         # To display filtered data we overwrite our alias to current stream
         # and replace it with the filtered data.
-        if self.widgets.qToolButton_ms.isChecked():
-            self._ms(st)
+        if self.widgets.qToolButton_physical_units.isChecked():
+            self._physical_units(st)
         if self.widgets.qToolButton_filter.isChecked():
             self._filter(st)
         else:
@@ -1545,7 +1586,7 @@ class ObsPyck(QtGui.QMainWindow):
                 return
 
         if ev.key in (keys['setMagMin'], keys['setMagMax']):
-            if self.widgets.qToolButton_ms.isChecked():
+            if self.widgets.qToolButton_physical_units.isChecked():
                 self.error("Can only set amplitude pick on raw count data!")
                 return
             # some keyPress events only make sense inside our matplotlib axes
@@ -1742,17 +1783,24 @@ class ObsPyck(QtGui.QMainWindow):
                 self.widgets.qLabel_xdata_rel.setText(formatXTicklabels(ev.xdata))
                 label = self.time_rel2abs(ev.xdata).isoformat().replace("T", "  ")[:-3]
                 self.widgets.qLabel_xdata_abs.setText(label)
-                if self.widgets.qToolButton_ms.isChecked() \
+                if self.widgets.qToolButton_physical_units.isChecked() \
                         and not self.widgets.qToolButton_spectrogram.isChecked():
                     absval = abs(ev.ydata)
+                    units = str(self.widgets.qToolButton_physical_units.text()).strip('[]')
                     if absval >= 1:
-                        text = "%.3g m/s" % ev.ydata
+                        text = "{:.3g} {}".format(ev.ydata, units)
                     elif absval >= 1e-4:
-                        text = "%.3g mm/s" % (ev.ydata * 1e3)
+                        # prepend milli-
+                        units = 'm' + units
+                        text = "{:.3g} {}".format(ev.ydata * 1e3, units)
                     elif absval >= 1e-7:
-                        text = "%.3g mu/s" % (ev.ydata * 1e6)
+                        # prepend micro-
+                        units = 'mu' + units
+                        text = "{:.3g} {}".format(ev.ydata * 1e6, units)
                     else:
-                        text = "%.3g nm/s" % (ev.ydata * 1e9)
+                        # prepend nano-
+                        units = 'n' + units
+                        text = "{:.3g} {}".format(ev.ydata * 1e9, units)
                     self.widgets.qLabel_ydata.setText(text)
                 else:
                     self.widgets.qLabel_ydata.setText("%.1f" % ev.ydata)
@@ -2816,8 +2864,8 @@ class ObsPyck(QtGui.QMainWindow):
                 tr = self.getTrace(
                     seed_string=amplitude.waveform_id.get_seed_string())
                 # either use attached PAZ or response..
-                if "paz" in tr.stats:
-                    paz = tr.stats["paz"]
+                if "parser" in tr.stats:
+                    paz = tr.stats["parser"].get_paz(tr.id, tr.stats.starttime)
                 elif "response" in tr.stats:
                     paz = tr.stats["response"]
                 else:
@@ -2964,6 +3012,9 @@ class ObsPyck(QtGui.QMainWindow):
             st = st.copy()
             for j, tr in enumerate(st):
                 net, sta, loc, cha = tr.id.split(".")
+		if loc=='':
+			loc=None
+		
                 color = COMPONENT_COLORS.get(cha[-1], "gray")
                 alpha = alphas.get(cha[-1], 0.4)
                 # make sure that the relative x-axis times start with 0 at the time
@@ -2991,8 +3042,8 @@ class ObsPyck(QtGui.QMainWindow):
                 # normalize with overall sensitivity and convert to nm/s
                 # if not explicitly deactivated on command line
                 if self.config.getboolean("base", "normalization") and not self.config.getboolean("base", "no_metadata"):
-                    if self.widgets.qToolButton_ms.isChecked():
-                        self._ms(tr)
+                    if self.widgets.qToolButton_physical_units.isChecked():
+                        self._physical_units(tr)
                     if self.widgets.qToolButton_filter.isChecked():
                         self._filter(tr)
                     data_ = tr.data
@@ -3010,9 +3061,13 @@ class ObsPyck(QtGui.QMainWindow):
             # plot picks and arrivals
             # seiscomp does not store location code with picks, so allow to
             # match any location code in that case..
-            if str(event.get("creation_info", {}).get("author", "")).startswith("scevent"):
-                loc = None
-            picks = self.getPicks(network=net, station=sta, location=loc)
+		try:
+			if event.get("creation_info", {}).get("author", "").startswith("scevent"):
+				loc = None
+		except:
+	    		pass
+
+	    picks = self.getPicks(network=net, station=sta, location=loc)
             try:
                 arrivals = event.origins[0].arrivals
             except:
@@ -3788,6 +3843,9 @@ class ObsPyck(QtGui.QMainWindow):
         net = st[0].stats.network
         sta = st[0].stats.station
         loc = st[0].stats.location
+	if loc=='':
+		loc=None
+
         xlims = [list(ax.get_xlim()) for ax in self.axs]
         ylims = [list(ax.get_ylim()) for ax in self.axs]
         for _i, ax in enumerate(self.axs):
@@ -3801,8 +3859,11 @@ class ObsPyck(QtGui.QMainWindow):
         # plot picks and arrivals
         # seiscomp does not store location code with picks, so allow to
         # match any location code in that case..
-        if event.get("creation_info", {}).get("author", "").startswith("scevent"):
-            loc = None
+        try:
+	    if event.get("creation_info", {}).get("author", "").startswith("scevent"):
+            	loc = None
+	except:
+	    pass
         picks = self.getPicks(network=net, station=sta, location=loc)
         try:
             arrivals = event.origins[0].arrivals
@@ -3906,7 +3967,10 @@ class ObsPyck(QtGui.QMainWindow):
 
         color = "k"
         time = self.time_abs2rel(pick.time)
-        reltime = time - arrival.time_residual
+        if arrival.time_residual is not None:
+        	reltime = time - arrival.time_residual
+	else:
+		reltime=time
         ax.axvline(reltime, color=color,
                    linewidth=AXVLINEWIDTH,
                    ymin=0, ymax=1, alpha=alpha_line)
@@ -3914,7 +3978,7 @@ class ObsPyck(QtGui.QMainWindow):
             ax.axvspan(time, reltime, color=color, alpha=0.2)
 
     def drawAmplitude(self, ax, amplitude, scaling=None, main_axes=True):
-        if self.widgets.qToolButton_ms.isChecked():
+        if self.widgets.qToolButton_physical_units.isChecked():
             self.error("Not displaying an amplitude pick set on raw count data.")
             return
         if main_axes:
