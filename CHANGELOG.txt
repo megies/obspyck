@@ -8,6 +8,11 @@ master
    for longitude <0 (see #47)
  - fix horizontal errors read after hyp2000 location (conversion from km to m
    was missing, see #48)
+ - add possibility to use other phase names besides the default "P" and "S" in
+   picking. this is highly experimental, especially when using location
+   routines most internals are very likely still using hard coded "P" and "S"
+   values, but for picking and saving to QuakeML only this reportedly works
+   (see #36).
 
 0.4.1
  - fix minor bug that prevents 0.4.0 from running

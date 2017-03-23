@@ -118,8 +118,6 @@ PROGRAMS = {
         'focmec': {'filenames': {'exe': "rfocmec", 'phases': "focmec.dat",
                                  'stdout': "focmec.stdout",
                                  'summary': "focmec.out"}}}
-SEISMIC_PHASES = ('P', 'S')
-PHASE_COLORS = {'P': "red", 'S': "blue", 'Mag': "green"}
 COMPONENT_COLORS = {'Z': "k", 'N': "b", 'E': "r"}
 WIDGET_NAMES = ("qToolButton_clearAll", "qToolButton_clearOrigMag",
         "qToolButton_clearFocMec", "qToolButton_doHyp2000",
