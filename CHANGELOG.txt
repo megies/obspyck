@@ -13,6 +13,10 @@ master
    routines most internals are very likely still using hard coded "P" and "S"
    values, but for picking and saving to QuakeML only this reportedly works
    (see #36).
+ - also show picks in the GUI that lack location code in the corresponding
+   QuakeML file (but such picks will not be associated to any one of the
+   Stream's axes, so it will not be possible to modify or delete them via the
+   GUI, see #49 and #51)
 
 0.4.1
  - fix minor bug that prevents 0.4.0 from running
