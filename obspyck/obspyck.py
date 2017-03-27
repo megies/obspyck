@@ -3024,7 +3024,7 @@ class ObsPyck(QtGui.QMainWindow):
             # match any location code in that case..
             if str(event.get("creation_info", {}).get("author", "")).startswith("scevent"):
                 loc = None
-            picks = self.getPicks(network=net, station=sta, location=loc)
+            picks = self.getPicks(network=net, station=sta)
             try:
                 arrivals = event.origins[0].arrivals
             except:
@@ -3815,7 +3815,7 @@ class ObsPyck(QtGui.QMainWindow):
         # match any location code in that case..
         if event.get("creation_info", {}).get("author", "").startswith("scevent"):
             loc = None
-        picks = self.getPicks(network=net, station=sta, location=loc)
+        picks = self.getPicks(network=net, station=sta)
         try:
             arrivals = event.origins[0].arrivals
         except:
@@ -4002,7 +4002,7 @@ class ObsPyck(QtGui.QMainWindow):
         else:
             return None
 
-    def getPicks(self, network, station, location):
+    def getPicks(self, network, station, location=None):
         """
         returns all matching picks as list.
         """
@@ -4013,8 +4013,9 @@ class ObsPyck(QtGui.QMainWindow):
                 continue
             if station != p.waveform_id.station_code:
                 continue
-            if location != p.waveform_id.location_code:
-                continue
+            if location is not None:
+                if location != p.waveform_id.location_code:
+                    continue
             ret.append(p)
         return ret
 
