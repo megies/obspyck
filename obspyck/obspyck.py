@@ -3186,7 +3186,8 @@ class ObsPyck(QtGui.QMainWindow):
             pick_s = self.getPick(network=net, station=sta, phase_hint='S')
             arrival_p = pick_p and getArrivalForPick(o.arrivals, pick_p)
             arrival_s = pick_s and getArrivalForPick(o.arrivals, pick_s)
-            if (arrival_p and arrival_p.time_residual) or (arrival_s and arrival_s.time_residual):
+            if ((arrival_p and arrival_p.time_residual is not None) or
+                    (arrival_s and arrival_s.time_residual is not None)):
                 stationColor = 'black'
             else:
                 stationColor = 'gray'
@@ -3198,7 +3199,7 @@ class ObsPyck(QtGui.QMainWindow):
             for _i, (pick, arrival) in enumerate([[pick_p, arrival_p], [pick_s, arrival_s]]):
                 if not (pick and arrival):
                     continue
-                if arrival.time_residual:
+                if arrival.time_residual is not None:
                     res_info = '\n' * (_i + 2) + '%+0.3fs' % arrival.time_residual
                     if pick.polarity:
                         res_info += '  %s' % pick.polarity
@@ -4086,7 +4087,7 @@ class ObsPyck(QtGui.QMainWindow):
                        lw=None)
 
     def drawArrival(self, ax, arrival, pick, main_axes):
-        if not pick.time:
+        if not pick.time or arrival.time_residual is None:
             return
 
         if main_axes:
