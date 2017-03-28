@@ -4,6 +4,9 @@ master
  - add possibility to specify complex, time-dependent station combinations
    (see #73)
  - avoid errors when encountering arrivals without a residual time (see #52)
+ - add experimental option for reviewing all picks in a given catalog (as
+   opposed to normal operation which only considers the first event in a loaded
+   catalog file, see #50)
 
 0.5.1
  - fix getting metadata via arclink (see #65)

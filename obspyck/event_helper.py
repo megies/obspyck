@@ -307,3 +307,23 @@ def readQuakeML(*args, **kwargs):
     for classname, class_ in bkp.iteritems():
         obspy.io.quakeml.core.__dict__[classname] = bkp[classname]
     return ret
+
+
+def merge_events_in_catalog(catalog):
+    """
+    Merge information contained in all events (origins, picks, magnitudes, ...)
+    in the catalog into the first event in the catalog.
+    WARNING: Works in place!
+    """
+    if len(catalog) < 2:
+        return
+    event = Event()
+    for e in catalog:
+        event.picks += e.picks
+        event.origins += e.origins
+        event.magnitudes += e.magnitudes
+        event.amplitudes += e.amplitudes
+        event.focal_mechanisms += e.focal_mechanisms
+        event.station_magnitudes += e.station_magnitudes
+        event.comments += e.comments
+    catalog.events = [e]

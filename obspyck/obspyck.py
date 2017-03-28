@@ -57,7 +57,8 @@ from .qt_designer import Ui_qMainWindow_obsPyck
 from .util import *
 from .event_helper import Catalog, Event, Origin, Pick, Arrival, \
     Magnitude, StationMagnitude, StationMagnitudeContribution, \
-    FocalMechanism, ResourceIdentifier, ID_ROOT, readQuakeML, Amplitude
+    FocalMechanism, ResourceIdentifier, ID_ROOT, readQuakeML, Amplitude, \
+    merge_events_in_catalog
 
 NAMESPACE = "http://erdbeben-in-bayern.de/xmlns/0.1"
 NSMAP = {"edb": NAMESPACE}
@@ -4426,6 +4427,19 @@ class ObsPyck(QtGui.QMainWindow):
         Set the currently active Event/Catalog.
         """
         self.catalog = catalog
+
+        try:
+            merge_events_in_catalog = self.config.getboolean(
+                'misc', 'merge_catalog')
+        except NoOptionError:
+            merge_events_in_catalog = False
+        if merge_events_in_catalog:
+            msg = ('Warning: Option to merge events in the catalog is highly '
+                   'experimental and should only be used for reviewing '
+                   'existing events.')
+            self.error(msg)
+            merge_events_in_catalog(self.catalog)
+
         string_io = StringIO()
         catalog.write(string_io, format="QUAKEML")
         string_io.seek(0)
