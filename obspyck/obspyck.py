@@ -2539,7 +2539,7 @@ class ObsPyck(QtGui.QMainWindow):
         lon_deg = int(line[35:38])
         lon_min = float(line[39:44])
         lon = lon_deg + (lon_min / 60.)
-        if line[38] == " ":
+        if line[38] == "W":
             lon = -lon
         depth = -float(line[46:51]) # depth: negative down!
         rms = float(line[52:57])
