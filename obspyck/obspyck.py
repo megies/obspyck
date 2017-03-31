@@ -19,7 +19,8 @@ import socket
 import sys
 import tempfile
 import warnings
-from configparser import SafeConfigParser, NoOptionError
+from collections import OrderedDict
+from ConfigParser import SafeConfigParser, NoOptionError
 from StringIO import StringIO
 
 from PyQt4 import QtGui, QtCore
@@ -80,6 +81,10 @@ class ObsPyck(QtGui.QMainWindow):
         self.keys = keys
         self.config = config
 
+        # make a mapping of seismic phases to colors as specified in config
+        self.seismic_phases = OrderedDict(config.items('seismic_phases'))
+        self._magnitude_color = config.get('base', 'magnitude_pick_color')
+
         # T0 is the global reference time (zero in relative time scales)
         if options.time is not None:
             self.T0 = UTCDateTime(options.time)
@@ -115,11 +120,15 @@ class ObsPyck(QtGui.QMainWindow):
         # Needs to be done pretty much at the beginning because some other
         # stuff relies on the phase type being set.
         pixmap = QtGui.QPixmap(70, 50)
-        for phase_type in list(SEISMIC_PHASES) + ['Mag']:
-            rgb = matplotlib_color_to_rgb(PHASE_COLORS[phase_type])
+        for phase_type, color in self.seismic_phases.items():
+            rgb = matplotlib_color_to_rgb(color)
             pixmap.fill(QtGui.QColor(*rgb))
             icon = QtGui.QIcon(pixmap)
             self.widgets.qComboBox_phaseType.addItem(icon, phase_type)
+        rgb = matplotlib_color_to_rgb(self._magnitude_color)
+        pixmap.fill(QtGui.QColor(*rgb))
+        icon = QtGui.QIcon(pixmap)
+        self.widgets.qComboBox_phaseType.addItem(icon, 'Mag')
 
         self.qMain = self.widgets.centralwidget
         # Add write methods to stdout/stderr text edits in GUI displays to
@@ -201,9 +210,6 @@ class ObsPyck(QtGui.QMainWindow):
         facecolor = self.qMain.palette().color(QtGui.QPalette.Window).getRgb()
         self.fig.set_facecolor([value / 255.0 for value in facecolor])
 
-        #Define some flags, dictionaries and plotting options
-        #this next flag indicates if we zoom on time or amplitude axis
-        self.flagWheelZoomAmplitude = False
         try:
             self.tmp_dir = setup_external_programs(options, config)
         except IOError:
@@ -301,7 +307,6 @@ class ObsPyck(QtGui.QMainWindow):
         # XXX MAYBE rename the event handles again so that they DONT get
         # XXX autoconnected via Qt?!?!?
         self.canv.mpl_connect('key_press_event', self.__mpl_keyPressEvent)
-        self.canv.mpl_connect('key_release_event', self.__mpl_keyReleaseEvent)
         self.canv.mpl_connect('button_release_event', self.__mpl_mouseButtonReleaseEvent)
         # The scroll event is handled using Qt.
         #self.canv.mpl_connect('scroll_event', self.__mpl_wheelEvent)
@@ -1147,7 +1152,7 @@ class ObsPyck(QtGui.QMainWindow):
             va = "bottom"
             bbox_fc = "lightgray"
         i = self.axs.index(ax)
-        color = PHASE_COLORS[pick.phase_hint]
+        color = self.seismic_phases[pick.phase_hint]
         bbox = dict(boxstyle="round,pad=0.4", fc=bbox_fc, ec="k", lw=1, alpha=1.0)
         ax.text(x, y, label, transform=self.trans[i], color=color,
                 family='monospace', va=va, bbox=bbox, size="large",
@@ -1444,7 +1449,7 @@ class ObsPyck(QtGui.QMainWindow):
             self.debug(str(ev.inaxes.lines[0].get_ydata()[xpos]))
 
         if ev.key == keys['setPick']:
-            if phase_type in SEISMIC_PHASES:
+            if phase_type in self.seismic_phases:
                 pick = self.getPick(axes=ev.inaxes, phase_hint=phase_type,
                                     setdefault=True, seed_string=tr.id)
                 self.debug(map(str, [ev.inaxes, self.axs, phase_type, tr.id]))
@@ -1468,7 +1473,7 @@ class ObsPyck(QtGui.QMainWindow):
 
         if ev.key in (keys['setWeight0'], keys['setWeight1'],
                       keys['setWeight2'], keys['setWeight3']):
-            if phase_type in SEISMIC_PHASES:
+            if phase_type in self.seismic_phases:
                 if pick is None:
                     return
                 if ev.key == keys['setWeight0']:
@@ -1489,7 +1494,7 @@ class ObsPyck(QtGui.QMainWindow):
                 return
 
         if ev.key in (keys['setPolU'], keys['setPolD']):
-            if phase_type in SEISMIC_PHASES:
+            if phase_type in self.seismic_phases:
                 if pick is None:
                     return
                 if ev.key == keys['setPolU']:
@@ -1516,7 +1521,7 @@ class ObsPyck(QtGui.QMainWindow):
                 return
 
         if ev.key in (keys['setOnsetI'], keys['setOnsetE']):
-            if phase_type in SEISMIC_PHASES:
+            if phase_type in self.seismic_phases:
                 if pick is None:
                     return
                 if ev.key == keys['setOnsetI']:
@@ -1531,14 +1536,14 @@ class ObsPyck(QtGui.QMainWindow):
                 return
 
         if ev.key == keys['delPick']:
-            if phase_type in SEISMIC_PHASES:
+            if phase_type in self.seismic_phases:
                 self.delPick(pick)
                 self.updateAllItems()
                 self.redraw()
                 return
 
         if ev.key == keys['setPickError']:
-            if phase_type in SEISMIC_PHASES:
+            if phase_type in self.seismic_phases:
                 if pick is None or not pick.time:
                     return
                 pick.setErrorTime(self.time_rel2abs(pickSample))
@@ -1597,8 +1602,7 @@ class ObsPyck(QtGui.QMainWindow):
         # End of key events related to picking                                #
         #######################################################################
 
-        if ev.key == keys['switchWheelZoomAxis']:
-            self.flagWheelZoomAmplitude = True
+        if ev.key in (keys['switchWheelZoomAxis'], keys['scrollWheelZoom']):
             return
 
         # iterate the phase type combobox
@@ -1620,10 +1624,6 @@ class ObsPyck(QtGui.QMainWindow):
                 return
             self.on_qToolButton_nextStream_clicked()
             return
-
-    def __mpl_keyReleaseEvent(self, ev):
-        if ev.key == self.keys['switchWheelZoomAxis']:
-            self.flagWheelZoomAmplitude = False
 
     # Define zooming for the mouse wheel wheel
     def __mpl_wheelEvent(self, ev):
@@ -1676,6 +1676,25 @@ class ObsPyck(QtGui.QMainWindow):
                 elif ev.delta() > 0:
                     top /= 2
                     bottom /= 2
+        # Still able to use the dictionary.
+        elif ev.modifiers() == getattr(
+                QtCore.Qt,
+                '%sModifier' % self.keys['scrollWheelZoom'].capitalize()):
+            direction = (self.config.getboolean('misc', 'scrollWheelInvert')
+                         and 1 or -1)
+            shift = ((right - left) *
+                     self.config.getfloat('misc', 'scrollWheelPercentage'))
+            if self.widgets.qToolButton_showMap.isChecked():
+                pass
+            else:
+                # scroll left
+                if ev.delta() * direction < 0:
+                    left -= shift
+                    right -= shift
+                # scroll right
+                elif ev.delta() * direction > 0:
+                    left += shift
+                    right += shift
         ax.set_xbound(lower=left, upper=right)
         ax.set_ybound(lower=bottom, upper=top)
         self.redraw()
@@ -1692,12 +1711,12 @@ class ObsPyck(QtGui.QMainWindow):
             self.multicursor.visible = False
             # reuse this event as setPick / setPickError event
             if ev.button == 1:
-                if str(self.widgets.qComboBox_phaseType.currentText()) in SEISMIC_PHASES:
+                if str(self.widgets.qComboBox_phaseType.currentText()) in self.seismic_phases:
                     ev.key = self.keys['setPick']
                 else:
                     ev.key = self.keys['setMagMin']
             elif ev.button == 3:
-                if str(self.widgets.qComboBox_phaseType.currentText()) in SEISMIC_PHASES:
+                if str(self.widgets.qComboBox_phaseType.currentText()) in self.seismic_phases:
                     ev.key = self.keys['setPickError']
                 else:
                     ev.key = self.keys['setMagMax']
@@ -1763,7 +1782,10 @@ class ObsPyck(QtGui.QMainWindow):
 
     def updateMulticursorColor(self):
         phase_name = str(self.widgets.qComboBox_phaseType.currentText())
-        color = PHASE_COLORS[phase_name]
+        if phase_name == 'Mag':
+            color = self._magnitude_color
+        else:
+            color = self.seismic_phases[phase_name]
         for l in self.multicursor.lines:
             l.set_color(color)
 
@@ -2548,7 +2570,7 @@ class ObsPyck(QtGui.QMainWindow):
         self.catalog[0].origins = [o]
         self.catalog[0].set_creation_info_username(self.username)
         o.clear()
-        o.method_id = "/".join([ID_ROOT, "location_method", "hyp2000", "2"])
+        o.method_id = "/".join([ID_ROOT, "location_method", "hyp2000", "3"])
         o.origin_uncertainty = OriginUncertainty()
         o.quality = OriginQuality()
         ou = o.origin_uncertainty
@@ -2556,7 +2578,8 @@ class ObsPyck(QtGui.QMainWindow):
         o.longitude = lon
         o.latitude = lat
         o.depth = depth * (-1e3)  # meters positive down!
-        ou.horizontal_uncertainty = errXY
+        # all errors are given in km!
+        ou.horizontal_uncertainty = errXY * 1e3
         ou.preferred_description = "horizontal uncertainty"
         o.depth_errors.uncertainty = errZ * 1e3
         oq.standard_error = rms #XXX stimmt diese Zuordnung!!!?!
@@ -3001,7 +3024,7 @@ class ObsPyck(QtGui.QMainWindow):
             # match any location code in that case..
             if str(event.get("creation_info", {}).get("author", "")).startswith("scevent"):
                 loc = None
-            picks = self.getPicks(network=net, station=sta, location=loc)
+            picks = self.getPicks(network=net, station=sta)
             try:
                 arrivals = event.origins[0].arrivals
             except:
@@ -3152,7 +3175,7 @@ class ObsPyck(QtGui.QMainWindow):
                         res_info += '  %s' % pick.polarity
                     axEM.text(coords.longitude, coords.latitude, res_info,
                               va='top', family='monospace',
-                              color=PHASE_COLORS[pick.phase_hint])
+                              color=self.seismic_phases[pick.phase_hint])
             for sm in self.catalog[0].station_magnitudes:
                 if sm.waveform_id.station_code != sta:
                     continue
@@ -3168,7 +3191,7 @@ class ObsPyck(QtGui.QMainWindow):
                 label = '\n' * (_i + 3) + \
                         '  %0.2f%s' % (sm.mag, chann_info)
                 axEM.text(coords.longitude, coords.latitude, label, va='top',
-                          family='monospace', color=PHASE_COLORS['Mag'])
+                          family='monospace', color=self._magnitude_color)
                 break
 
         if len(self.scatterMagLon) > 0:
@@ -3310,8 +3333,8 @@ class ObsPyck(QtGui.QMainWindow):
             stats = st[0].stats
             sta = stats.station
             lon = stats.coordinates.longitude
-            lon_deg = int(lon)
-            lon_min = (lon - lon_deg) * 60.
+            lon_deg = int(abs(lon))
+            lon_min = (abs(lon) - abs(lon_deg)) * 60.
             lat = stats.coordinates.latitude
             lat_deg = int(abs(lat))
             lat_min = (abs(lat) - abs(lat_deg)) * 60.
@@ -3320,7 +3343,7 @@ class ObsPyck(QtGui.QMainWindow):
             if lat < 0:
                 hem_NS = 'S'
             if lon < 0:
-                hem_NS = 'W'
+                hem_EW = 'W'
             # hypo 71 format uses elevation in meters not kilometers
             ele = stats.coordinates.elevation
             # if sensor is buried or downhole, account for the specified sensor
@@ -3792,7 +3815,7 @@ class ObsPyck(QtGui.QMainWindow):
         # match any location code in that case..
         if event.get("creation_info", {}).get("author", "").startswith("scevent"):
             loc = None
-        picks = self.getPicks(network=net, station=sta, location=loc)
+        picks = self.getPicks(network=net, station=sta)
         try:
             arrivals = event.origins[0].arrivals
         except:
@@ -3852,7 +3875,7 @@ class ObsPyck(QtGui.QMainWindow):
             alpha_line = 0.3
             alpha_span = 0.04
 
-        color = PHASE_COLORS[pick.phase_hint]
+        color = self.seismic_phases[pick.phase_hint]
         reltime = self.time_abs2rel(pick.time)
         ax.axvline(reltime, color=color,
                    linewidth=AXVLINEWIDTH,
@@ -3907,7 +3930,7 @@ class ObsPyck(QtGui.QMainWindow):
             self.error("Not displaying an amplitude pick set on raw count data.")
             return
         if main_axes:
-            color = PHASE_COLORS['Mag']
+            color = self._magnitude_color
         else:
             color = "gray"
 
@@ -3979,7 +4002,7 @@ class ObsPyck(QtGui.QMainWindow):
         else:
             return None
 
-    def getPicks(self, network, station, location):
+    def getPicks(self, network, station, location=None):
         """
         returns all matching picks as list.
         """
@@ -3990,8 +4013,9 @@ class ObsPyck(QtGui.QMainWindow):
                 continue
             if station != p.waveform_id.station_code:
                 continue
-            if location != p.waveform_id.location_code:
-                continue
+            if location is not None:
+                if location != p.waveform_id.location_code:
+                    continue
             ret.append(p)
         return ret
 
@@ -4437,6 +4461,7 @@ def main():
             print "created example config file: {}".format(config_file)
     print "using config file: {}".format(config_file)
     config = SafeConfigParser(allow_no_value=True)
+    # make all config keys case sensitive
     config.optionxform = str
     config.read(config_file)
 
