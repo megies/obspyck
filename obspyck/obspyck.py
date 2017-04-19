@@ -437,7 +437,10 @@ class ObsPyck(QtGui.QMainWindow):
             return
         #self.delAllItems()
         self.clearOriginMagnitude()
-        self.setXMLEventID()
+        if self.catalog[0].get("resource_id"):
+            self.setXMLEventID(event_id=str(self.catalog[0].resource_id).split('/')[-1])
+        else:
+            self.setXMLEventID()
         self.doHyp2000()
         self.loadHyp2000Data()
         self.calculateEpiHypoDists()
@@ -451,7 +454,7 @@ class ObsPyck(QtGui.QMainWindow):
             return
         #self.delAllItems()
         self.clearOriginMagnitude()
-        self.setXMLEventID()
+        self.setXMLEventID(event_id=str(self.catalog[0].resource_id).split('/')[-1])
         self.doNLLoc()
         self.loadNLLocOutput()
         self.calculateEpiHypoDists()
@@ -465,7 +468,7 @@ class ObsPyck(QtGui.QMainWindow):
             return
         self.clearFocmec()
         self.doFocmec()
-        self.setXMLEventID()
+        self.setXMLEventID(event_id=str(self.catalog[0].resource_id).split('/')[-1])
 
     def on_qToolButton_showMap_toggled(self):
         state = self.widgets.qToolButton_showMap.isChecked()
@@ -1413,7 +1416,7 @@ class ObsPyck(QtGui.QMainWindow):
             # some keyPress events only make sense inside our matplotlib axes
             if ev.inaxes not in self.axs:
                 return
-            self.setXMLEventID()
+            self.setXMLEventID(event_id=str(self.catalog[0].resource_id).split('/')[-1])
 
         if ev.key in [keys['setPick'], keys['setPickError'],
                       keys['setMagMin'], keys['setMagMax'],
@@ -2651,7 +2654,7 @@ class ObsPyck(QtGui.QMainWindow):
             self.info("updating magnitude info...")
             self.calculateStationMagnitudes()
             self.updateNetworkMag()
-            self.setXMLEventID()
+            self.setXMLEventID(event_id=str(self.catalog[0].resource_id).split('/')[-1])
         else:
             self.critical("can not update magnitude (no origin)...")
 
@@ -4218,6 +4221,7 @@ class ObsPyck(QtGui.QMainWindow):
         catalog = readQuakeML(filename)
         self.setEventFromCatalog(catalog)
         self.critical("Loaded event from file: %s" % filename)
+        self.setXMLEventID(event_id=filename.split('/')[-1].rstrip('.xml'))
 
     def setEventFromCatalog(self, catalog):
         """
