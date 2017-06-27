@@ -36,7 +36,6 @@ from obspy.clients.fdsn import Client as FDSNClient
 from obspy.clients.filesystem.sds import Client as SDSClient
 from obspy.clients.seedlink import Client as SeedlinkClient
 from obspy.clients.seishub import Client as SeisHubClient
-from obspy.core.util import get_matplotlib_version
 from obspy.geodetics.base import gps2dist_azimuth
 from obspy.io.xseed import Parser
 
@@ -50,6 +49,15 @@ obspy.clients.arclink.client.MAX_REQUESTS = 200
 mpl.rc('figure.subplot', left=0.05, right=0.98, bottom=0.10, top=0.92,
        hspace=0.28)
 mpl.rcParams['font.size'] = 10
+
+
+try:
+    # obspy >= 1.1.0
+    from obspy.core.util import MATPLOTLIB_VERSION
+except ImportError:
+    # obspy < 1.1.0
+    from obspy.core.util import get_matplotlib_version
+    MATPLOTLIB_VERSION = get_matplotlib_version()
 
 
 # restrict to 64 characters to fit in allowed QuakeML maximum version field
@@ -933,14 +941,14 @@ class MultiCursor(MplMultiCursor):
 
     @property
     def lines(self):
-        if get_matplotlib_version() < [1, 3, 0]:
+        if MATPLOTLIB_VERSION < [1, 3, 0]:
             return self.__dict__["lines"]
         else:
             return self.vlines
 
     @lines.setter
     def lines(self, value):
-        if get_matplotlib_version() < [1, 3, 0]:
+        if MATPLOTLIB_VERSION < [1, 3, 0]:
             self.__dict__["lines"] = value
         else:
             self.vlines = value
