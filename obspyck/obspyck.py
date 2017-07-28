@@ -12,19 +12,13 @@
 import locale
 import logging
 import optparse
-import os
 import re
-import shutil
 import socket
-import sys
-import tempfile
-import warnings
 from configparser import SafeConfigParser, NoOptionError
-from StringIO import StringIO
 
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import Qt
-import numpy as np
+from six import BytesIO
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.cm
@@ -38,7 +32,6 @@ from matplotlib.backend_bases import MouseEvent as MplMouseEvent
 #os.chdir("/baysoft/obspyck/")
 import obspy
 import obspy.imaging.cm as obspy_cm
-from obspy import UTCDateTime, Stream
 from obspy.core.event import CreationInfo, WaveformStreamID, \
     OriginUncertainty, OriginQuality, Comment, NodalPlane, NodalPlanes
 from obspy.core.util import NamedTemporaryFile, AttribDict
@@ -48,7 +41,6 @@ from obspy.signal.invsim import estimate_magnitude
 from obspy.signal.rotate import rotate_zne_lqt, rotate_ne_rt
 from obspy.imaging.spectrogram import spectrogram
 from obspy.imaging.beachball import beach
-from obspy.clients.seishub import Client as SeisHubClient
 
 from . import __version__
 from .qt_designer import Ui_qMainWindow_obsPyck
@@ -60,10 +52,11 @@ from .event_helper import Catalog, Event, Origin, Pick, Arrival, \
 NAMESPACE = "http://erdbeben-in-bayern.de/xmlns/0.1"
 NSMAP = {"edb": NAMESPACE}
 
-
-if map(int, obspy.__version__.split('.')[:2]) < [1, 1]:
-    msg = "Needing ObsPy version >= 1.1.0 (current version is: {})"
-    warnings.warn(msg.format(obspy.__version__))
+# CJH Comment out following as type comparison eliminated in py3
+# CJH Also, obspy 1.1 not quite released
+# if map(int, obspy.__version__.split('.')[:2]) < [1, 1]:
+#     msg = "Needing ObsPy version >= 1.1.0 (current version is: {})"
+#     warnings.warn(msg.format(obspy.__version__))
 
 
 class ObsPyck(QtGui.QMainWindow):
@@ -974,7 +967,7 @@ class ObsPyck(QtGui.QMainWindow):
     def update_qml_text(self, qml=None):
         if qml is None:
             qml = self.get_QUAKEML_string()
-        self.widgets.qTextEdit_qml.setText(qml)
+        self.widgets.qTextEdit_qml.setText(qml.decode('utf-8'))
 
     def _filter(self, stream):
         """
@@ -1334,7 +1327,7 @@ class ObsPyck(QtGui.QMainWindow):
                 assert(len(self.catalog[0].origins) > 0), "No origin data"
                 origin = self.catalog[0].origins[0]
                 self._rotateLQT(st, origin)
-            except Exception, e:
+            except Exception as e:
                 self.widgets.qToolButton_rotateLQT.setChecked(False)
                 err = str(e)
                 err += "\nError during rotating to LQT. Showing unrotated data."
@@ -1344,7 +1337,7 @@ class ObsPyck(QtGui.QMainWindow):
                 assert(len(self.catalog[0].origins) > 0), "No origin data"
                 origin = self.catalog[0].origins[0]
                 self._rotateZRT(st, origin)
-            except Exception, e:
+            except Exception as e:
                 self.widgets.qToolButton_rotateZRT.setChecked(False)
                 err = str(e)
                 err += "\nError during rotating to ZRT. Showing unrotated data."
@@ -1561,6 +1554,7 @@ class ObsPyck(QtGui.QMainWindow):
             if phase_type == 'Mag':
                 picker_width = self.config.getint("base", "magnitude_picker_width")
                 ampl = self.getAmplitude(axes=ev.inaxes, setdefault=True, seed_string=tr.id)
+                print(ampl)
                 ampl.set_general_info()
                 # do the actual work
                 ydata = ev.inaxes.lines[0].get_ydata() #get the first line hoping that it is the seismogram!
@@ -1866,6 +1860,7 @@ class ObsPyck(QtGui.QMainWindow):
             polarities.append((sta, azim, inci, pol))
         sta_map = self._4_letter_sta_map
         with open(files['phases'], 'wt') as f:
+            print(f)
             f.write("\n") #first line is ignored!
             for sta, azim, inci, pol in polarities:
                 f.write(fmt % (sta_map[sta], azim, inci, pol))
@@ -2045,7 +2040,7 @@ class ObsPyck(QtGui.QMainWindow):
             sta_map_tmp.setdefault(sta[:4], set()).add(sta)
         sta_map = {}
         sta_map_reverse = {}
-        for sta_short, stations in sta_map_tmp.iteritems():
+        for sta_short, stations in iteritems(sta_map_tmp):
             stations = list(stations)
             if len(stations) == 1:
                 sta_map[stations[0]] = sta_short
@@ -4204,7 +4199,7 @@ class ObsPyck(QtGui.QMainWindow):
         resource_xml = client.event.get_resource(resource_name)
 
         # parse quakeml
-        catalog = readQuakeML(StringIO(resource_xml))
+        catalog = readQuakeML(BytesIO(resource_xml))
         self.setEventFromCatalog(catalog)
         ev = catalog[0]
         self.critical("Fetched event %i of %i: %s (public: %s, user: %s)"% \
@@ -4228,7 +4223,7 @@ class ObsPyck(QtGui.QMainWindow):
         Set the currently active Event/Catalog.
         """
         self.catalog = catalog
-        string_io = StringIO()
+        string_io = BytesIO()
         catalog.write(string_io, format="QUAKEML")
         string_io.seek(0)
 
@@ -4270,6 +4265,7 @@ class ObsPyck(QtGui.QMainWindow):
             if "/obspyck/" not in str(ampl.method_id) or str(ampl.method_id).endswith("/obspyck/1"):
                 msg = "Skipping amplitude not set with obspyck (or with old version)."
                 self.error(msg)
+                # ampl = Amplitude(ampl) # Trying to patch into obspyck amp type
                 continue
             tr = self.getTrace(ampl.waveform_id.get_seed_string())
             if tr is None:
@@ -4428,8 +4424,8 @@ def main():
     if options.time is None:
         msg = 'Time option ("-t", "--time") must be specified.'
         raise Exception(msg)
-    print "Running ObsPyck version {} (location: {})".format(__version__,
-                                                             __file__)
+    print("Running ObsPyck version {} (location: {})".format(__version__,
+                                                             __file__))
     # read config file
     if options.config_file:
         config_file = os.path.expanduser(options.config_file)
@@ -4439,8 +4435,8 @@ def main():
             src = os.path.join(
                 os.path.dirname(__file__), "example.cfg")
             shutil.copy(src, config_file)
-            print "created example config file: {}".format(config_file)
-    print "using config file: {}".format(config_file)
+            print("created example config file: {}".format(config_file))
+    print("using config file: {}".format(config_file))
     config = SafeConfigParser(allow_no_value=True)
     config.optionxform = str
     config.read(config_file)

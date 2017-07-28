@@ -977,4 +977,4 @@ class Ui_qMainWindow_obsPyck(object):
         self.qLabel_perlap.setText(_translate("qMainWindow_obsPyck", "%lap", None))
         self.qPushButton_qml_update.setText(_translate("qMainWindow_obsPyck", "update QuakeML text", None))
 
-from util import QMplCanvas
+from .util import QMplCanvas

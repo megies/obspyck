@@ -18,7 +18,7 @@ import subprocess
 import sys
 import tempfile
 import warnings
-from StringIO import StringIO
+from io import StringIO
 
 import PyQt4
 import numpy as np
@@ -39,6 +39,7 @@ from obspy.clients.seishub import Client as SeisHubClient
 from obspy.core.util import get_matplotlib_version
 from obspy.geodetics.base import gps2dist_azimuth
 from obspy.io.xseed import Parser
+from future.utils import iteritems
 
 from . import __version__
 from .rotate_to_zne import (
@@ -295,9 +296,9 @@ def fetch_waveforms_with_metadata(options, args, config):
     parsers = []
     inventories = []
     if args:
-        print "=" * 80
-        print "Reading local files:"
-        print "-" * 80
+        print("=" * 80)
+        print("Reading local files:")
+        print("-" * 80)
         stream_tmp = Stream()
         for file in args:
             # try to read as metadata
@@ -306,7 +307,7 @@ def fetch_waveforms_with_metadata(options, args, config):
             except:
                 pass
             else:
-                print "%s: Metadata" % file
+                print("%s: Metadata" % file)
                 parsers.append(p)
                 continue
             # try to read as metadata
@@ -315,7 +316,7 @@ def fetch_waveforms_with_metadata(options, args, config):
             except:
                 pass
             else:
-                print "%s: Metadata" % file
+                print("%s: Metadata" % file)
                 inventories.append(inv)
                 continue
             # try to read as waveforms
@@ -323,12 +324,12 @@ def fetch_waveforms_with_metadata(options, args, config):
                 st = read(file, starttime=t1, endtime=t2,
                           verify_chksum=not config.getboolean("base", "ignore_gse2_chksum_error"))
             except TypeError:
-                print "File %s not recognized as dataless or waveform file. Skipped." % file
+                print("File %s not recognized as dataless or waveform file. Skipped." % file)
                 continue
             msg = "%s: Waveforms" % file
             if not st:
                 msg += " (not matching requested time window)"
-            print msg
+            print(msg)
             stream_tmp += st
         if len(parsers + inventories) == 0:
             if not no_metadata:
@@ -359,7 +360,7 @@ def fetch_waveforms_with_metadata(options, args, config):
                         except:
                             continue
                 if not has_metadata:
-                    print "found no metadata for %s!!!" % tr.id
+                    print("found no metadata for %s!!!" % tr.id)
             if tr.stats._format == 'GSE2':
                 apply_gse2_calib(tr)
         ids = set([(tr.stats.network, tr.stats.station, tr.stats.location) for tr in stream_tmp])
@@ -373,9 +374,9 @@ def fetch_waveforms_with_metadata(options, args, config):
                     rotate_channels(stream_tmp_, net, sta, loc, config)
             streams.append(stream_tmp_)
 
-    print "=" * 80
-    print "Fetching waveforms and metadata from servers:"
-    print "-" * 80
+    print("=" * 80)
+    print("Fetching waveforms and metadata from servers:")
+    print("-" * 80)
     for seed_id, server in sorted(seed_id_lookup.items()):
         server_type = config.get(server, "type")
         if server_type not in ("seishub", "fdsn", "jane", "arclink",
@@ -393,8 +394,8 @@ def fetch_waveforms_with_metadata(options, args, config):
                    "channel part: {}").format(seed_id)
             raise NotImplementedError(msg)
         if net_sta_loc in sta_fetched:
-            print "%s (%s: %s) skipped! (Was already retrieved)" % (
-                seed_id.ljust(15), server_type, server)
+            print("%s (%s: %s) skipped! (Was already retrieved)" % (
+                seed_id.ljust(15), server_type, server))
             continue
         try:
             sys.stdout.write("\r%s (%s: %s) ..." % (
@@ -564,7 +565,7 @@ def fetch_waveforms_with_metadata(options, args, config):
             sys.stdout.write("\r%s (%s: %s) fetched.\n" % (
                 seed_id.ljust(15), server_type, server))
             sys.stdout.flush()
-        except Exception, e:
+        except Exception as e:
             sys.stdout.write(
                 "\r%s (%s: %s) skipped! (Exception: %s)\n" % (
                     seed_id.ljust(15), server_type, server, e))
@@ -598,7 +599,7 @@ def fetch_waveforms_with_metadata(options, args, config):
             for tr in st:
                 tr.stats['_format'] = "SDS"
         streams.append(st)
-    print "=" * 80
+    print("=" * 80)
     return (clients, streams)
 
 
@@ -741,7 +742,7 @@ def merge_check_and_cleanup_streams(streams, options, config):
                                     station=st[0].stats.station)):
             msg = "Warning: Stream with a mix of stations/networks. " + \
                   "Discarding stream."
-            print msg
+            print(msg)
             warn_msg += msg + "\n"
             streams.remove(st)
             continue
@@ -752,7 +753,7 @@ def merge_check_and_cleanup_streams(streams, options, config):
         if net_sta in sta_list:
             msg = ("Warning: Station/Network combination '%s' "
                    "already in stream list. Discarding stream.") % net_sta
-            print msg
+            print(msg)
             warn_msg += msg + "\n"
             streams.remove(st)
             continue
@@ -791,8 +792,8 @@ def cleanup_streams_without_metadata(streams):
             if "paz" not in tr.stats and "response" not in tr.stats:
                 ok = False
             if not ok:
-                print 'Error: Missing metadata for "%s". Discarding stream.' \
-                    % tr.id
+                print('Error: Missing metadata for "%s". Discarding stream.'
+                      % tr.id)
                 streams.pop(i)
                 break
     return streams
@@ -828,15 +829,15 @@ def setup_external_programs(options, config):
         os.symlink(os.path.join(pluginpath, "VELOCITY_MODELS"),
                    os.path.join(tmp_dir, "VELOCITY_MODELS"))
     # Setup external programs #############################################
-    for prog_basename, prog_dict in PROGRAMS.iteritems():
+    for prog_basename, prog_dict in iteritems(PROGRAMS):
         prog_srcpath = os.path.join(pluginpath, prog_basename)
         prog_tmpdir = os.path.join(tmp_dir, prog_basename)
         prog_dict['dir'] = prog_tmpdir
         shutil.copytree(prog_srcpath, prog_tmpdir, symlinks=True)
         prog_dict['files'] = {}
-        for key, filename in prog_dict['filenames'].iteritems():
+        for key, filename in iteritems(prog_dict['filenames']):
             prog_dict['files'][key] = os.path.join(prog_tmpdir, filename)
-        prog_dict['files']['exe'] = "__".join(\
+        prog_dict['files']['exe'] = "__".join(
                 [prog_dict['filenames']['exe'], system, architecture])
         # setup clean environment
         prog_dict['env'] = {}
@@ -870,7 +871,7 @@ def setup_external_programs(options, config):
     prog_dict = PROGRAMS['nlloc']
     def tmp(prog_dict):
         filepattern = os.path.join(prog_dict['dir'], "nlloc*")
-        print filepattern
+        print(filepattern)
         for file in glob.glob(filepattern):
             os.remove(file)
         return
@@ -1166,7 +1167,7 @@ def apply_gse2_calib(tr):
         msg = ("Warning: Failed to apply GSE2 calibration factor to overall "
                "sensitivity (%s, %s). Continuing anyway.")
         msg = msg % (e.__class__.__name__, str(e))
-        print msg
+        print(msg)
 
 
 def map_rotated_channel_code(channel, rotation):
