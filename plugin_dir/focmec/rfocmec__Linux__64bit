@@ -12,11 +12,12 @@ case $POLS in
     *B*) FILE=${FILE}_SV;;
 esac
 FILE=${FILE}.stdin
+NUMPOLS=`cat focmec.dat | wc -l`
 ## iterate from few to many errors and break at first found solutions
-for i in 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20
+for i in `seq 0 $NUMPOLS`
 do
     cat $FILE | sed "s#XXX#$i#" | ./focmec__Linux__64bit > focmec.stdout
-    echo "trying to find solution with $i P-Errors..."
-    grep -v "nan" focmec.out.all | grep "      $i.0   " > focmec.out && echo "found solution with $i Errors." && exit 0
+    echo "trying to find solution with $i polarity Errors..."
+    grep -v "nan" focmec.out.all | grep -E '^\s*([[:digit:].-]+\s+){5}[[:digit:].-]+\s*$' > focmec.out && echo "found solution with $i Errors." && exit 0
 done
 exit 1
