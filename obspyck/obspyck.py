@@ -1960,23 +1960,16 @@ class ObsPyck(QtGui.QMainWindow):
         # plot the selected solution
         fm = fms[self.focMechCurrent]
         np1 = fm.nodal_planes.nodal_plane_1
-        if hasattr(fm, "_beachball"):
-            beach_ = fm._beachball
-        else:
-            beach_ = beach([np1.strike, np1.dip, np1.rake],
-                           width=plot_width)
-            fm._beachball = beach_
+        beach_ = beach([np1.strike, np1.dip, np1.rake],
+                       width=plot_width)
         ax.add_collection(beach_)
         # plot the alternative solutions
-        if not hasattr(fm, "_beachball2"):
-            for fm_ in fms:
-                _np1 = fm_.nodal_planes.nodal_plane_1
-                beach_ = beach([_np1.strike, _np1.dip, _np1.rake],
-                               nofill=True, edgecolor='k', linewidth=1.,
-                               alpha=0.3, width=plot_width)
-                fm_._beachball2 = beach_
         for fm_ in fms:
-            ax.add_collection(fm_._beachball2)
+            _np1 = fm_.nodal_planes.nodal_plane_1
+            beach_ = beach([_np1.strike, _np1.dip, _np1.rake],
+                           nofill=True, edgecolor='k', linewidth=1.,
+                           alpha=0.3, width=plot_width)
+            ax.add_collection(beach_)
         text = "Focal Mechanism (%i of %i)" % \
                (self.focMechCurrent + 1, len(fms))
         text += "\nStrike: %6.2f  Dip: %6.2f  Rake: %6.2f" % \
