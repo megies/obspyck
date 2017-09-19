@@ -26,7 +26,7 @@ from StringIO import StringIO
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import Qt
 import numpy as np
-import matplotlib
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.cm
 import matplotlib.transforms
@@ -231,7 +231,7 @@ class ObsPyck(QtGui.QMainWindow):
             except AttributeError:
                 cmap_spectrogram = get_cmap(_cmap_name)
         except NoOptionError:
-            _cmap_name = matplotlib.rcParams.get('image.cmap', 'jet')
+            _cmap_name = mpl.rcParams.get('image.cmap', 'jet')
             cmap_spectrogram = get_cmap(_cmap_name)
         self.spectrogramColormap = cmap_spectrogram
         # indicates which of the available events from seishub was loaded
@@ -1270,8 +1270,8 @@ class ObsPyck(QtGui.QMainWindow):
             if len(sampletimes) == tr.stats.npts + 1:
                 sampletimes = sampletimes[:-1]
             t.append(sampletimes)
-            trans.append(matplotlib.transforms.blended_transform_factory(ax.transData,
-                                                                         ax.transAxes))
+            trans.append(mpl.transforms.blended_transform_factory(ax.transData,
+                                                                  ax.transAxes))
             ax.xaxis.set_major_formatter(FuncFormatter(formatXTicklabels))
             if self.widgets.qToolButton_spectrogram.isChecked():
                 log = self.widgets.qCheckBox_spectrogramLog.isChecked()
@@ -2991,7 +2991,7 @@ class ObsPyck(QtGui.QMainWindow):
                 # duplicates
                 if j == 0:
                     axs.append(ax)
-                    trans.append(matplotlib.transforms.blended_transform_factory(ax.transData, ax.transAxes))
+                    trans.append(mpl.transforms.blended_transform_factory(ax.transData, ax.transAxes))
                 ax.xaxis.set_major_formatter(FuncFormatter(formatXTicklabels))
                 # normalize with overall sensitivity and convert to nm/s
                 # if not explicitly deactivated on command line
@@ -3055,7 +3055,7 @@ class ObsPyck(QtGui.QMainWindow):
             return
         #XXX self.figEventMap.canvas.widgetlock.release(toolbar)
         #self.axEventMap = self.fig.add_subplot(111)
-        bbox = matplotlib.transforms.Bbox.from_extents(0.08, 0.08, 0.92, 0.92)
+        bbox = mpl.transforms.Bbox.from_extents(0.08, 0.08, 0.92, 0.92)
         self.axEventMap = self.fig.add_axes(bbox, aspect='equal', adjustable='datalim')
         axEM = self.axEventMap
         #axEM.set_aspect('equal', adjustable="datalim")
@@ -3213,7 +3213,7 @@ class ObsPyck(QtGui.QMainWindow):
         # handle exceptions!
         data = o.get("nonlinloc_scatter")
         if data is not None:
-            cmap = matplotlib.cm.gist_heat_r
+            cmap = mpl.cm.gist_heat_r
             axEM.hexbin(data[0], data[1], cmap=cmap, zorder=-1000)
 
             self.axEventMapInletXY = self.fig.add_axes([0.8, 0.8, 0.16, 0.16])
@@ -4457,6 +4457,9 @@ def main():
     # make all config keys case sensitive
     config.optionxform = str
     config.read(config_file)
+
+    # set matplotlibrc changes specified in config (if any)
+    set_matplotlib_defaults(config)
 
     # TODO: remove KEYS variable and lookup from config directly
     KEYS = {key: config.get('keys', key) for key in config.options('keys')}

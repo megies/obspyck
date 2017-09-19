@@ -1242,3 +1242,15 @@ def _seed_id_keyfunction(tr):
         x = [x, ]
 
     return x
+
+
+def set_matplotlib_defaults(config):
+    """
+    Sets matplotlib rc customizations specified in config file, section
+    ``[matplotlibrc]``.
+
+    :type config: :class:`ConfigParser.SafeConfigParser`
+    """
+    if config.has_section('matplotlibrc'):
+        for key, value in config.items('matplotlibrc'):
+            mpl.rcParams[key] = value
