@@ -1109,12 +1109,8 @@ class ObsPyck(QtGui.QMainWindow):
         sys.stderr = self.stderr_backup
         ## DEBUG PYQT START
         QtCore.pyqtRemoveInputHook()
-        try:
-            from IPython.core.debugger import Tracer
-            Tracer(colors="Linux")()
-        except ImportError:
-            import pdb
-            pdb.set_trace()
+        import pdb
+        pdb.set_trace()
         QtCore.pyqtRestoreInputHook()
         ## DEBUG PYQT END
         self.stdout_backup = sys.stdout
