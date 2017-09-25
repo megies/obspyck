@@ -733,20 +733,22 @@ class ObsPyck(QtGui.QMainWindow):
         self.debugger()
 
     def on_qToolButton_sort_abc_clicked(self, *args):
-        self.streams_bkp.sort(key=lambda stream: stream[0].id)
         if args:
             return
+        self.streams_bkp.sort(key=lambda stream: stream[0].id)
+        self.streams = [st.copy() for st in self.streams_bkp]
         self.stPt = 0
         self.widgets.qComboBox_streamName.setCurrentIndex(self.stPt)
         self.update_stream_name_combobox_from_streams()
 
     def on_qToolButton_sort_distance_clicked(self, *args):
+        if args:
+            return
         self.streams_bkp.sort(key=self.epidist_for_stream)
+        self.streams = [st.copy() for st in self.streams_bkp]
         epidists = [self.epidist_for_stream(st) for st in self.streams_bkp]
         suffixes = ['{:.1f}km'.format(dist) if dist is not None else '??km'
                     for dist in epidists]
-        if args:
-            return
         self.stPt = 0
         self.widgets.qComboBox_streamName.setCurrentIndex(self.stPt)
         self.update_stream_name_combobox_from_streams(suffixes=suffixes)
