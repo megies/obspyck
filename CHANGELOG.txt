@@ -1,3 +1,5 @@
+master
+
 0.5.0
  - add support for magnitude estimation for data fetched from an FDSN server
    (using full response)
