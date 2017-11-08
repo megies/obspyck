@@ -8,5 +8,5 @@ qt_designer: qt_designer.ui
 # 	git checkout <tag-name>
 # 	git clean -fdx
 # 	umask 0022 && chmod -R a+rX . && python setup.py sdist --format=zip
-# 	openssl sha256 dist/*
+# 	sha256sum dist/*
 # 	twine upload dist/*

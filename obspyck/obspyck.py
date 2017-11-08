@@ -4435,11 +4435,7 @@ def main():
     for opt_args, opt_kwargs in COMMANDLINE_OPTIONS:
         parser.add_option(*opt_args, **opt_kwargs)
     (options, args) = parser.parse_args()
-    if options.time is None:
-        msg = 'Time option ("-t", "--time") must be specified.'
-        raise Exception(msg)
-    print "Running ObsPyck version {} (location: {})".format(__version__,
-                                                             __file__)
+
     # read config file
     if options.config_file:
         config_file = os.path.expanduser(options.config_file)
@@ -4450,6 +4446,12 @@ def main():
                 os.path.dirname(__file__), "example.cfg")
             shutil.copy(src, config_file)
             print "created example config file: {}".format(config_file)
+
+    if options.time is None:
+        msg = 'Time option ("-t", "--time") must be specified.'
+        raise Exception(msg)
+    print "Running ObsPyck version {} (location: {})".format(__version__,
+                                                             __file__)
     print "using config file: {}".format(config_file)
     config = SafeConfigParser(allow_no_value=True)
     # make all config keys case sensitive
