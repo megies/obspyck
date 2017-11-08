@@ -338,7 +338,10 @@ def fetch_waveforms_with_metadata(options, args, config):
             stream_tmp += st
         if len(parsers + inventories) == 0:
             if not no_metadata:
-                msg = "No station metadata for waveforms from local files."
+                msg = ("No station metadata for waveforms from local files. "
+                       "(Set the following config option to start obspyck "
+                       "regardless of missing station metadata: [base] "
+                       "no_metadata = true)")
                 raise Exception(msg)
         for tr in stream_tmp:
             if not no_metadata:
