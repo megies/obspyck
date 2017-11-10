@@ -30,6 +30,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.cm
 import matplotlib.transforms
+import requests
 from matplotlib.cm import get_cmap
 from matplotlib.patches import Ellipse
 from matplotlib.ticker import FuncFormatter, FormatStrFormatter, MaxNLocator
@@ -243,8 +244,17 @@ class ObsPyck(QtGui.QMainWindow):
         if event_server_name:
             self.event_server = connect_to_server(event_server_name, config,
                                                   clients)
+            self.event_server_type = config.get(event_server_name, "type")
         else:
             self.event_server = None
+            self.event_server_type = None
+        # for transition to Jane, temporarily do both
+        test_event_server_name = config.get("base", "test_event_server_jane")
+        if test_event_server_name:
+            self.test_event_server = connect_to_server(
+                test_event_server_name, config, clients)
+        else:
+            self.test_event_server = None
 
         (warn_msg, merge_msg, streams) = \
                 merge_check_and_cleanup_streams(streams, options, config)
@@ -608,7 +618,7 @@ class ObsPyck(QtGui.QMainWindow):
             if not ok:
                 self.popupBadEventError(msg)
                 return
-        self.uploadSeisHub()
+        self.upload_event()
         self.on_qToolButton_updateEventList_clicked()
         self.checkForSysopEventDuplicates(self.T0, self.T1)
 
@@ -649,9 +659,9 @@ class ObsPyck(QtGui.QMainWindow):
         qMessageBox.setStandardButtons(QtGui.QMessageBox.Cancel | QtGui.QMessageBox.Ok)
         qMessageBox.setDefaultButton(QtGui.QMessageBox.Cancel)
         if qMessageBox.exec_() == QtGui.QMessageBox.Ok:
-            self.deleteEventInSeisHub(resource_name)
+            self.delete_event(resource_name)
             self.setXMLEventID(event_id)
-            self.uploadSeisHub()
+            self.upload_event()
             self.on_qToolButton_updateEventList_clicked()
             self.checkForSysopEventDuplicates(self.T0, self.T1)
 
@@ -680,7 +690,7 @@ class ObsPyck(QtGui.QMainWindow):
         qMessageBox.setStandardButtons(QtGui.QMessageBox.Cancel | QtGui.QMessageBox.Ok)
         qMessageBox.setDefaultButton(QtGui.QMessageBox.Cancel)
         if qMessageBox.exec_() == QtGui.QMessageBox.Ok:
-            self.deleteEventInSeisHub(resource_name)
+            self.delete_event(resource_name)
             self.on_qToolButton_updateEventList_clicked()
 
     def on_qToolButton_saveEventLocally_clicked(self, *args):
@@ -3213,6 +3223,7 @@ class ObsPyck(QtGui.QMainWindow):
         # handle exceptions!
         data = o.get("nonlinloc_scatter")
         if data is not None:
+            data = data.T
             cmap = mpl.cm.gist_heat_r
             axEM.hexbin(data[0], data[1], cmap=cmap, zorder=-1000)
 
@@ -3675,21 +3686,14 @@ class ObsPyck(QtGui.QMainWindow):
         self.critical(msg % name)
         open(name, "wt").write(data)
 
-    def uploadSeisHub(self):
+    def upload_event(self):
         """
-        Upload quakeml file to SeisHub
+        Upload event to SeisHub and/or Jane
         """
-        # check, if the event should be uploaded as sysop. in this case we use
-        # the sysop client instance for the upload (and also set
-        # user_account in the xml to "sysop").
-        # the correctness of the sysop password is tested when checking the
-        # sysop box and entering the password immediately.
-        if self.widgets.qCheckBox_public.isChecked():
-            seishub_account = "sysop"
-            client = self.clients['__SeisHub-sysop__']
-        else:
-            seishub_account = "obspyck"
-            client = self.event_server
+        if not self.event_server:
+            msg = "'event_server' not set in config, section [base]"
+            self.error(msg)
+            return
 
         # if we did no location at all, and only picks would be saved the
         # EventID ist still not set, so we have to do this now.
@@ -3697,6 +3701,7 @@ class ObsPyck(QtGui.QMainWindow):
             err = "Error: Event resource_id not set."
             self.error(err)
             return
+
         name = str(self.catalog[0].resource_id).split("/")[-1] #XXX id of the file
         # create XML and also save in temporary directory for inspection purposes
         name = "obspyck_" + name
@@ -3712,6 +3717,108 @@ class ObsPyck(QtGui.QMainWindow):
         self.critical(msg % (tmpfile, tmpfile2))
         for fname in [tmpfile, tmpfile2]:
             open(fname, "wt").write(data)
+
+        if self.event_server_type == "seishub":
+            self.uploadSeisHub(name, data)
+        elif self.event_server_type == "jane":
+            conf = self.config
+            server_key = conf.get("base", "event_server")
+            client = self.event_server
+            base_url = client.base_url
+            user = conf.get(server_key, "user")
+            password = conf.get(server_key, "password")
+            self.upload_event_jane(name, data, base_url, user, password)
+        else:
+            raise ValueError()
+        # XXX for transition to Jane, temporarily do both
+        if self.test_event_server:
+            self.upload_event_jane_test(name, data)
+
+    def upload_event_jane_test(self, name, data):
+        """
+        Should be deleted again.. when Jane upload is properly tested and we
+        drop parallel upload to Seishub+Jane again
+        """
+        conf = self.config
+        server_key = conf.get("base", "test_event_server_jane")
+        client = self.test_event_server
+        base_url = client.base_url
+        user = conf.get(server_key, "user")
+        password = conf.get(server_key, "password")
+        self.upload_event_jane(name, data, base_url, user, password)
+
+    def upload_event_jane(self, name, data, base_url, user, password):
+        url = base_url + "/rest/documents/quakeml/%s" % name
+        r = requests.put(url=url, data=data, auth=(user, password))
+        if not r.ok:
+            msg = 'Something went wrong during upload to JANE! ({!s})'.format(
+                r.status_code)
+            self.error(msg)
+            return
+
+        msg = "Uploading Event!"
+        msg += "\nJane Account: %s" % user
+        msg += "\nAuthor: %s" % self.username
+        msg += "\nName: %s" % name
+        msg += "\nJane Server: %s" % base_url
+        msg += "\nResponse: %s %s" % (r.status_code, r.text)
+        self.critical(msg)
+
+        if not self.catalog[0].origins:
+            return
+
+        origin = self.catalog[0].origins[0]
+        nlloc_scatter = origin.get("nonlinloc_scatter")
+        if nlloc_scatter is not None:
+            sio = StringIO()
+            header = "\n".join([
+                "NonLinLoc Scatter",
+                "Origin ID: {}".format(str(origin.resource_id)),
+                "Longitude, Latitude, Z (km below sea level), PDF value",
+                ])
+            np.savetxt(sio, nlloc_scatter, fmt="%.6f %.6f %.4f %.2f",
+                       header=header)
+            sio.seek(0)
+            data = sio.read()
+            sio.close()
+            url = "{}/rest/documents/quakeml/{}?format=json".format(
+                base_url, name)
+            r = requests.get(url, auth=(user, password))
+            if not r.ok:
+                msg = ('Something went wrong during NonLinLoc scatter upload '
+                       'to JANE! ({!s})').format(r.status_code)
+                self.error(msg)
+            jane_id = r.json()["indices"][0]["id"]
+            url = "{}/rest/document_indices/quakeml/{}/attachments".format(
+                base_url, jane_id)
+            headers = {"content-type": "text/plain",
+                       "category": "nonlinloc_scatter"}
+            r = requests.post(url=url, auth=(user, password), headers=headers,
+                              data=data)
+            if not r.ok:
+                msg = ('Something went wrong during NonLinLoc scatter upload '
+                       'to JANE! ({!s})').format(r.status_code)
+                self.error(msg)
+
+        msg = "Uploaded NonLinLoc Scatter as attachment"
+        msg += "\nResponse: %s %s" % (r.status_code, r.text)
+        self.critical(msg)
+
+    def uploadSeisHub(self, name, data):
+        """
+        Upload quakeml file to SeisHub
+        """
+        # check, if the event should be uploaded as sysop. in this case we use
+        # the sysop client instance for the upload (and also set
+        # user_account in the xml to "sysop").
+        # the correctness of the sysop password is tested when checking the
+        # sysop box and entering the password immediately.
+        if self.widgets.qCheckBox_public.isChecked():
+            seishub_account = "sysop"
+            client = self.clients['__SeisHub-sysop__']
+        else:
+            seishub_account = "obspyck"
+            client = self.event_server
 
         headers = {}
         try:
@@ -3730,6 +3837,58 @@ class ObsPyck(QtGui.QMainWindow):
         msg += "\nName: %s" % name
         msg += "\nServer: %s" % self.config.get("base", "event_server")
         msg += "\nResponse: %s %s" % (code, message)
+        self.critical(msg)
+
+    def delete_event(self, resource_name):
+        """
+        Delete event from SeisHub and/or Jane
+        """
+        if not self.event_server:
+            msg = "'event_server' not set in config, section [base]"
+            self.error(msg)
+            return
+
+        if self.event_server_type == "seishub":
+            self.deleteEventInSeisHub(resource_name)
+        elif self.event_server_type == "jane":
+            conf = self.config
+            server_key = conf.get("base", "event_server")
+            client = self.event_server
+            base_url = client.base_url
+            user = conf.get(server_key, "user")
+            password = conf.get(server_key, "password")
+            self.delete_event_jane(resource_name, base_url, user, password)
+        else:
+            raise ValueError()
+        # for transition to Jane, temporarily do both
+        if self.test_event_server:
+            self.delete_event_jane_test(resource_name)
+
+    def delete_event_jane_test(self, resource_name):
+        conf = self.config
+        server_key = conf.get("base", "test_event_server_jane")
+        client = self.test_event_server
+        base_url = client.base_url
+        user = conf.get(server_key, "user")
+        password = conf.get(server_key, "password")
+        self.delete_event_jane(resource_name, base_url, user, password)
+
+    def delete_event_jane(self, resource_name, base_url, user, password):
+        r = requests.delete(
+            url=base_url + "/rest/documents/quakeml/%s" % resource_name,
+            auth=(user, password))
+        if not r.ok:
+            msg = 'Something went wrong during deletion on JANE! ({!s})'.format(
+                r.status_code)
+            self.error(msg)
+            return
+
+        msg = "Deleting Event!"
+        msg += "\nJane Account: %s" % user
+        msg += "\nAuthor: %s" % self.username
+        msg += "\nName: %s" % resource_name
+        msg += "\nJane Server: %s" % base_url
+        msg += "\nResponse: %s %s" % (r.status_code, r.text)
         self.critical(msg)
 
     def deleteEventInSeisHub(self, resource_name):

@@ -1,6 +1,8 @@
 master
  - fix getting metadata via arclink (see #65)
  - make it possible to set default filter corners via config file (see #66)
+ - enable parallel event upload/replacement/deletion on seishub and jane
+   (see #67)
 
 0.5.0
  - add support for magnitude estimation for data fetched from an FDSN server
