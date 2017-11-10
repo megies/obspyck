@@ -62,6 +62,8 @@ from .event_helper import Catalog, Event, Origin, Pick, Arrival, \
 NAMESPACE = "http://erdbeben-in-bayern.de/xmlns/0.1"
 NSMAP = {"edb": NAMESPACE}
 
+ICON_PATH = os.path.join(os.path.dirname(
+    sys.modules[__name__].__file__), 'obspyck{}.gif')
 
 if map(int, obspy.__version__.split('.')[:2]) < [1, 1]:
     msg = "Needing ObsPy version >= 1.1.0 (current version is: {})"
@@ -116,6 +118,15 @@ class ObsPyck(QtGui.QMainWindow):
         # All GUI elements will be accessible via self.widgets.name_of_element
         self.widgets = Ui_qMainWindow_obsPyck()
         self.widgets.setupUi(self)
+
+        # set icon
+        app_icon = QtGui.QIcon()
+        app_icon.addFile(ICON_PATH.format("_16x16"), QtCore.QSize(16, 16))
+        app_icon.addFile(ICON_PATH.format("_24x42"), QtCore.QSize(24, 24))
+        app_icon.addFile(ICON_PATH.format("_32x32"), QtCore.QSize(32, 32))
+        app_icon.addFile(ICON_PATH.format("_48x48"), QtCore.QSize(48, 48))
+        app_icon.addFile(ICON_PATH.format(""), QtCore.QSize(64, 64))
+        self.setWindowIcon(app_icon)
 
         # Create little color icons in front of the phase type combo box.
         # Needs to be done pretty much at the beginning because some other
@@ -647,7 +658,13 @@ class ObsPyck(QtGui.QMainWindow):
         except:
             user = None
         qMessageBox = QtGui.QMessageBox()
-        qMessageBox.setWindowIcon(QtGui.QIcon(QtGui.QPixmap("obspyck.gif")))
+        app_icon = QtGui.QIcon()
+        app_icon.addFile(ICON_PATH.format("_16x16"), QtCore.QSize(16, 16))
+        app_icon.addFile(ICON_PATH.format("_24x42"), QtCore.QSize(24, 24))
+        app_icon.addFile(ICON_PATH.format("_32x32"), QtCore.QSize(32, 32))
+        app_icon.addFile(ICON_PATH.format("_48x48"), QtCore.QSize(48, 48))
+        app_icon.addFile(ICON_PATH.format(""), QtCore.QSize(64, 64))
+        qMessageBox.setWindowIcon(app_icon)
         qMessageBox.setIcon(QtGui.QMessageBox.Warning)
         qMessageBox.setWindowTitle("Replace?")
         qMessageBox.setText("Overwrite event in database?")
@@ -681,7 +698,13 @@ class ObsPyck(QtGui.QMainWindow):
         except:
             user = None
         qMessageBox = QtGui.QMessageBox()
-        qMessageBox.setWindowIcon(QtGui.QIcon(QtGui.QPixmap("obspyck.gif")))
+        app_icon = QtGui.QIcon()
+        app_icon.addFile(ICON_PATH.format("_16x16"), QtCore.QSize(16, 16))
+        app_icon.addFile(ICON_PATH.format("_24x42"), QtCore.QSize(24, 24))
+        app_icon.addFile(ICON_PATH.format("_32x32"), QtCore.QSize(32, 32))
+        app_icon.addFile(ICON_PATH.format("_48x48"), QtCore.QSize(48, 48))
+        app_icon.addFile(ICON_PATH.format(""), QtCore.QSize(64, 64))
+        qMessageBox.setWindowIcon(app_icon)
         qMessageBox.setIcon(QtGui.QMessageBox.Warning)
         qMessageBox.setWindowTitle("Delete?")
         qMessageBox.setText("Delete event from database?")
@@ -4531,7 +4554,13 @@ class ObsPyck(QtGui.QMainWindow):
             self.error(err)
             self.error(errlist)
             qMessageBox = QtGui.QMessageBox()
-            qMessageBox.setWindowIcon(QtGui.QIcon(QtGui.QPixmap("obspyck.gif")))
+            app_icon = QtGui.QIcon()
+            app_icon.addFile(ICON_PATH.format("_16x16"), QtCore.QSize(16, 16))
+            app_icon.addFile(ICON_PATH.format("_24x42"), QtCore.QSize(24, 24))
+            app_icon.addFile(ICON_PATH.format("_32x32"), QtCore.QSize(32, 32))
+            app_icon.addFile(ICON_PATH.format("_48x48"), QtCore.QSize(48, 48))
+            app_icon.addFile(ICON_PATH.format(""), QtCore.QSize(64, 64))
+            qMessageBox.setWindowIcon(app_icon)
             qMessageBox.setIcon(QtGui.QMessageBox.Critical)
             qMessageBox.setWindowTitle("Possible Duplicate Public Event!")
             qMessageBox.setText(err)
@@ -4576,7 +4605,13 @@ class ObsPyck(QtGui.QMainWindow):
                " %s." % msg)
         self.error(err)
         qMessageBox = QtGui.QMessageBox()
-        qMessageBox.setWindowIcon(QtGui.QIcon(QtGui.QPixmap("obspyck.gif")))
+        app_icon = QtGui.QIcon()
+        app_icon.addFile(ICON_PATH.format("_16x16"), QtCore.QSize(16, 16))
+        app_icon.addFile(ICON_PATH.format("_24x42"), QtCore.QSize(24, 24))
+        app_icon.addFile(ICON_PATH.format("_32x32"), QtCore.QSize(32, 32))
+        app_icon.addFile(ICON_PATH.format("_48x48"), QtCore.QSize(48, 48))
+        app_icon.addFile(ICON_PATH.format(""), QtCore.QSize(64, 64))
+        qMessageBox.setWindowIcon(app_icon)
         qMessageBox.setIcon(QtGui.QMessageBox.Critical)
         qMessageBox.setWindowTitle("Public Event with Missing Information!")
         qMessageBox.setText(err)

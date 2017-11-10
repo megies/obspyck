@@ -3,6 +3,7 @@ master
  - make it possible to set default filter corners via config file (see #66)
  - enable parallel event upload/replacement/deletion on seishub and jane
    (see #67)
+ - fix Qt application Window icon (see #68)
 
 0.5.0
  - add support for magnitude estimation for data fetched from an FDSN server

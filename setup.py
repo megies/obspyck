@@ -18,7 +18,8 @@ ENTRY_POINTS = {
         ]
     }
 PACKAGE_DATA = {
-    'obspyck': ['example.cfg', 'obspyck.gif']}
+    'obspyck': ['example.cfg', 'obspyck.gif', 'obspyck_16x16.gif',
+                'obspyck_24x24.gif', 'obspyck_32x32.gif', 'obspyck_48x48.gif']}
 
 SETUP_DIRECTORY = os.path.dirname(os.path.abspath(inspect.getfile(
     inspect.currentframe())))
