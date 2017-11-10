@@ -467,8 +467,8 @@ def fetch_waveforms_with_metadata(options, args, config):
                         tr.stats.orientation = \
                             get_orientation_from_parser(p_, tr.id, datetime=t1)
                         tr.stats.coordinates = \
-                            p_.getCoordinates(tr.id, datetime=t1)
-                        tr.stats.paz = p_.getPAZ(tr.id, datetime=t1)
+                            p_.get_coordinates(tr.id, datetime=t1)
+                        tr.stats.paz = p_.get_paz(tr.id, datetime=t1)
             # FDSN (or JANE)
             elif server_type in ("fdsn", "jane"):
                 st = client.get_waveforms(
