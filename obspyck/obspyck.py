@@ -288,6 +288,8 @@ class ObsPyck(QtGui.QMainWindow):
             self.config.getfloat("gui_defaults", "filter_highpass"))
         self.widgets.qDoubleSpinBox_lowpass.setValue(
             self.config.getfloat("gui_defaults", "filter_lowpass"))
+        self.widgets.qDoubleSpinBox_corners.setValue(
+            self.config.getint("gui_defaults", "filter_corners"))
         self.widgets.qDoubleSpinBox_sta.setValue(
             self.config.getfloat("gui_defaults", "sta"))
         self.widgets.qDoubleSpinBox_lta.setValue(
