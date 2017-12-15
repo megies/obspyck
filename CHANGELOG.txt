@@ -1,4 +1,6 @@
 master
+ - avoid error when special use case key `test_event_server_jane` is not
+   present (see #71)
 
 0.5.1
  - fix getting metadata via arclink (see #65)

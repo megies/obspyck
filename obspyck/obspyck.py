@@ -260,7 +260,10 @@ class ObsPyck(QtGui.QMainWindow):
             self.event_server = None
             self.event_server_type = None
         # for transition to Jane, temporarily do both
-        test_event_server_name = config.get("base", "test_event_server_jane")
+        try:
+            test_event_server_name = config.get("base", "test_event_server_jane")
+        except NoOptionError:
+            test_event_server_name = None
         if test_event_server_name:
             self.test_event_server = connect_to_server(
                 test_event_server_name, config, clients)
