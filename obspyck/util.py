@@ -233,6 +233,47 @@ def check_keybinding_conflicts(keys):
             raise Exception(err)
 
 
+def resolve_complex_station_combination(config, section_title, time):
+    """
+    Resolve complex time-dependent station combination from config file
+    """
+    seed_ids = set()
+    for key, value in config.items(section_title):
+        # no value: always use that stream
+        if not value:
+            seed_ids.add(key)
+        # two comma separated time stamps: only use stream if requested time is
+        # in between given timestamps
+        elif ',' in value:
+            start, end = map(UTCDateTime, value.split(','))
+            if end < start:
+                msg = ("Invalid configuration in section [{}], stream '{}'. "
+                       "End time larger than start time for used time "
+                       "span.").format(section_title, key)
+                raise ValueError(msg)
+            if start <= time <= end:
+                seed_ids.add(key)
+        # timestamp preceded by smaller-than sign: only use stream if requested
+        # time is smaller than specified timestamp
+        elif value[0] == '<':
+            end = UTCDateTime(value[1:])
+            if time <= end:
+                seed_ids.add(key)
+        # timestamp preceded by larger-than sign: only use stream if requested
+        # time is after the specified timestamp
+        elif value[0] == '>':
+            start = UTCDateTime(value[1:])
+            if time >= start:
+                seed_ids.add(key)
+        else:
+            msg = ("Invalid configuration in section [{}], stream '{}'. "
+                   "Value can be empty, two comma-separated time stamps or "
+                   "one timestamp preceded by either '>' or '<'.").format(
+                        section_title, key)
+            raise ValueError(msg)
+    return seed_ids
+
+
 def fetch_waveforms_with_metadata(options, args, config):
     """
     Sets up obspy clients and fetches waveforms and metadata according to
@@ -269,7 +310,14 @@ def fetch_waveforms_with_metadata(options, args, config):
     seed_ids_to_fetch = set()
     for station_combination_key in options.station_combinations:
         seed_ids = config.get("station_combinations", station_combination_key)
-        for seed_id in seed_ids.split(","):
+        # starts with an exclamation mark: lookup seed ids from that section
+        if seed_ids[0] == '!':
+            seed_ids = resolve_complex_station_combination(
+                config, seed_ids[1:], t1)
+        # otherwise a list of comma-separated stream labels
+        else:
+            seed_ids = seed_ids.split(",")
+        for seed_id in seed_ids:
             seed_ids_to_fetch.add(seed_id)
     for seed_id in options.seed_ids:
         seed_ids_to_fetch.add(seed_id)
