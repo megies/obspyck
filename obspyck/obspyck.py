@@ -2553,7 +2553,8 @@ class ObsPyck(QtGui.QMainWindow):
             arrival.phase = type
             arrival.time_residual = res
             arrival.azimuth = azimuth
-            arrival.takeoff_angle = ray_dip
+            if not np.isnan(ray_dip):
+                arrival.takeoff_angle = ray_dip
             if onset and not pick.onset:
                 pick.onset = onset
             if polarity and not pick.polarity:
