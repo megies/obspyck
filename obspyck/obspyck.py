@@ -20,7 +20,7 @@ import sys
 import tempfile
 import warnings
 from collections import OrderedDict
-from ConfigParser import SafeConfigParser, NoOptionError
+from ConfigParser import SafeConfigParser, NoOptionError, NoSectionError
 from StringIO import StringIO
 
 from PyQt4 import QtGui, QtCore
@@ -48,6 +48,7 @@ from obspy.geodetics.base import gps2dist_azimuth, kilometer2degrees
 from obspy.signal.util import util_lon_lat
 from obspy.signal.invsim import estimate_magnitude
 from obspy.signal.rotate import rotate_zne_lqt, rotate_ne_rt
+from obspy.signal.trigger import ar_pick
 from obspy.imaging.spectrogram import spectrogram
 from obspy.imaging.beachball import beach
 from obspy.clients.seishub import Client as SeisHubClient
@@ -1182,7 +1183,58 @@ class ObsPyck(QtGui.QMainWindow):
         Run AR picker on all streams and set P/S picks accordingly.
         Also displays a message.
         """
-        raise NotImplementedError(NOT_REIMPLEMENTED_MSG)
+        try:
+            f1 = self.config.getfloat("ar_picker", "f1")
+            f2 = self.config.getfloat("ar_picker", "f2")
+            sta_p = self.config.getfloat("ar_picker", "sta_p")
+            lta_p = self.config.getfloat("ar_picker", "lta_p")
+            sta_s = self.config.getfloat("ar_picker", "sta_s")
+            lta_s = self.config.getfloat("ar_picker", "lta_s")
+            m_p = self.config.getint("ar_picker", "m_p")
+            m_s = self.config.getint("ar_picker", "m_s")
+            l_p = self.config.getfloat("ar_picker", "l_p")
+            l_s = self.config.getfloat("ar_picker", "l_s")
+        except (NoOptionError, NoSectionError) as e:
+            msg = ('To use AR Picker, you need to have a section [ar_picker] '
+                   'in your .obspyckrc with the following keys set: "f1", '
+                   '"f2", "lta_p", "sta_p", "lta_s", "sta_s", "m_p", "m_s", '
+                   '"l_p", "l_s" (compare documentation for '
+                   'obspy.signal.trigger.ar_pick\n%s') % str(e)
+            self.error(msg)
+            return
+        self.info("Setting automatic picks using AR picker:")
+        for i, st in enumerate(self.streams):
+            try:
+                z = st.select(component="Z")[0]
+                n = st.select(component="N")[0]
+                e = st.select(component="E")[0]
+            except IndexError:
+                msg = ('AR picker currently only implemented for Z/N/E data, '
+                       'but provided stream was:\n%s') % st
+                self.error(msg)
+                continue
+            try:
+                assert z.stats.sampling_rate == n.stats.sampling_rate == \
+                    e.stats.sampling_rate
+            except AssertionError:
+                msg = ('AR picker needs same sampling rate on all traces '
+                       'but provided stream was:\n%s') % st
+                self.error(msg)
+                continue
+            spr = z.stats.sampling_rate
+            p, s = ar_pick(z.data, n.data, e.data, spr, f1, f2, lta_p, sta_p,
+                           lta_s, sta_s, m_p, m_s, l_p, l_s)
+            for t, phase_hint, tr in zip((p, s), 'PS', (z, n)):
+                pick = self.getPick(phase_hint=phase_hint, setdefault=True,
+                                    seed_string=tr.id)
+                pick.setTime(z.stats.starttime + t)
+                self.info(str(pick))
+                self.info("%s pick set at %.3f (%s)" % (
+                    phase_hint, self.time_abs2rel(pick.time),
+                    pick.time.isoformat()))
+        self.updateAllItems()
+        self.redraw()
+        return
 
     def debugger(self):
         sys.stdout = self.stdout_backup
