@@ -1112,7 +1112,7 @@ class ObsPyck(QtGui.QMainWindow):
                 stream.remove_response(output=output_units,
                                        water_level=water_level)
             else:
-                msg = ('No SEED Parser or Response object attached to trace, '
+                msg = ('No Response object attached to trace, '
                        'can not convert to physical units:\n')
                 self.error(msg + str(stream[0].stats))
             self.info(msg)

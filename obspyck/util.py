@@ -484,11 +484,10 @@ def fetch_waveforms_with_metadata(options, args, config):
                         raise Exception(msg)
                     inventories = []
                     for d in data:
-                        parser = Parser(
+                        bio = io.BytesIO(
                             client.station.get_resource(d['resource_name']))
-                        bio = io.BytesIO(parser.get_seed())
                         bio.seek(0)
-                        inv = read_inventory(bio, format='SEED')
+                        inv = read_inventory(bio, format='XSEED')
                         inventories.append(inv)
                     _attach_metadata(st, inventories)
             # ArcLink
