@@ -10,6 +10,7 @@
 # -------------------------------------------------------------------
 import copy
 import glob
+import io
 import math
 import os
 import platform
@@ -29,6 +30,7 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as QFigureCanva
 from matplotlib.widgets import MultiCursor as MplMultiCursor
 
 import obspy
+from obspy import Trace, Inventory
 import obspy.clients.arclink
 from obspy import UTCDateTime, read_inventory, read, Stream
 from obspy.clients.arclink import Client as ArcLinkClient
@@ -274,6 +276,53 @@ def resolve_complex_station_combination(config, section_title, time):
     return seed_ids
 
 
+def _get_metadata(tr, inv):
+    """
+    Extract metadata for given Trace
+    """
+    try:
+        coordinates = inv.get_coordinates(
+            tr.id, tr.stats.starttime)
+        orientation = get_orientation(
+            inv, tr.id, tr.stats.starttime)
+        response = inv.get_response(tr.id, tr.stats.starttime)
+    except Exception as e:
+        if str(e).startswith('No matching '):
+            return None
+        raise
+    return response, coordinates, orientation
+
+
+def _attach_metadata(st, inventories):
+    """
+    Attach response, coordinates and orientation to all traces in stream.
+    Raise an exception if it fails. Show a warning if multiple matching
+    metadata are found for any trace.
+    """
+    if isinstance(inventories, Inventory):
+        inventories = [inventories]
+    if isinstance(st, Trace):
+        st = [st]
+    for tr in st:
+        metadata = []
+        for inv in inventories:
+            metadata_ = _get_metadata(tr, inv)
+            if metadata_ is None:
+                continue
+            metadata.append(metadata_)
+        if not metadata:
+            msg = 'Failed to get response for {}!'.format(tr.id)
+            raise Exception(msg)
+        elif len(metadata) > 1:
+            msg = ('Found multiple matching metadata entries for {}, using '
+                   'first.').format(tr.id)
+            warnings.warn(msg)
+        response, coordinates, orientation = metadata[0]
+        tr.stats.coordinates = coordinates
+        tr.stats.orientation = orientation
+        tr.stats.response = response
+
+
 def fetch_waveforms_with_metadata(options, args, config):
     """
     Sets up obspy clients and fetches waveforms and metadata according to
@@ -346,7 +395,6 @@ def fetch_waveforms_with_metadata(options, args, config):
     streams = []
     sta_fetched = set()
     # Local files:
-    parsers = []
     inventories = []
     if args:
         print "=" * 80
@@ -354,15 +402,6 @@ def fetch_waveforms_with_metadata(options, args, config):
         print "-" * 80
         stream_tmp = Stream()
         for file in args:
-            # try to read as metadata
-            try:
-                p = Parser(file)
-            except:
-                pass
-            else:
-                print "%s: Metadata" % file
-                parsers.append(p)
-                continue
             # try to read as metadata
             try:
                 inv = read_inventory(file)
@@ -384,45 +423,17 @@ def fetch_waveforms_with_metadata(options, args, config):
                 msg += " (not matching requested time window)"
             print msg
             stream_tmp += st
-        if len(parsers + inventories) == 0:
-            if not no_metadata:
-                msg = ("No station metadata for waveforms from local files. "
-                       "(Set the following config option to start obspyck "
-                       "regardless of missing station metadata: [base] "
-                       "no_metadata = true)")
-                raise Exception(msg)
-        for tr in stream_tmp:
-            if not no_metadata:
-                has_metadata = False
-                for inv in inventories:
-                    try:
-                        tr.attach_response(inv)
-                        tr.stats.coordinates = inv.get_coordinates(
-                            tr.id, tr.stats.starttime)
-                        tr.stats.orientation = get_orientation(
-                            inv, tr.id, tr.stats.starttime)
-                        has_metadata = True
-                        break
-                    except:
-                        continue
-                if not has_metadata:
-                    for parser in parsers:
-                        try:
-                            # the following line is only to find out if the
-                            # Parser contains the metadata for given time of
-                            # Trace..
-                            parser.get_paz(tr.id, tr.stats.starttime)
-                            tr.stats.parser = parser
-                            tr.stats.coordinates = parser.get_coordinates(tr.id, tr.stats.starttime)
-                            tr.stats.orientation = get_orientation_from_parser(parser, tr.id, tr.stats.starttime)
-                            has_metadata = True
-                            break
-                        except:
-                            continue
-                if not has_metadata:
-                    print "found no metadata for %s!!!" % tr.id
-            if tr.stats._format == 'GSE2':
-                apply_gse2_calib(tr)
+        if not inventories and not no_metadata:
+            msg = ("No station metadata for waveforms from local files. "
+                   "(Set the following config option to start obspyck "
+                   "regardless of missing station metadata: [base] "
+                   "no_metadata = true)")
+            raise Exception(msg)
+        if not no_metadata:
+            _attach_metadata(stream_tmp, inventories)
+            for tr in stream_tmp:
+                if tr.stats._format == 'GSE2':
+                    apply_gse2_calib(tr)
         ids = set([(tr.stats.network, tr.stats.station, tr.stats.location) for tr in stream_tmp])
         for net, sta, loc in ids:
             stream_tmp_ = stream_tmp.select(
@@ -471,54 +482,30 @@ def fetch_waveforms_with_metadata(options, args, config):
                     if len(data) == 0:
                         msg = "No station metadata on server."
                         raise Exception(msg)
-                    parsers = [
-                        Parser(client.station.get_resource(d['resource_name']))
-                        for d in data]
-                    for tr in st:
-                        orientation = [
-                            get_orientation_from_parser(p_, tr.id, datetime=t1)
-                            for p_ in parsers]
-                        coordinates = [
-                            p_.get_coordinates(tr.id, datetime=t1)
-                            for p_ in parsers]
-                        # check for clashing multiple station metadata
-                        for list_ in (orientation, coordinates, parsers):
-                            for i in range(1, len(list_))[::-1]:
-                                if list_[i] == list_[0]:
-                                    list_.pop(i)
-                        for list_, name in zip(
-                                (orientation, coordinates, parsers),
-                                ("orientation", "coordinates", "parsers")):
-                            if len(list_) > 1:
-                                msg = ("Multiple matching station metadata "
-                                       "({}) on server: {}.").format(
-                                    name, list_)
-                                raise Exception(msg)
-                        tr.stats.orientation = orientation[0]
-                        tr.stats.coordinates = coordinates[0]
-                        tr.stats.parser = parsers[0]
+                    inventories = []
+                    for d in data:
+                        bio = io.BytesIO(
+                            client.station.get_resource(d['resource_name']))
+                        bio.seek(0)
+                        inv = read_inventory(bio, format='XSEED')
+                        inventories.append(inv)
+                    _attach_metadata(st, inventories)
             # ArcLink
             elif server_type == "arclink":
                 st = client.get_waveforms(
                     network=net, station=sta, location=loc, channel=cha,
                     starttime=t1, endtime=t2)
                 if not no_metadata:
-                    parsers = {}
+                    inventories = []
                     for net_, sta_, loc_, cha_ in set([
                             tuple(tr.id.split(".")) for tr in st]):
-                        sio = StringIO()
-                        client.save_response(sio, net_, sta_, loc_, cha_,
+                        bio = io.BytesIO()
+                        client.save_response(bio, net_, sta_, loc_, cha_,
                                              t1-10, t2+10)
-                        sio.seek(0)
-                        id_ = ".".join((net_, sta_, loc_, cha_))
-                        parsers[id_] = Parser(sio)
-                    for tr in st:
-                        p_ = parsers[tr.id]
-                        tr.stats.orientation = \
-                            get_orientation_from_parser(p_, tr.id, datetime=t1)
-                        tr.stats.coordinates = \
-                            p_.get_coordinates(tr.id, datetime=t1)
-                        tr.stats.parser = p_
+                        bio.seek(0)
+                        inventories.append(
+                            read_inventory(bio, format='SEED'))
+                    _attach_metadata(st, inventories)
             # FDSN (or JANE)
             elif server_type in ("fdsn", "jane"):
                 st = client.get_waveforms(
@@ -528,15 +515,7 @@ def fetch_waveforms_with_metadata(options, args, config):
                     inventory = client.get_stations(
                         network=net, station=sta, location=loc,
                         level="response")
-                    failed = st.attach_response(inventory)
-                    if failed:
-                        msg = ("Failed to get response for {}!").format(failed)
-                        raise Exception(msg)
-                    for tr in st:
-                        tr.stats.coordinates = inventory.get_coordinates(
-                            tr.id, tr.stats.starttime)
-                        tr.stats.orientation = get_orientation(
-                            inventory, tr.id, tr.stats.starttime)
+                    _attach_metadata(st, inventory)
             # Seedlink
             elif server_type == "seedlink":
                 # XXX I think the wild card checks for net/sta/loc can be
@@ -567,15 +546,7 @@ def fetch_waveforms_with_metadata(options, args, config):
                         inventory = meta_client.get_stations(
                             network=net, station=sta, location=loc,
                             level="response")
-                        failed = st.attach_response(inventory)
-                        if failed:
-                            msg = "Failed to get response for {}!"
-                            raise Exception(msg.format(failed))
-                        for tr in st:
-                            tr.stats.coordinates = inventory.get_coordinates(
-                                tr.id, tr.stats.starttime)
-                            tr.stats.orientation = get_orientation(
-                                inventory, tr.id, tr.stats.starttime)
+                        _attach_metadata(st, inventory)
                     else:
                         raise NotImplementedError()
             # SDS
@@ -608,15 +579,7 @@ def fetch_waveforms_with_metadata(options, args, config):
                         inventory = meta_client.get_stations(
                             network=net, station=sta, location=loc,
                             level="response")
-                        failed = st.attach_response(inventory)
-                        if failed:
-                            msg = "Failed to get response for {}!"
-                            raise Exception(msg.format(failed))
-                        for tr in st:
-                            tr.stats.coordinates = inventory.get_coordinates(
-                                tr.id, tr.stats.starttime)
-                            tr.stats.orientation = get_orientation(
-                                inventory, tr.id, tr.stats.starttime)
+                        _attach_metadata(st, inventory)
                     else:
                         raise NotImplementedError()
             sta_fetched.add(net_sta_loc)
