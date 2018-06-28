@@ -11,6 +11,7 @@ master
    acceleration (so far always was converting to velocity; see #43)
  - use obspy read_inventory() and Inventory/Response objects internally for
    all metadata, regardless of source (see #77)
+ - reimplement AR picker (see #75)
 
 0.5.1
  - fix getting metadata via arclink (see #65)
