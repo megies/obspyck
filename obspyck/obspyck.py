@@ -232,7 +232,7 @@ class ObsPyck(QtGui.QMainWindow):
             warnings.warn(msg)
         self.catalog = Catalog()
         event = Event()
-        event.set_creation_info_username(self.username)
+        event.creation_info.username=self.username
         self.catalog.events = [event]
         self.setXMLEventID()
         # indicates which of the available focal mechanisms is selected
@@ -2424,7 +2424,7 @@ class ObsPyck(QtGui.QMainWindow):
             event.creation_info.creation_time = UTCDateTime()
         o = Origin()
         event.origins = [o]
-        self.catalog[0].set_creation_info_username(self.username)
+        self.catalog[0].creation_info.username=self.username
         # version field has 64 char maximum per QuakeML RNG schema
         o.creation_info = CreationInfo(creation_time=creation_time,
                                        version=nlloc_version[:64])
@@ -2699,7 +2699,7 @@ class ObsPyck(QtGui.QMainWindow):
         # assign origin info
         o = Origin()
         self.catalog[0].origins = [o]
-        self.catalog[0].set_creation_info_username(self.username)
+        self.catalog[0].creation_info.username=self.username
         o.clear()
         o.method_id = "/".join([ID_ROOT, "location_method", "hyp2000", "3"])
         o.origin_uncertainty = OriginUncertainty()
