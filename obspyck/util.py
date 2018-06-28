@@ -658,6 +658,12 @@ def fetch_waveforms_with_metadata(options, args, config):
                 tr.stats['_format'] = "SDS"
         streams.append(st)
     print "=" * 80
+    # save all waveforms to a single file
+    tmp_stream = Stream()
+    for st_ in streams:
+        tmp_stream += st_
+    tmp_stream.write('/tmp/obspyck_waveforms_%s.mseed' % UTCDateTime(),
+                     format='MSEED')
     return (clients, streams)
 
 
