@@ -15,6 +15,8 @@ master
  - make reference time given on command line the zero-time on time axis always
    (so far if an offset was given the zero time was equal to reference time
    plus offset, see #78)
+ - save raw waveform data and station metadata in current obspyck instance's
+   temporary directory for easy reuse (see #79)
 
 0.5.1
  - fix getting metadata via arclink (see #65)

@@ -336,7 +336,8 @@ def fetch_waveforms_with_metadata(options, args, config):
        "-m overwrite" option.
 
     :returns: (dictionary with clients,
-               list(:class:`obspy.core.stream.Stream`s))
+               list(:class:`obspy.core.stream.Stream`s),
+               list of Inventory)
     """
     if not options.station_combinations and not options.seed_ids and not args:
         msg = ('No data to use specified. At least use one of option "-s", '
@@ -395,6 +396,7 @@ def fetch_waveforms_with_metadata(options, args, config):
     streams = []
     sta_fetched = set()
     # Local files:
+    all_inventories = []
     inventories = []
     if args:
         print "=" * 80
@@ -444,6 +446,7 @@ def fetch_waveforms_with_metadata(options, args, config):
                 if net_sta_loc in config.options("rotate_channels"):
                     rotate_channels(stream_tmp_, net, sta, loc, config)
             streams.append(stream_tmp_)
+    all_inventories += inventories
 
     print "=" * 80
     print "Fetching waveforms and metadata from servers:"
@@ -490,6 +493,7 @@ def fetch_waveforms_with_metadata(options, args, config):
                         inv = read_inventory(bio, format='XSEED')
                         inventories.append(inv)
                     _attach_metadata(st, inventories)
+                    all_inventories += inventories
             # ArcLink
             elif server_type == "arclink":
                 st = client.get_waveforms(
@@ -506,6 +510,7 @@ def fetch_waveforms_with_metadata(options, args, config):
                         inventories.append(
                             read_inventory(bio, format='SEED'))
                     _attach_metadata(st, inventories)
+                    all_inventories += inventories
             # FDSN (or JANE)
             elif server_type in ("fdsn", "jane"):
                 st = client.get_waveforms(
@@ -516,6 +521,7 @@ def fetch_waveforms_with_metadata(options, args, config):
                         network=net, station=sta, location=loc,
                         level="response")
                     _attach_metadata(st, inventory)
+                    all_inventories += [inventory]
             # Seedlink
             elif server_type == "seedlink":
                 # XXX I think the wild card checks for net/sta/loc can be
@@ -547,6 +553,7 @@ def fetch_waveforms_with_metadata(options, args, config):
                             network=net, station=sta, location=loc,
                             level="response")
                         _attach_metadata(st, inventory)
+                        all_inventories += [inventory]
                     else:
                         raise NotImplementedError()
             # SDS
@@ -580,6 +587,7 @@ def fetch_waveforms_with_metadata(options, args, config):
                             network=net, station=sta, location=loc,
                             level="response")
                         _attach_metadata(st, inventory)
+                        all_inventories += [inventory]
                     else:
                         raise NotImplementedError()
             sta_fetched.add(net_sta_loc)
@@ -621,7 +629,7 @@ def fetch_waveforms_with_metadata(options, args, config):
                 tr.stats['_format'] = "SDS"
         streams.append(st)
     print "=" * 80
-    return (clients, streams)
+    return (clients, streams, all_inventories)
 
 
 def rotate_channels(st, net, sta, loc, config):
@@ -1283,3 +1291,29 @@ def set_matplotlib_defaults(config):
     if config.has_section('matplotlibrc'):
         for key, value in config.items('matplotlibrc'):
             mpl.rcParams[key] = value
+
+
+def _save_input_data(streams, inventories, directory):
+    """
+    :type streams: list of Stream
+    :type inventories: list of Inventory
+    :type directory: str
+    """
+    if not os.path.isdir(directory):
+        raise OSError('Not a directory: ' + str(directory))
+    if isinstance(streams, (list, tuple)):
+        pass
+    elif isinstance(streams, Stream):
+        streams = [streams]
+    else:
+        raise TypeError
+    # write raw waveforms
+    st = Stream()
+    for st_ in streams:
+        st += st_
+    st.write(os.path.join(directory, 'waveforms.mseed'), format='MSEED')
+    # write inventories
+    inv = Inventory(networks=[], source='')
+    for inv_ in inventories:
+        inv += inv_
+    inv.write(os.path.join(directory, 'inventory.xml'), format='STATIONXML')
