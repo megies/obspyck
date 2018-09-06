@@ -239,6 +239,8 @@ class ObsPyck(QtGui.QMainWindow):
             msg = "Cannot find external programs dir, localization " + \
                   "methods/functions are deactivated"
             warnings.warn(msg)
+        self.info('Using temporary directory: ' + self.tmp_dir)
+
         self.catalog = Catalog()
         event = Event()
         event.set_creation_info_username(self.username)
