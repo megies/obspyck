@@ -239,144 +239,149 @@ class ObsPyck(QtGui.QMainWindow):
             msg = "Cannot find external programs dir, localization " + \
                   "methods/functions are deactivated"
             warnings.warn(msg)
-        self.info('Using temporary directory: ' + self.tmp_dir)
 
-        self.catalog = Catalog()
-        event = Event()
-        event.set_creation_info_username(self.username)
-        self.catalog.events = [event]
-        self.setXMLEventID()
-        # indicates which of the available focal mechanisms is selected
-        self.focMechCurrent = None
         try:
-            _cmap_name = config.get("base", "spectrogram_colormap")
+            self.info('Using temporary directory: ' + self.tmp_dir)
+
+            self.catalog = Catalog()
+            event = Event()
+            event.set_creation_info_username(self.username)
+            self.catalog.events = [event]
+            self.setXMLEventID()
+            # indicates which of the available focal mechanisms is selected
+            self.focMechCurrent = None
             try:
-                cmap_spectrogram = getattr(
-                    obspy_cm, _cmap_name)
-            except AttributeError:
+                _cmap_name = config.get("base", "spectrogram_colormap")
+                try:
+                    cmap_spectrogram = getattr(
+                        obspy_cm, _cmap_name)
+                except AttributeError:
+                    cmap_spectrogram = get_cmap(_cmap_name)
+            except NoOptionError:
+                _cmap_name = mpl.rcParams.get('image.cmap', 'jet')
                 cmap_spectrogram = get_cmap(_cmap_name)
-        except NoOptionError:
-            _cmap_name = mpl.rcParams.get('image.cmap', 'jet')
-            cmap_spectrogram = get_cmap(_cmap_name)
-        self.spectrogramColormap = cmap_spectrogram
-        # indicates which of the available events from seishub was loaded
-        self.seishubEventCurrent = None
-        # indicates how many events are available from seishub
-        self.seishubEventCount = None
-        # connect to server for event pull/push if not already connected
-        event_server_name = config.get("base", "event_server")
-        if event_server_name:
-            self.event_server = connect_to_server(event_server_name, config,
-                                                  clients)
-            self.event_server_type = config.get(event_server_name, "type")
-        else:
-            self.event_server = None
-            self.event_server_type = None
-        # for transition to Jane, temporarily do both
-        try:
-            test_event_server_name = config.get("base", "test_event_server_jane")
-        except NoOptionError:
-            test_event_server_name = None
-        if test_event_server_name:
-            self.test_event_server = connect_to_server(
-                test_event_server_name, config, clients)
-        else:
-            self.test_event_server = None
+            self.spectrogramColormap = cmap_spectrogram
+            # indicates which of the available events from seishub was loaded
+            self.seishubEventCurrent = None
+            # indicates how many events are available from seishub
+            self.seishubEventCount = None
+            # connect to server for event pull/push if not already connected
+            event_server_name = config.get("base", "event_server")
+            if event_server_name:
+                self.event_server = connect_to_server(event_server_name, config,
+                                                      clients)
+                self.event_server_type = config.get(event_server_name, "type")
+            else:
+                self.event_server = None
+                self.event_server_type = None
+            # for transition to Jane, temporarily do both
+            try:
+                test_event_server_name = config.get("base", "test_event_server_jane")
+            except NoOptionError:
+                test_event_server_name = None
+            if test_event_server_name:
+                self.test_event_server = connect_to_server(
+                    test_event_server_name, config, clients)
+            else:
+                self.test_event_server = None
 
-        # save input raw data and metadata for eventual reuse
-        _save_input_data(streams, inventories, self.tmp_dir)
+            # save input raw data and metadata for eventual reuse
+            _save_input_data(streams, inventories, self.tmp_dir)
 
-        (warn_msg, merge_msg, streams) = \
-                merge_check_and_cleanup_streams(streams, options, config)
+            (warn_msg, merge_msg, streams) = \
+                    merge_check_and_cleanup_streams(streams, options, config)
 
-        # if it's not empty show the merge info message now
-        if merge_msg:
-            self.info(merge_msg)
-        # exit if no streams are left after removing everything not suited.
-        if not streams:
-            err = "No streams left to work with after removing bad streams."
-            raise Exception(err)
+            # if it's not empty show the merge info message now
+            if merge_msg:
+                self.info(merge_msg)
+            # exit if no streams are left after removing everything not suited.
+            if not streams:
+                err = "No streams left to work with after removing bad streams."
+                raise Exception(err)
 
-        # set up dictionaries to store phase_type/axes/line informations
-        self.lines = {}
-        self.texts = {}
+            # set up dictionaries to store phase_type/axes/line informations
+            self.lines = {}
+            self.texts = {}
 
-        # sort streams by station name
-        streams.sort(key=lambda st: st[0].stats['station'])
-        if not config.get("base", "no_metadata"):
-            streams = cleanup_streams_without_metadata(streams)
-        self.streams_bkp = [st.copy() for st in streams]
-        self._setup_4_letter_station_map()
-        # XXX TODO replace old 'eventMapColors'
+            # sort streams by station name
+            streams.sort(key=lambda st: st[0].stats['station'])
+            if not config.get("base", "no_metadata"):
+                streams = cleanup_streams_without_metadata(streams)
+            self.streams_bkp = [st.copy() for st in streams]
+            self._setup_4_letter_station_map()
+            # XXX TODO replace old 'eventMapColors'
 
-        #Define a pointer to navigate through the streams
-        self.stNum = len(streams)
-        self.stPt = 0
+            #Define a pointer to navigate through the streams
+            self.stNum = len(streams)
+            self.stPt = 0
 
-        if options.event:
-            self.setEventFromFilename(options.event)
+            if options.event:
+                self.setEventFromFilename(options.event)
 
-        self.drawAxes()
-        self.multicursor = MultiCursor(self.canv, self.axs, useblit=True,
-                                       color='k', linewidth=1, ls='dotted')
+            self.drawAxes()
+            self.multicursor = MultiCursor(self.canv, self.axs, useblit=True,
+                                           color='k', linewidth=1, ls='dotted')
 
-        # Initialize the stream related widgets with the right values:
-        self.update_stream_name_combobox_from_streams()
+            # Initialize the stream related widgets with the right values:
+            self.update_stream_name_combobox_from_streams()
 
-        # set the filter/trigger default values according to command line
-        # options or optionparser default values
-        self.widgets.qDoubleSpinBox_highpass.setValue(
-            self.config.getfloat("gui_defaults", "filter_highpass"))
-        self.widgets.qDoubleSpinBox_lowpass.setValue(
-            self.config.getfloat("gui_defaults", "filter_lowpass"))
-        self.widgets.qDoubleSpinBox_corners.setValue(
-            self.config.getint("gui_defaults", "filter_corners"))
-        self.widgets.qDoubleSpinBox_sta.setValue(
-            self.config.getfloat("gui_defaults", "sta"))
-        self.widgets.qDoubleSpinBox_lta.setValue(
-            self.config.getfloat("gui_defaults", "lta"))
-        self.widgets.qToolButton_filter.setChecked(
-            self.config.getboolean("gui_defaults", "filter"))
-        self.updateStreamLabels()
+            # set the filter/trigger default values according to command line
+            # options or optionparser default values
+            self.widgets.qDoubleSpinBox_highpass.setValue(
+                self.config.getfloat("gui_defaults", "filter_highpass"))
+            self.widgets.qDoubleSpinBox_lowpass.setValue(
+                self.config.getfloat("gui_defaults", "filter_lowpass"))
+            self.widgets.qDoubleSpinBox_corners.setValue(
+                self.config.getint("gui_defaults", "filter_corners"))
+            self.widgets.qDoubleSpinBox_sta.setValue(
+                self.config.getfloat("gui_defaults", "sta"))
+            self.widgets.qDoubleSpinBox_lta.setValue(
+                self.config.getfloat("gui_defaults", "lta"))
+            self.widgets.qToolButton_filter.setChecked(
+                self.config.getboolean("gui_defaults", "filter"))
+            self.updateStreamLabels()
 
-        self.error(warn_msg)
+            self.error(warn_msg)
 
-        # XXX mpl connect XXX XXX XXX XXX XXX
-        # XXX http://eli.thegreenplace.net/files/prog_code/qt_mpl_bars.py.txt
-        # XXX http://eli.thegreenplace.net/2009/01/20/matplotlib-with-pyqt-guis/
-        # XXX https://www.packtpub.com/sites/default/files/sample_chapters/7900-matplotlib-for-python-developers-sample-chapter-6-embedding-matplotlib-in-qt-4.pdf
-        # XXX mpl connect XXX XXX XXX XXX XXX
-        # Activate all mouse/key/Cursor-events
-        # XXX MAYBE rename the event handles again so that they DONT get
-        # XXX autoconnected via Qt?!?!?
-        self.canv.mpl_connect('key_press_event', self.__mpl_keyPressEvent)
-        self.canv.mpl_connect('button_release_event', self.__mpl_mouseButtonReleaseEvent)
-        # The scroll event is handled using Qt.
-        #self.canv.mpl_connect('scroll_event', self.__mpl_wheelEvent)
-        self.canv.mpl_connect('button_press_event', self.__mpl_mouseButtonPressEvent)
-        self.canv.mpl_connect('motion_notify_event', self.__mpl_motionNotifyEvent)
-        self.multicursorReinit()
-        self.canv.show()
-        #self.showMaximized()
-        self.show()
-        # XXX XXX the good old focus issue again!?! no events get to the mpl canvas
-        # XXX self.canv.setFocusPolicy(Qt.WheelFocus)
-        #print self.canv.hasFocus()
+            # XXX mpl connect XXX XXX XXX XXX XXX
+            # XXX http://eli.thegreenplace.net/files/prog_code/qt_mpl_bars.py.txt
+            # XXX http://eli.thegreenplace.net/2009/01/20/matplotlib-with-pyqt-guis/
+            # XXX https://www.packtpub.com/sites/default/files/sample_chapters/7900-matplotlib-for-python-developers-sample-chapter-6-embedding-matplotlib-in-qt-4.pdf
+            # XXX mpl connect XXX XXX XXX XXX XXX
+            # Activate all mouse/key/Cursor-events
+            # XXX MAYBE rename the event handles again so that they DONT get
+            # XXX autoconnected via Qt?!?!?
+            self.canv.mpl_connect('key_press_event', self.__mpl_keyPressEvent)
+            self.canv.mpl_connect('button_release_event', self.__mpl_mouseButtonReleaseEvent)
+            # The scroll event is handled using Qt.
+            #self.canv.mpl_connect('scroll_event', self.__mpl_wheelEvent)
+            self.canv.mpl_connect('button_press_event', self.__mpl_mouseButtonPressEvent)
+            self.canv.mpl_connect('motion_notify_event', self.__mpl_motionNotifyEvent)
+            self.multicursorReinit()
+            self.canv.show()
+            #self.showMaximized()
+            self.show()
+            # XXX XXX the good old focus issue again!?! no events get to the mpl canvas
+            # XXX self.canv.setFocusPolicy(Qt.WheelFocus)
+            #print self.canv.hasFocus()
 
-        if self.event_server:
-            if not isinstance(self.event_server, SeisHubClient):
-                msg = ("Only SeisHub implemented as event server right now.")
-                raise NotImplementedError(msg)
+            if self.event_server:
+                if not isinstance(self.event_server, SeisHubClient):
+                    msg = ("Only SeisHub implemented as event server right now.")
+                    raise NotImplementedError(msg)
 
-        if not self.event_server or not isinstance(self.event_server, SeisHubClient):
-            msg = ("Warning: SeisHub specific features will not work "
-                   "(e.g. 'send Event').")
-            self.error(msg)
+            if not self.event_server or not isinstance(self.event_server, SeisHubClient):
+                msg = ("Warning: SeisHub specific features will not work "
+                       "(e.g. 'send Event').")
+                self.error(msg)
 
-        if self.event_server:
-            self.updateEventListFromSeisHub(self.T0, self.T1)
+            if self.event_server:
+                self.updateEventListFromSeisHub(self.T0, self.T1)
 
-        self.setFocusToMatplotlib()
+            self.setFocusToMatplotlib()
+        except:
+            self.cleanup(skip_duplicate_check=True)
+            raise
 
     def getCurrentStream(self):
         """
@@ -412,14 +417,14 @@ class ObsPyck(QtGui.QMainWindow):
         """
         return self.TREF + reltime
 
-    def cleanup(self):
+    def cleanup(self, skip_duplicate_check=False):
         """
         Cleanup and prepare for quit.
         Do:
             - check if sysop duplicates are there
             - remove temporary directory and all contents
         """
-        if self.event_server:
+        if not skip_duplicate_check and self.event_server:
             self.checkForSysopEventDuplicates(self.T0, self.T1)
         try:
             shutil.rmtree(self.tmp_dir)
