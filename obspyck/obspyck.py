@@ -55,7 +55,16 @@ from obspy.clients.seishub import Client as SeisHubClient
 
 from . import __version__
 from .qt_designer import Ui_qMainWindow_obsPyck
-from .util import *
+from .util import (
+    _save_input_data, fetch_waveforms_with_metadata, matplotlib_color_to_rgb,
+    SplitWriter, LOGLEVELS, setup_external_programs, connect_to_server,
+    merge_check_and_cleanup_streams, cleanup_streams_without_metadata,
+    MultiCursor, WIDGET_NAMES, coords2azbazinc, map_rotated_channel_code,
+    ONSET_CHARS, POLARITY_CHARS, COMPONENT_COLORS, formatXTicklabels,
+    AXVLINEWIDTH, PROGRAMS, getArrivalForPick, POLARITY_2_FOCMEC, gk2lonlat,
+    errorEllipsoid2CartesianErrors, readNLLocScatter, ONE_SIGMA, VERSION_INFO,
+    MAG_MARKER, getPickForArrival, COMMANDLINE_OPTIONS, set_matplotlib_defaults,
+    check_keybinding_conflicts)
 from .event_helper import Catalog, Event, Origin, Pick, Arrival, \
     Magnitude, StationMagnitude, StationMagnitudeContribution, \
     FocalMechanism, ResourceIdentifier, ID_ROOT, readQuakeML, Amplitude, \
