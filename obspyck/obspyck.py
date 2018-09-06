@@ -76,7 +76,7 @@ class ObsPyck(QtGui.QMainWindow):
     """
     Main Window with the design loaded from the Qt Designer.
     """
-    def __init__(self, clients, streams, options, keys, config):
+    def __init__(self, clients, streams, options, keys, config, inventories):
         """
         Standard init.
         """
@@ -272,8 +272,12 @@ class ObsPyck(QtGui.QMainWindow):
         else:
             self.test_event_server = None
 
+        # save input raw data and metadata for eventual reuse
+        _save_input_data(streams, inventories, self.tmp_dir)
+
         (warn_msg, merge_msg, streams) = \
                 merge_check_and_cleanup_streams(streams, options, config)
+
         # if it's not empty show the merge info message now
         if merge_msg:
             self.info(merge_msg)
@@ -4782,10 +4786,10 @@ def main():
     # TODO: remove KEYS variable and lookup from config directly
     KEYS = {key: config.get('keys', key) for key in config.options('keys')}
     check_keybinding_conflicts(KEYS)
-    (clients, streams) = fetch_waveforms_with_metadata(options, args, config)
+    (clients, streams, inventories) = fetch_waveforms_with_metadata(options, args, config)
     # Create the GUI application
     qApp = QtGui.QApplication(sys.argv)
-    obspyck = ObsPyck(clients, streams, options, KEYS, config)
+    obspyck = ObsPyck(clients, streams, options, KEYS, config, inventories)
     qApp.connect(qApp, QtCore.SIGNAL("aboutToQuit()"), obspyck.cleanup)
     os._exit(qApp.exec_())
 
