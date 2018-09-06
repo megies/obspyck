@@ -762,7 +762,7 @@ def merge_check_and_cleanup_streams(streams, options, config):
         if len(st) != len(st.select(network=st[0].stats.network,
                                     station=st[0].stats.station)):
             msg = "Warning: Stream with a mix of stations/networks. " + \
-                  "Discarding stream."
+                  "Discarding stream:\n%s" % str(st)
             print msg
             warn_msg += msg + "\n"
             streams.remove(st)
@@ -1053,12 +1053,21 @@ def formatXTicklabels(x, *pos):
     # x is of type numpy.float64, the string representation of that float
     # strips of all tailing zeros
     # pos returns the position of x on the axis while zooming, None otherwise
-    min = int(x / 60.)
-    if min > 0:
-        sec = x % 60
-        return "%i:%06.3f" % (min, sec)
-    else:
-        return "%.3f" % x
+    info = []
+
+    if x < 0:
+        info.append('-')
+    x = abs(x)
+
+    minutes = int(x / 60.)
+    seconds = x % 60
+
+    if minutes > 0:
+        info.append('%imin' % minutes)
+
+    info.append("%ss" % seconds)
+
+    return ' '.join(info)
 
 
 def coords2azbazinc(stream, origin):
