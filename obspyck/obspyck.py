@@ -90,15 +90,15 @@ class ObsPyck(QtGui.QMainWindow):
         self.seismic_phases = OrderedDict(config.items('seismic_phases'))
         self._magnitude_color = config.get('base', 'magnitude_pick_color')
 
-        # T0 is the global reference time (zero in relative time scales)
+        # TREF is the global reference time (zero in relative time scales)
         if options.time is not None:
-            self.T0 = UTCDateTime(options.time)
+            self.TREF = UTCDateTime(options.time)
         else:
-            self.T0 = UTCDateTime(config.get("base", "time"))
+            self.TREF = UTCDateTime(config.get("base", "time"))
         if options.starttime_offset is not None:
-            self.T0 += options.starttime_offset
+            self.T0 = self.TREF + options.starttime_offset
         else:
-            self.T0 += config.getfloat("base", "starttime_offset")
+            self.T0 = self.TREF + config.getfloat("base", "starttime_offset")
         # T1 is the end time specified by user
         if options.duration is not None:
             self.T1 = self.T0 + options.duration
@@ -384,7 +384,7 @@ class ObsPyck(QtGui.QMainWindow):
         :param abstime: Absolute time in UTC.
         :returns: time in ObsPyck's relative time as a float
         """
-        return abstime - self.T0
+        return abstime - self.TREF
 
     def time_rel2abs(self, reltime):
         """
@@ -395,7 +395,7 @@ class ObsPyck(QtGui.QMainWindow):
         :param reltime: Relative time in ObsPyck's realtive time frame
         :returns: absolute UTCDateTime
         """
-        return self.T0 + reltime
+        return self.TREF + reltime
 
     def cleanup(self):
         """
@@ -1410,6 +1410,9 @@ class ObsPyck(QtGui.QMainWindow):
                 spectrogram(tr.data, tr.stats.sampling_rate, log=log, wlen=wlen, per_lap=perlap,
                             cmap=self.spectrogramColormap, axes=ax, zorder=-10)
                 textcolor = "red"
+                # adjust spectrogram start time offset, relative to reference time
+                x1, x2, y1, y2 = ax.images[0].get_extent()
+                ax.images[0].set_extent((x1 + self.option.offset, x2 + self.option.offset, y1, y2))
             else:
                 # normalize with overall sensitivity and convert to nm/s
                 # if not explicitly deactivated on command line
@@ -1423,7 +1426,7 @@ class ObsPyck(QtGui.QMainWindow):
                     plts.append(ax.plot(sampletimes, tr.data, color='k', zorder=1000)[0])
         self.drawIds()
         axs[-1].xaxis.set_ticks_position("both")
-        label = self.T0.isoformat().replace("T", "  ")
+        label = self.TREF.isoformat().replace("T", "  ")
         self.supTit = fig.suptitle(label, ha="left", va="bottom",
                                    x=0.01, y=0.01)
         self.xMin, self.xMax = axs[0].get_xlim()
@@ -3176,7 +3179,7 @@ class ObsPyck(QtGui.QMainWindow):
                 self.drawAmplitude(ax, amplitude, scaling=scaling)
         self.drawIds()
         axs[-1].xaxis.set_ticks_position("both")
-        label = self.T0.isoformat().replace("T", "  ")
+        label = self.TREF.isoformat().replace("T", "  ")
         self.supTit = fig.suptitle(label, ha="left", va="bottom",
                                    x=0.01, y=0.01)
         self.xMin, self.xMax = axs[0].get_xlim()
