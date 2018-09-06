@@ -762,7 +762,7 @@ def merge_check_and_cleanup_streams(streams, options, config):
         if len(st) != len(st.select(network=st[0].stats.network,
                                     station=st[0].stats.station)):
             msg = "Warning: Stream with a mix of stations/networks. " + \
-                  "Discarding stream."
+                  "Discarding stream:\n%s" % str(st)
             print msg
             warn_msg += msg + "\n"
             streams.remove(st)
