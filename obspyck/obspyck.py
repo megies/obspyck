@@ -1045,6 +1045,29 @@ class ObsPyck(QtGui.QMainWindow):
         Applies filter currently selected in GUI to Trace or Stream object.
         Also displays a message.
         """
+        # get taper settings from config
+        try:
+            taper_max_length = self.config.get('base', 'taper_max_length')
+        except NoOptionError:
+            msg = ('No configuration option "taper_max_length" in section '
+                   '"base". Defaulting to 10s.')
+            self.error(msg)
+            taper_max_length = 5
+        try:
+            taper_max_percentage = self.config.get('base', 'taper_max_percentage')
+        except NoOptionError:
+            msg = ('No configuration option "taper_max_percentage" in section '
+                   '"base". Defaulting to 0.05.')
+            self.error(msg)
+            taper_max_percentage = 0.05
+        try:
+            taper_type = self.config.get('base', 'taper_type')
+        except NoOptionError:
+            msg = ('No configuration option "taper_type" in section '
+                   '"base". Defaulting to "cosine".')
+            self.error(msg)
+            taper_type = 'cosine'
+
         w = self.widgets
         type = str(w.qComboBox_filterType.currentText()).lower()
         options = {}
@@ -1068,9 +1091,14 @@ class ObsPyck(QtGui.QMainWindow):
         try:
             stream.detrend("linear")
             try:
-                stream.taper(max_percentage=0.05, type='cosine')
+                stream.taper(max_percentage=taper_max_percentage,
+                             max_length=taper_max_length, type=taper_type)
             except:
                 stream.taper()
+                msg = ('Error in stream tapering (old obspy version?). '
+                       'Tapering will be performed with Trace.taper() '
+                       'defaults.')
+                self.error(msg)
             if w.qCheckBox_50Hz.isChecked():
                 for i_ in xrange(2):
                     stream.filter("bandstop", freqmin=46, freqmax=54,
