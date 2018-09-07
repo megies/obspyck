@@ -250,15 +250,12 @@ class ObsPyck(QtGui.QMainWindow):
             self.setXMLEventID()
             # indicates which of the available focal mechanisms is selected
             self.focMechCurrent = None
+            _cmap_name = self._get_config_value(
+                "base", "spectrogram_colormap",
+                default=mpl.rcParams.get('image.cmap', 'jet'))
             try:
-                _cmap_name = config.get("base", "spectrogram_colormap")
-                try:
-                    cmap_spectrogram = getattr(
-                        obspy_cm, _cmap_name)
-                except AttributeError:
-                    cmap_spectrogram = get_cmap(_cmap_name)
-            except NoOptionError:
-                _cmap_name = mpl.rcParams.get('image.cmap', 'jet')
+                cmap_spectrogram = getattr(obspy_cm, _cmap_name)
+            except AttributeError:
                 cmap_spectrogram = get_cmap(_cmap_name)
             self.spectrogramColormap = cmap_spectrogram
             # indicates which of the available events from seishub was loaded
@@ -275,10 +272,9 @@ class ObsPyck(QtGui.QMainWindow):
                 self.event_server = None
                 self.event_server_type = None
             # for transition to Jane, temporarily do both
-            try:
-                test_event_server_name = config.get("base", "test_event_server_jane")
-            except NoOptionError:
-                test_event_server_name = None
+            test_event_server_name = self._get_config_value(
+                "base", "test_event_server_jane", default=None,
+                no_option_error_message=False)
             if test_event_server_name:
                 self.test_event_server = connect_to_server(
                     test_event_server_name, config, clients)
@@ -382,6 +378,34 @@ class ObsPyck(QtGui.QMainWindow):
         except:
             self.cleanup(skip_duplicate_check=True)
             raise
+
+    def _get_config_value(self, section, key, default=None,
+                          no_option_error_message=True, type=str):
+        """
+        Get a config key value, optionally with default value if key is missing
+        showing a warning about it by default.
+
+        :param type: str, int, float or bool
+        """
+        if type is bool:
+            config_getter = self.config.getboolean
+        elif type is int:
+            config_getter = self.config.getint
+        elif type is float:
+            config_getter = self.config.getfloat
+        elif type is str:
+            config_getter = self.config.get
+        else:
+            raise ValueError()
+        try:
+            return config_getter(section, key)
+        except NoOptionError:
+            if no_option_error_message:
+                msg = ("No configuration option '{key}' in section "
+                       "'{section}'. Defaulting to '{default}'").format(
+                           key=key, section=section, default=str(default))
+                self.error(msg)
+            return default
 
     def getCurrentStream(self):
         """
@@ -1046,27 +1070,12 @@ class ObsPyck(QtGui.QMainWindow):
         Also displays a message.
         """
         # get taper settings from config
-        try:
-            taper_max_length = self.config.get('base', 'taper_max_length')
-        except NoOptionError:
-            msg = ('No configuration option "taper_max_length" in section '
-                   '"base". Defaulting to 10s.')
-            self.error(msg)
-            taper_max_length = 5
-        try:
-            taper_max_percentage = self.config.get('base', 'taper_max_percentage')
-        except NoOptionError:
-            msg = ('No configuration option "taper_max_percentage" in section '
-                   '"base". Defaulting to 0.05.')
-            self.error(msg)
-            taper_max_percentage = 0.05
-        try:
-            taper_type = self.config.get('base', 'taper_type')
-        except NoOptionError:
-            msg = ('No configuration option "taper_type" in section '
-                   '"base". Defaulting to "cosine".')
-            self.error(msg)
-            taper_type = 'cosine'
+        taper_max_length = self._get_config_value(
+            'base', 'taper_max_length', default=5, type=float)
+        taper_max_percentage = self._get_config_value(
+            'base', 'taper_max_percentage', default=0.05, type=float)
+        taper_type = self._get_config_value(
+            'base', 'taper_type', default='cosine', type=str)
 
         w = self.widgets
         type = str(w.qComboBox_filterType.currentText()).lower()
@@ -1121,13 +1130,8 @@ class ObsPyck(QtGui.QMainWindow):
 
         w = self.widgets
         water_level = float(w.qDoubleSpinBox_waterlevel.value())
-        try:
-            output_units = self.config.get('base', 'physical_units')
-        except NoOptionError:
-            msg = ('No configuration option "physical_units" in section '
-                   '"base". Defaulting to m/s for physical units switch.')
-            self.error(msg)
-            output_units = 'velocity'
+        output_units = self._get_config_value('base', 'physical_units',
+                                              default='velocity')
         if output_units == 'velocity':
             output_units = 'VEL'
             label = '[m/s]'
@@ -4580,11 +4584,8 @@ class ObsPyck(QtGui.QMainWindow):
         """
         self.catalog = catalog
 
-        try:
-            merge_events_in_catalog = self.config.getboolean(
-                'misc', 'merge_catalog')
-        except NoOptionError:
-            merge_events_in_catalog = False
+        merge_events_in_catalog = self._get_config_value(
+            'misc', 'merge_catalog', default=False)
         if merge_events_in_catalog:
             msg = ('Warning: Option to merge events in the catalog is highly '
                    'experimental and should only be used for reviewing '
