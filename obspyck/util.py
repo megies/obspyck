@@ -1061,6 +1061,10 @@ def formatXTicklabels(x, *pos):
     # x is of type numpy.float64, the string representation of that float
     # strips of all tailing zeros
     # pos returns the position of x on the axis while zooming, None otherwise
+
+    if x == 0:
+        return '0s'
+
     info = []
 
     if x < 0:
@@ -1073,7 +1077,8 @@ def formatXTicklabels(x, *pos):
     if minutes > 0:
         info.append('%imin' % minutes)
 
-    info.append("%ss" % seconds)
+    if seconds != 0:
+        info.append("%ss" % seconds)
 
     return ' '.join(info)
 
