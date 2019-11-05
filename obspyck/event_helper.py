@@ -74,6 +74,11 @@ class StationMagnitudeContribution(
 
 
 class StationMagnitude(obspy.core.event.StationMagnitude, CommonEventHelper):
+    # we use _amplitude_ids to store amplitude IDS of used Amplitudes, since
+    # QuakeML only has room to store a single Amplitude for a StationMagnitude
+    # unfortunately
+    do_not_warn_on = ['extra', '_amplitude_ids']
+
     def __init__(self, *args, **kwargs):
         super(StationMagnitude, self).__init__()
         self.used = True
@@ -168,6 +173,11 @@ class Arrival(obspy.core.event.Arrival, CommonEventHelper):
 
 
 class Amplitude(obspy.core.event.Amplitude, CommonEventHelper):
+    # we use _station_magnitude_id to store ID of derived StationMagnitude,
+    # since QuakeML does not link back and this makes it easier to find the
+    # correct one
+    do_not_warn_on = ['extra', '_station_magnitude_id']
+
     def __init__(self, seed_string=None, *args, **kwargs):
         super(Amplitude, self).__init__()
         if seed_string:
