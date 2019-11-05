@@ -2998,7 +2998,7 @@ class ObsPyck(QtGui.QMainWindow):
     def calculateStationMagnitudes(self):
         event = self.catalog[0]
         origin = event.origins[0]
-        event.station_magnitudes = []
+        station_magnitudes = []
 
         netstaloc = set([(amp.waveform_id.network_code,
                           amp.waveform_id.station_code,
@@ -3011,7 +3011,22 @@ class ObsPyck(QtGui.QMainWindow):
             pazs = []
             channels = []
             p2ps = []
-            for amplitude in self.getAmplitudes(net, sta, loc):
+            amplitudes_ = self.getAmplitudes(net, sta, loc)
+
+            # check if we can reuse an existing StationMagnitude
+            amp_ids = set(str(amp.resource_id) for amp in amplitudes_)
+            for sm in event.station_magnitudes:
+                if sm.get('_amplitude_ids') == amp_ids:
+                    break
+            else:
+                sm = None
+            if sm is not None:
+                station_magnitudes.append(sm)
+                self.critical('reusing existing magnitude for %s: %0.2f' % (
+                    sta, sm.mag))
+                continue
+
+            for amplitude in amplitudes_:
                 self.debug(str(amplitude))
                 timedelta = amplitude.get_timedelta()
                 self.debug("Timedelta: " + str(timedelta))
@@ -3046,7 +3061,10 @@ class ObsPyck(QtGui.QMainWindow):
             dist = self.hypoDist(tr.stats.coordinates)
             mag = estimate_magnitude(pazs, p2ps, timedeltas, dist)
             sm = StationMagnitude()
-            event.station_magnitudes.append(sm)
+            # store ids of used amplitudes, so we're able to tell when a
+            # station magnitude needs to be updated
+            sm._amplitude_ids = amp_ids
+            station_magnitudes.append(sm)
             sm.origin_id = origin.resource_id
             sm.method_id = "/".join(
                 [ID_ROOT, "station_magnitude_method", "obspyck", "2"])
@@ -3062,8 +3080,16 @@ class ObsPyck(QtGui.QMainWindow):
             extra.amplitudeIDs = {'value': ",".join([str(a.resource_id)
                                                      for a in amplitudes]),
                                   'namespace': NAMESPACE}
+            # need to do this at the very end when StationMagnitude is not
+            # changed anymore, and we need to avoid setting a new random ID
+            # automatically (in event_helper.py)
+            for amplitude in amplitudes:
+                super(Amplitude, amplitude).__setattr__(
+                    '_station_magnitude_id', str(sm.resource_id))
             self.critical('calculated new magnitude for %s: %0.2f (channels: %s)' % (
                 sta, mag, ",".join(channels)))
+        # finally switch out station magnitudes
+        event.station_magnitudes = station_magnitudes
 
     #see http://www.scipy.org/Cookbook/LinearRegression for alternative routine
     #XXX replace with drawWadati()
