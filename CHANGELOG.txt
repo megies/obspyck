@@ -1,4 +1,4 @@
-master
+0.6.0
  - avoid error when special use case key `test_event_server_jane` is not
    present (see #71)
  - add possibility to specify complex, time-dependent station combinations
