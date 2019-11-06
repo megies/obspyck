@@ -11,6 +11,7 @@ INSTALL_REQUIRES = [
     'numpy',
     'scipy',
     'matplotlib',
+    'requests',
     ]
 ENTRY_POINTS = {
     'console_scripts': [
