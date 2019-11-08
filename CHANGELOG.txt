@@ -1,5 +1,6 @@
 master
- - ...
+ - fix changing extent of spectrogram image if no starttime offset is specified
+   in either config file (as default) or on command line (see #89)
 
 0.6.0
  - avoid error when special use case key `test_event_server_jane` is not
