@@ -840,10 +840,12 @@ def setup_external_programs(options, config):
     pluginpath = config.get("base", "pluginpath") or None
     if pluginpath is None:
         pluginpath = os.path.dirname(os.path.abspath(__file__))
-    if not os.path.isdir(pluginpath):
-        msg = "No such directory: '%s'" % pluginpath
-        raise IOError(msg)
     tmp_dir = tempfile.mkdtemp(prefix="obspyck-")
+    if not os.path.isdir(pluginpath):
+        msg = ("'pluginpath' in config file is no valid directory: '%s'\n"
+               "Localization methods/functions are deactivated.") % pluginpath
+        warnings.warn(msg)
+        return tmp_dir
     # set binary names to use depending on architecture and platform...
     env = os.environ
     architecture = platform.architecture()[0]
