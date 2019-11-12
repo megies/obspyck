@@ -1,5 +1,5 @@
 master
- - ...
+ - start up obspyck even if pluginpath is not a valid directory (see #91)
 
 0.6.0
  - avoid error when special use case key `test_event_server_jane` is not
