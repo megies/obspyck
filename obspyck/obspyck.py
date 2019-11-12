@@ -233,12 +233,7 @@ class ObsPyck(QtGui.QMainWindow):
         facecolor = self.qMain.palette().color(QtGui.QPalette.Window).getRgb()
         self.fig.set_facecolor([value / 255.0 for value in facecolor])
 
-        try:
-            self.tmp_dir = setup_external_programs(options, config)
-        except IOError:
-            msg = "Cannot find external programs dir, localization " + \
-                  "methods/functions are deactivated"
-            warnings.warn(msg)
+        self.tmp_dir = setup_external_programs(options, config)
 
         try:
             self.info('Using temporary directory: ' + self.tmp_dir)
