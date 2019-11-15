@@ -1457,14 +1457,13 @@ class ObsPyck(QtGui.QMainWindow):
                             cmap=self.spectrogramColormap, axes=ax, zorder=-10)
                 textcolor = "red"
                 # adjust spectrogram start time offset, relative to reference time
+                offset = self.T0 - self.TREF
                 if log:
                     quadmesh_ = ax.collections[0]
-                    quadmesh_._coordinates[:, :, 0] += self.options.starttime_offset
+                    quadmesh_._coordinates[:, :, 0] += offset
                 else:
                     x1, x2, y1, y2 = ax.images[0].get_extent()
-                    ax.images[0].set_extent((
-                        x1 + self.options.starttime_offset,
-                        x2 + self.options.starttime_offset, y1, y2))
+                    ax.images[0].set_extent((x1 + offset, x2 + offset, y1, y2))
             else:
                 # normalize with overall sensitivity and convert to nm/s
                 # if not explicitly deactivated on command line
