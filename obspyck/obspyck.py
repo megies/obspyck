@@ -91,7 +91,6 @@ class ObsPyck(QtGui.QMainWindow):
         """
         self.clients = clients
         self.streams = streams
-        self.options = options
         self.keys = keys
         self.config = config
 
