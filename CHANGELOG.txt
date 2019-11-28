@@ -1,3 +1,8 @@
+master
+ - fix latitude/longitude sign for Southern/Western hemisphere when loading in
+   Hyp2000 output
+ - add example station combination for oklahoma 2011 Ml 5.7 earthquake
+
 0.6.1
  - start up obspyck even if pluginpath is not a valid directory (see #91)
  - fix spectrogram plot (correct the offset adjustment, see #92)

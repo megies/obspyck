@@ -2701,6 +2701,8 @@ class ObsPyck(QtGui.QMainWindow):
                 break
             if line.startswith(" YEAR MO DA  --ORIGIN--"):
                 break
+        lat_negative = 'LAT S' in line.upper()
+        lon_negative = 'LON W' in line.upper()
         try:
             line = lines.pop(0)
         except:
@@ -2719,12 +2721,12 @@ class ObsPyck(QtGui.QMainWindow):
         lat_deg = int(line[25:27])
         lat_min = float(line[28:33])
         lat = lat_deg + (lat_min / 60.)
-        if line[27] == "S":
+        if lat_negative:
             lat = -lat
         lon_deg = int(line[35:38])
         lon_min = float(line[39:44])
         lon = lon_deg + (lon_min / 60.)
-        if line[38] == "W":
+        if lon_negative:
             lon = -lon
         depth = -float(line[46:51]) # depth: negative down!
         rms = float(line[52:57])
@@ -3539,24 +3541,26 @@ class ObsPyck(QtGui.QMainWindow):
         a file.
         """
         sta_map = self._4_letter_sta_map
-        fmt = "%6s%02i%05.2f%1s%03i%05.2f%1s%4i\n"
+        fmt = "  %4s%02i%05.2f%1s%03i%05.2f%1s%4i\n"
         hypo71_string = ""
 
         for st in self.streams:
             stats = st[0].stats
             sta = stats.station
             lon = stats.coordinates.longitude
-            lon_deg = int(abs(lon))
-            lon_min = (abs(lon) - abs(lon_deg)) * 60.
             lat = stats.coordinates.latitude
-            lat_deg = int(abs(lat))
-            lat_min = (abs(lat) - abs(lat_deg)) * 60.
             hem_NS = 'N'
             hem_EW = 'E'
             if lat < 0:
                 hem_NS = 'S'
             if lon < 0:
                 hem_EW = 'W'
+            lon = abs(lon)
+            lat = abs(lat)
+            lon_deg = int(lon)
+            lon_min = (lon - lon_deg) * 60.
+            lat_deg = int(lat)
+            lat_min = (lat - lat_deg) * 60.
             # hypo 71 format uses elevation in meters not kilometers
             ele = stats.coordinates.elevation
             # if sensor is buried or downhole, account for the specified sensor
