@@ -1,5 +1,6 @@
-master
+0.6.1
  - start up obspyck even if pluginpath is not a valid directory (see #91)
+ - fix spectrogram plot (correct the offset adjustment, see #92)
 
 0.6.0
  - avoid error when special use case key `test_event_server_jane` is not
