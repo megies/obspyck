@@ -1,4 +1,4 @@
-master
+0.6.2
  - fix latitude/longitude sign for Southern/Western hemisphere when loading in
    Hyp2000 output
  - add example station combination for oklahoma 2011 Ml 5.7 earthquake
