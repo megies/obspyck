@@ -1,3 +1,6 @@
+master:
+ - ...
+
 0.6.2
  - fix latitude/longitude sign for Southern/Western hemisphere when loading in
    Hyp2000 output
