@@ -492,8 +492,10 @@ def fetch_waveforms_with_metadata(options, args, config):
                         bio.seek(0)
                         inv = read_inventory(bio, format='XSEED')
                         inventories.append(inv)
-                    _attach_metadata(st, inventories)
-                    all_inventories += inventories
+                    # look in all metadata available, but prefer metadata from
+                    # same source (by putting it in front in list)
+                    all_inventories = inventories + all_inventories
+                    _attach_metadata(st, all_inventories)
             # ArcLink
             elif server_type == "arclink":
                 st = client.get_waveforms(
@@ -509,8 +511,10 @@ def fetch_waveforms_with_metadata(options, args, config):
                         bio.seek(0)
                         inventories.append(
                             read_inventory(bio, format='SEED'))
-                    _attach_metadata(st, inventories)
-                    all_inventories += inventories
+                    # look in all metadata available, but prefer metadata from
+                    # same source (by putting it in front in list)
+                    all_inventories = inventories + all_inventories
+                    _attach_metadata(st, all_inventories)
             # FDSN (or JANE)
             elif server_type in ("fdsn", "jane"):
                 st = client.get_waveforms(
@@ -520,8 +524,10 @@ def fetch_waveforms_with_metadata(options, args, config):
                     inventory = client.get_stations(
                         network=net, station=sta, location=loc,
                         level="response")
-                    _attach_metadata(st, inventory)
-                    all_inventories += [inventory]
+                    # look in all metadata available, but prefer metadata from
+                    # same source (by putting it in front in list)
+                    all_inventories = [inventory] + all_inventories
+                    _attach_metadata(st, all_inventories)
             # Seedlink
             elif server_type == "seedlink":
                 # XXX I think the wild card checks for net/sta/loc can be
@@ -552,8 +558,10 @@ def fetch_waveforms_with_metadata(options, args, config):
                         inventory = meta_client.get_stations(
                             network=net, station=sta, location=loc,
                             level="response")
-                        _attach_metadata(st, inventory)
-                        all_inventories += [inventory]
+                        # look in all metadata available, but prefer metadata from
+                        # same source (by putting it in front in list)
+                        all_inventories = [inventory] + all_inventories
+                        _attach_metadata(st, all_inventories)
                     else:
                         raise NotImplementedError()
             # SDS
@@ -586,8 +594,10 @@ def fetch_waveforms_with_metadata(options, args, config):
                         inventory = meta_client.get_stations(
                             network=net, station=sta, location=loc,
                             level="response")
-                        _attach_metadata(st, inventory)
-                        all_inventories += [inventory]
+                        # look in all metadata available, but prefer metadata from
+                        # same source (by putting it in front in list)
+                        all_inventories = [inventory] + all_inventories
+                        _attach_metadata(st, all_inventories)
                     else:
                         raise NotImplementedError()
             sta_fetched.add(net_sta_loc)
