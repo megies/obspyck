@@ -2711,6 +2711,13 @@ class ObsPyck(QtGui.QMainWindow):
             self.error(err)
             return
 
+        # it seems the header line and the actual numbers with E/W N/S flags
+        # can disagree and the flags trump
+        lat_negative = {'N': False, 'S': True}.get(line[27].upper(),
+                                                   lat_negative)
+        lon_negative = {'E': False, 'W': True}.get(line[38].upper(),
+                                                   lon_negative)
+
         year = int(line[1:5])
         month = int(line[6:8])
         day = int(line[9:11])

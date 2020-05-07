@@ -1,5 +1,5 @@
 master:
- - ...
+ - try to be even more robust when reading lat/lon from Hyp2000 output
 
 0.6.2
  - fix latitude/longitude sign for Southern/Western hemisphere when loading in
