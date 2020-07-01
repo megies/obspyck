@@ -9,6 +9,7 @@
 #
 # Copyright (C) 2010 Tobias Megies, Lion Krischer
 #---------------------------------------------------------------------
+import io
 import locale
 import logging
 import optparse
@@ -51,7 +52,6 @@ from obspy.signal.rotate import rotate_zne_lqt, rotate_ne_rt
 from obspy.signal.trigger import ar_pick
 from obspy.imaging.spectrogram import spectrogram
 from obspy.imaging.beachball import beach
-from obspy.clients.seishub import Client as SeisHubClient
 
 from . import __version__
 from .qt_designer import Ui_qMainWindow_obsPyck
@@ -79,6 +79,10 @@ ICON_PATH = os.path.join(os.path.dirname(
 if map(int, obspy.__version__.split('.')[:2]) < [1, 1]:
     msg = "Needing ObsPy version >= 1.1.0 (current version is: {})"
     warnings.warn(msg.format(obspy.__version__))
+
+
+class JaneNotConnectedError(Exception):
+    pass
 
 
 class ObsPyck(QtGui.QMainWindow):
@@ -252,28 +256,18 @@ class ObsPyck(QtGui.QMainWindow):
             except AttributeError:
                 cmap_spectrogram = get_cmap(_cmap_name)
             self.spectrogramColormap = cmap_spectrogram
-            # indicates which of the available events from seishub was loaded
-            self.seishubEventCurrent = None
-            # indicates how many events are available from seishub
-            self.seishubEventCount = None
-            # connect to server for event pull/push if not already connected
+            # indicates which of the available events from jane was loaded
+            self.janeEventCurrent = None
+            # indicates how many events are available from jane
+            self.janeEventCount = None
+            # connect to Jane for event pull/push
+            self.jane_session = None
+            self.jane_user = None
+            self.jane_password = None
+            self.jane_auth = None
             event_server_name = config.get("base", "event_server")
             if event_server_name:
-                self.event_server = connect_to_server(event_server_name, config,
-                                                      clients)
-                self.event_server_type = config.get(event_server_name, "type")
-            else:
-                self.event_server = None
-                self.event_server_type = None
-            # for transition to Jane, temporarily do both
-            test_event_server_name = self._get_config_value(
-                "base", "test_event_server_jane", default=None,
-                no_option_error_message=False)
-            if test_event_server_name:
-                self.test_event_server = connect_to_server(
-                    test_event_server_name, config, clients)
-            else:
-                self.test_event_server = None
+                self.jane_connect(event_server_name)
 
             # save input raw data and metadata for eventual reuse
             _save_input_data(streams, inventories, self.tmp_dir)
@@ -355,23 +349,77 @@ class ObsPyck(QtGui.QMainWindow):
             # XXX self.canv.setFocusPolicy(Qt.WheelFocus)
             #print self.canv.hasFocus()
 
-            if self.event_server:
-                if not isinstance(self.event_server, SeisHubClient):
-                    msg = ("Only SeisHub implemented as event server right now.")
-                    raise NotImplementedError(msg)
-
-            if not self.event_server or not isinstance(self.event_server, SeisHubClient):
-                msg = ("Warning: SeisHub specific features will not work "
+            if self.jane_session:
+                self.updateEventListFromJane(self.T0, self.T1)
+            else:
+                msg = ("Warning: Jane specific features will not work "
                        "(e.g. 'send Event').")
                 self.error(msg)
-
-            if self.event_server:
-                self.updateEventListFromSeisHub(self.T0, self.T1)
 
             self.setFocusToMatplotlib()
         except:
             self.cleanup(skip_duplicate_check=True)
             raise
+
+    def jane_http_request(self, method, *args, **kwargs):
+        if not self.jane_session:
+            msg = "Not connected to Jane ('event_server' not set in config, section [base]?)"
+            self.error(msg)
+            raise JaneNotConnectedError()
+        method = getattr(self.jane_session, method)
+        # sometimes we get ConnectionError, don't know why but it should be
+        # safe to retry same request
+        for i in range(10):
+            try:
+                return method(*args, **kwargs)
+            except requests.exceptions.ConnectionError:
+                continue
+        raise
+
+    def jane_connect(self, server_name):
+        """
+        In principle it should be possible to authenticate once and then just
+        keep using the sessionid cookie, but somehow it seems thats's not
+        working, but we can just resend credentials every time. So we do this
+        connect method mainly to check at the start if the credentials are
+        sound and inform user.
+        """
+        # get credentials from obspyckrc
+        user = self.config.get(server_name, "user")
+        password = self.config.get(server_name, "password")
+        # set up urls
+        self.jane_url_base = self.config.get(server_name, "base_url")
+        self.jane_url_rest = self.jane_url_base.rstrip('/') + '/rest'
+        url_login = self.jane_url_rest + '/api-auth/login/'
+        url_current_user = self.jane_url_rest + '/current_user'
+        # start a session
+        session = requests.Session()
+        # need to first get CSRF token in a plain GET
+        response = session.get(url_login)
+        assert response.ok
+        csrf_token = response.cookies['csrftoken']
+        # now we can POST to authenticate
+        login_data = {'username': user, 'password': password,
+                      'csrfmiddlewaretoken': csrf_token,
+                      'next': url_current_user}
+        response = session.post(url_login, data=login_data)
+        assert response.ok
+        # finally check if we got properly logged in
+        response = session.get(url_current_user)
+        assert response.ok
+        current_user = response.json()['username'] or None
+        if current_user is None:
+            msg = 'Failed to log in as user "%s"' % user
+            self.error(msg)
+            return
+        msg = 'Logged in to Jane at "%s" as user "%s"' % (self.jane_url_base,
+                                                          user)
+        self.info(msg)
+        # keep the requests session as our "event_server"
+        self.jane_session = session
+        self.jane_user = user
+        self.jane_password = password
+        self.jane_auth = (self.jane_user, self.jane_password)
 
     def _get_config_value(self, section, key, default=None,
                           no_option_error_message=True, type=str):
@@ -442,8 +490,8 @@ class ObsPyck(QtGui.QMainWindow):
             - check if sysop duplicates are there
             - remove temporary directory and all contents
         """
-        if not skip_duplicate_check and self.event_server:
-            self.checkForSysopEventDuplicates(self.T0, self.T1)
+        if not skip_duplicate_check and self.jane_session:
+            self.check_for_public_event_duplicates_by_event_list(self.janeEventList)
         try:
             shutil.rmtree(self.tmp_dir)
         except:
@@ -638,29 +686,40 @@ class ObsPyck(QtGui.QMainWindow):
     def on_qToolButton_getNextEvent_clicked(self, *args):
         if args:
             return
+        if not self.jane_session:
+            msg = "Not connected to Jane ('event_server' not set in config, section [base]?)"
+            self.error(msg)
+            return
         # check if event list is empty and force an update if this is the case
-        if not hasattr(self, "seishubEventList"):
-            self.updateEventListFromSeisHub(self.T0, self.T1)
-        if not self.seishubEventList:
-            self.critical("No events available from SeisHub.")
+        if not hasattr(self, "janeEventList"):
+            self.updateEventListFromJane(self.T0, self.T1)
+        if not self.janeEventList:
+            self.critical("No events available from Jane.")
             return
         # iterate event number to fetch
-        self.seishubEventCurrent = (self.seishubEventCurrent + 1) % \
-                                   self.seishubEventCount
-        event = self.seishubEventList[self.seishubEventCurrent]
-        resource_name = str(event.get('resource_name'))
+        self.janeEventCurrent = (self.janeEventCurrent + 1) % \
+            self.janeEventCount
+        event = self.janeEventList[self.janeEventCurrent]
         self.clearEvent()
-        self.getEventFromSeisHub(resource_name)
+        self.get_event_from_jane(event)
         self.updateAllItems()
         self.redraw()
 
     def on_qToolButton_updateEventList_clicked(self, *args):
         if args:
             return
-        self.updateEventListFromSeisHub(self.T0, self.T1)
+        if not self.jane_session:
+            msg = "Not connected to Jane ('event_server' not set in config, section [base]?)"
+            self.error(msg)
+            return
+        self.updateEventListFromJane(self.T0, self.T1)
 
     def on_qToolButton_sendNewEvent_clicked(self, *args):
         if args:
+            return
+        if not self.jane_session:
+            msg = "Not connected to Jane ('event_server' not set in config, section [base]?)"
+            self.error(msg)
             return
         # if sysop event and information missing show error and abort upload
         if self.widgets.qCheckBox_public.isChecked():
@@ -674,32 +733,29 @@ class ObsPyck(QtGui.QMainWindow):
                 return
         self.upload_event()
         self.on_qToolButton_updateEventList_clicked()
-        self.checkForSysopEventDuplicates(self.T0, self.T1)
+        self.check_for_public_event_duplicates_by_event_list(self.janeEventList)
 
     def on_qToolButton_replaceEvent_clicked(self, *args):
         if args:
             return
+        if not self.jane_session:
+            msg = "Not connected to Jane ('event_server' not set in config, section [base]?)"
+            self.error(msg)
+            return
         # if sysop event and information missing show error and abort upload
         if self.widgets.qCheckBox_public.isChecked():
-            if not self.widgets.qCheckBox_sysop.isChecked():
-                err = "Error: Enter password for \"sysop\"-account first."
-                self.error(err)
-                return
             ok, msg = self.checkForCompleteEvent()
             if not ok:
                 self.popupBadEventError(msg)
                 return
-        event = self.seishubEventList[self.seishubEventCurrent]
-        resource_name = event.get('resource_name')
+        event = self.janeEventList[self.janeEventCurrent]
+        resource_name = event['containing_document_url'].split('/')[-1]
         if not resource_name.startswith("obspyck_"):
             err = "Error: Only replacing of events created with ObsPyck allowed."
             self.error(err)
             return
         event_id = resource_name.split("_")[1]
-        try:
-            user = event.creation_info.author
-        except:
-            user = None
+        user = event['indexed_data']['author'] or None
         qMessageBox = QtGui.QMessageBox()
         app_icon = QtGui.QIcon()
         app_icon.addFile(ICON_PATH.format("_16x16"), QtCore.QSize(16, 16))
@@ -723,23 +779,18 @@ class ObsPyck(QtGui.QMainWindow):
             self.setXMLEventID(event_id)
             self.upload_event()
             self.on_qToolButton_updateEventList_clicked()
-            self.checkForSysopEventDuplicates(self.T0, self.T1)
+            self.check_for_public_event_duplicates_by_event_list(self.janeEventList)
 
     def on_qToolButton_deleteEvent_clicked(self, *args):
         if args:
             return
-        # if sysop event and information missing show error and abort upload
-        if self.widgets.qCheckBox_public.isChecked():
-            if not self.widgets.qCheckBox_sysop.isChecked():
-                err = "Error: Enter password for \"sysop\"-account first."
-                self.error(err)
-                return
-        event = self.seishubEventList[self.seishubEventCurrent]
-        resource_name = event.get('resource_name')
-        try:
-            user = event.creation_info.author
-        except:
-            user = None
+        if not self.jane_session:
+            msg = "Not connected to Jane ('event_server' not set in config, section [base]?)"
+            self.error(msg)
+            return
+        event = self.janeEventList[self.janeEventCurrent]
+        resource_name = event['containing_document_url'].split('/')[-1]
+        user = event['indexed_data']['author'] or None
         qMessageBox = QtGui.QMessageBox()
         app_icon = QtGui.QIcon()
         app_icon.addFile(ICON_PATH.format("_16x16"), QtCore.QSize(16, 16))
@@ -765,45 +816,18 @@ class ObsPyck(QtGui.QMainWindow):
         self.save_event_locally()
 
     def on_qCheckBox_sysop_toggled(self):
-        self.on_qLineEdit_sysopPassword_editingFinished()
-        newstate = self.widgets.qCheckBox_sysop.isChecked()
-        if not str(self.widgets.qLineEdit_sysopPassword.text()):
-            self.widgets.qCheckBox_sysop.setChecked(False)
-            err = "Error: Enter password for \"sysop\"-account first."
-            self.error(err)
-        else:
-            self.info("Setting usage of \"sysop\"-account to: %s" % newstate)
+        # XXX remove button, not used anymore
+        msg = "Button not used anymore."
+        self.error(msg)
+        return
 
     # the corresponding signal is emitted when hitting return after entering
     # the password
     def on_qLineEdit_sysopPassword_editingFinished(self):
-        if not self.event_server:
-            self.widgets.qCheckBox_sysop.setChecked(False)
-            self.widgets.qLineEdit_sysopPassword.clear()
-            err = "Error: No event server specified"
-            self.error(err)
-            return
-        event_server = self.config.get("base", "event_server")
-        passwd = str(self.widgets.qLineEdit_sysopPassword.text())
-        tmp_client = SeisHubClient(
-            base_url=self.config.get(event_server, "base_url"),
-            user="sysop", password=passwd)
-        if tmp_client.test_auth():
-            self.clients['__SeisHub-sysop__'] = tmp_client
-            self.widgets.qCheckBox_sysop.setChecked(True)
-        # if authentication test fails empty password field and uncheck sysop
-        else:
-            self.clients.pop('__SeisHub-sysop__', None)
-            self.widgets.qCheckBox_sysop.setChecked(False)
-            self.widgets.qLineEdit_sysopPassword.clear()
-            err = "Error: Authentication as sysop failed! (Wrong password!?)"
-            self.error(err)
-        self.canv.setFocus() # XXX needed??
-    # XXX XXX not used atm. relict from gtk when buttons snatch to grab the
-    # XXX XXX focus away from the mpl-canvas to which key/mouseButtonPresses are
-    # XXX XXX connected
-    # XXX def on_buttonSetFocusOnPlot_clicked(self, event):
-    # XXX     self.setFocusToMatplotlib()
+        # XXX remove text box, not used anymore
+        msg = "Text field not used anymore."
+        self.error(msg)
+        return
 
     def on_qToolButton_debug_clicked(self, *args):
         if args:
@@ -3906,12 +3930,33 @@ class ObsPyck(QtGui.QMainWindow):
         self.critical(msg % name)
         open(name, "wt").write(data)
 
+    def get_event_from_jane(self, event):
+        """
+        Fetch a QuakeML resource from Jane, based on the event's document
+        indices fetched earlier.
+        """
+        url = event['containing_document_data_url']
+        try:
+            response = self.jane_http_request(method='get', url=url, auth=self.jane_auth)
+        except JaneNotConnectedError:
+            return
+        assert response.ok
+        # parse quakeml
+        catalog = readQuakeML(io.BytesIO(response.content))
+        self.setEventFromCatalog(catalog)
+        ev = catalog[0]
+        self.critical("Fetched event %i of %i: %s (public: %s, user: %s)" %
+              (self.janeEventCurrent + 1, self.janeEventCount,
+               event['containing_document_data_url'].split('/')[-1],
+               event['indexed_data']['public'],
+               ev.creation_info.author))
+
     def upload_event(self):
         """
-        Upload event to SeisHub and/or Jane
+        Upload event to Jane
         """
-        if not self.event_server:
-            msg = "'event_server' not set in config, section [base]"
+        if not self.jane_session:
+            msg = "Not connected to Jane ('event_server' not set in config, section [base]?)"
             self.error(msg)
             return
 
@@ -3938,49 +3983,22 @@ class ObsPyck(QtGui.QMainWindow):
         for fname in [tmpfile, tmpfile2]:
             open(fname, "wt").write(data)
 
-        if self.event_server_type == "seishub":
-            self.uploadSeisHub(name, data)
-        elif self.event_server_type == "jane":
-            conf = self.config
-            server_key = conf.get("base", "event_server")
-            client = self.event_server
-            base_url = client.base_url
-            user = conf.get(server_key, "user")
-            password = conf.get(server_key, "password")
-            self.upload_event_jane(name, data, base_url, user, password)
-        else:
-            raise ValueError()
-        # XXX for transition to Jane, temporarily do both
-        if self.test_event_server:
-            self.upload_event_jane_test(name, data)
-
-    def upload_event_jane_test(self, name, data):
-        """
-        Should be deleted again.. when Jane upload is properly tested and we
-        drop parallel upload to Seishub+Jane again
-        """
-        conf = self.config
-        server_key = conf.get("base", "test_event_server_jane")
-        client = self.test_event_server
-        base_url = client.base_url
-        user = conf.get(server_key, "user")
-        password = conf.get(server_key, "password")
-        self.upload_event_jane(name, data, base_url, user, password)
-
-    def upload_event_jane(self, name, data, base_url, user, password):
-        url = base_url + "/rest/documents/quakeml/%s" % name
-        r = requests.put(url=url, data=data, auth=(user, password))
+        url = self.jane_url_rest + "/documents/quakeml/%s" % name
+        try:
+            r = self.jane_http_request(
+                method='put', url=url, data=data, auth=self.jane_auth)
+        except JaneNotConnectedError:
+            return
         if not r.ok:
-            msg = 'Something went wrong during upload to JANE! ({!s})'.format(
-                r.status_code)
+            msg = 'Something went wrong during upload to JANE! (HTTP: {!s} {!s})'.format(
+                r.status_code, r.text)
             self.error(msg)
             return
 
-        msg = "Uploading Event!"
-        msg += "\nJane Account: %s" % user
-        msg += "\nAuthor: %s" % self.username
+        msg = "Uploading Event"
+        msg += "\nJane Account: %s" % self.jane_user
+        msg += "\nJane Server: %s" % self.jane_url_base
         msg += "\nName: %s" % name
-        msg += "\nJane Server: %s" % base_url
         msg += "\nResponse: %s %s" % (r.status_code, r.text)
         self.critical(msg)
 
@@ -4001,20 +4019,19 @@ class ObsPyck(QtGui.QMainWindow):
             sio.seek(0)
             data = sio.read()
             sio.close()
-            url = "{}/rest/documents/quakeml/{}?format=json".format(
-                base_url, name)
-            r = requests.get(url, auth=(user, password))
+            url = "{}/documents/quakeml/{}?format=json".format(
+                self.jane_url_rest, name)
+            r = requests.get(url, auth=self.jane_auth)
             if not r.ok:
                 msg = ('Something went wrong during NonLinLoc scatter upload '
                        'to JANE! ({!s})').format(r.status_code)
                 self.error(msg)
             jane_id = r.json()["indices"][0]["id"]
-            url = "{}/rest/document_indices/quakeml/{}/attachments".format(
-                base_url, jane_id)
+            url = "{}/document_indices/quakeml/{}/attachments".format(
+                self.jane_url_rest, jane_id)
             headers = {"content-type": "text/plain",
                        "category": "nonlinloc_scatter"}
-            r = requests.post(url=url, auth=(user, password), headers=headers,
-                              data=data)
+            r = requests.post(url=url, auth=self.jane_auth, headers=headers, data=data)
             if not r.ok:
                 msg = ('Something went wrong during NonLinLoc scatter upload '
                        'to JANE! ({!s})').format(r.status_code)
@@ -4024,127 +4041,28 @@ class ObsPyck(QtGui.QMainWindow):
         msg += "\nResponse: %s %s" % (r.status_code, r.text)
         self.critical(msg)
 
-    def uploadSeisHub(self, name, data):
-        """
-        Upload quakeml file to SeisHub
-        """
-        # check, if the event should be uploaded as sysop. in this case we use
-        # the sysop client instance for the upload (and also set
-        # user_account in the xml to "sysop").
-        # the correctness of the sysop password is tested when checking the
-        # sysop box and entering the password immediately.
-        if self.widgets.qCheckBox_public.isChecked():
-            seishub_account = "sysop"
-            client = self.clients['__SeisHub-sysop__']
-        else:
-            seishub_account = "obspyck"
-            client = self.event_server
-
-        headers = {}
-        try:
-            host = socket.gethostname()
-        except:
-            host = "localhost"
-        headers["Host"] = host
-        headers["User-Agent"] = "obspyck"
-        headers["Content-type"] = "text/xml; charset=\"UTF-8\""
-        headers["Content-length"] = "%d" % len(data)
-        # XXX TODO: Calculate real PGV?!
-        code, message = client.event.put_resource(name, xml_string=data,
-                                                  headers=headers)
-        msg = "Seishub Account: %s" % seishub_account
-        msg += "\nUser: %s" % self.username
-        msg += "\nName: %s" % name
-        msg += "\nServer: %s" % self.config.get("base", "event_server")
-        msg += "\nResponse: %s %s" % (code, message)
-        self.critical(msg)
-
     def delete_event(self, resource_name):
         """
-        Delete event from SeisHub and/or Jane
+        Delete event from Jane
         """
-        if not self.event_server:
-            msg = "'event_server' not set in config, section [base]"
-            self.error(msg)
-            return
-
-        if self.event_server_type == "seishub":
-            self.deleteEventInSeisHub(resource_name)
-        elif self.event_server_type == "jane":
-            conf = self.config
-            server_key = conf.get("base", "event_server")
-            client = self.event_server
-            base_url = client.base_url
-            user = conf.get(server_key, "user")
-            password = conf.get(server_key, "password")
-            self.delete_event_jane(resource_name, base_url, user, password)
-        else:
-            raise ValueError()
-        # for transition to Jane, temporarily do both
-        if self.test_event_server:
-            self.delete_event_jane_test(resource_name)
-
-    def delete_event_jane_test(self, resource_name):
-        conf = self.config
-        server_key = conf.get("base", "test_event_server_jane")
-        client = self.test_event_server
-        base_url = client.base_url
-        user = conf.get(server_key, "user")
-        password = conf.get(server_key, "password")
-        self.delete_event_jane(resource_name, base_url, user, password)
-
-    def delete_event_jane(self, resource_name, base_url, user, password):
-        r = requests.delete(
-            url=base_url + "/rest/documents/quakeml/%s" % resource_name,
-            auth=(user, password))
-        if not r.ok:
-            msg = 'Something went wrong during deletion on JANE! ({!s})'.format(
-                r.status_code)
-            self.error(msg)
-            return
-
-        msg = "Deleting Event!"
-        msg += "\nJane Account: %s" % user
-        msg += "\nAuthor: %s" % self.username
-        msg += "\nName: %s" % resource_name
-        msg += "\nJane Server: %s" % base_url
-        msg += "\nResponse: %s %s" % (r.status_code, r.text)
-        self.critical(msg)
-
-    def deleteEventInSeisHub(self, resource_name):
-        """
-        Delete xml file from SeisHub.
-        (Move to SeisHubs trash folder if this option is activated)
-        """
-        # check, if the event should be deleted as sysop. in this case we
-        # use the sysop client instance for the DELETE request.
-        # sysop may delete resources from any user.
-        # at the moment deleted resources go to SeisHubs trash folder (and can
-        # easily be resubmitted using the http interface).
-        # the correctness of the sysop password is tested when checking the
-        # sysop box and entering the password immediately.
-        if self.widgets.qCheckBox_public.isChecked():
-            seishub_account = "sysop"
-            client = self.clients['__SeisHub-sysop__']
-        else:
-            seishub_account = "obspyck"
-            client = self.event_server
-
-        headers = {}
         try:
-            host = socket.gethostname()
-        except:
-            host = "localhost"
-        headers["Host"] = host
-        headers["User-Agent"] = "obspyck"
-        code, message = client.event.delete_resource(str(resource_name),
-                                                     headers=headers)
+            r = self.jane_http_request(
+                method='delete',
+                url=self.jane_url_rest + "/documents/quakeml/%s" % resource_name,
+                auth=self.jane_auth)
+        except JaneNotConnectedError:
+            return
+        if not r.ok:
+            msg = 'Something went wrong during deletion on JANE! (HTTP: {!s} {!s})'.format(
+                r.status_code, r.text)
+            self.error(msg)
+            return
+
         msg = "Deleting Event!"
-        msg += "\nSeishub Account: %s" % seishub_account
-        msg += "\nUser: %s" % self.username
+        msg += "\nJane Account: %s" % self.jane_user
+        msg += "\nJane Server: %s" % self.jane_url_base
         msg += "\nName: %s" % resource_name
-        msg += "\nServer: %s" % self.config.get("base", "event_server")
-        msg += "\nResponse: %s %s" % (code, message)
+        msg += "\nResponse: %s %s" % (r.status_code, r.text)
         self.critical(msg)
 
     def clearEvent(self):
@@ -4588,22 +4506,6 @@ class ObsPyck(QtGui.QMainWindow):
         picks.remove(old)
         picks.append(pick)
 
-    def getEventFromSeisHub(self, resource_name):
-        """
-        Fetch a Resource XML from SeisHub
-        """
-        client = self.event_server
-        resource_xml = client.event.get_resource(resource_name)
-
-        # parse quakeml
-        catalog = readQuakeML(StringIO(resource_xml))
-        self.setEventFromCatalog(catalog)
-        ev = catalog[0]
-        self.critical("Fetched event %i of %i: %s (public: %s, user: %s)"% \
-              (self.seishubEventCurrent + 1, self.seishubEventCount,
-               resource_name, self.widgets.qCheckBox_public.isChecked(),
-               ev.creation_info.author))
-
     def setEventFromFilename(self, filename):
         """
         Set the currently active Event/Catalog from a filename of a QuakeML
@@ -4620,9 +4522,7 @@ class ObsPyck(QtGui.QMainWindow):
         """
         self.catalog = catalog
 
-        merge_events_in_catalog = self._get_config_value(
-            'misc', 'merge_catalog', default=False)
-        if merge_events_in_catalog:
+        if self._get_config_value('misc', 'merge_events_in_catalog', default=False, type=bool):
             msg = ('Warning: Option to merge events in the catalog is highly '
                    'experimental and should only be used for reviewing '
                    'existing events.')
@@ -4704,7 +4604,7 @@ class ObsPyck(QtGui.QMainWindow):
         else:
             self.focMechCurrent = None
 
-    def updateEventListFromSeisHub(self, starttime, endtime):
+    def updateEventListFromJane(self, starttime, endtime):
         """
         Searches for events in the database and stores a list of resource
         names. All events with at least one pick set in between start- and
@@ -4713,51 +4613,50 @@ class ObsPyck(QtGui.QMainWindow):
         :param starttime: Start datetime as UTCDateTime
         :param endtime: End datetime as UTCDateTime
         """
-        self.checkForSysopEventDuplicates(self.T0, self.T1)
-
-        events = self.event_server.event.get_list(min_last_pick=starttime,
-                                                  max_first_pick=endtime)
-        events.sort(key=lambda x: x['resource_name'])
-        self.seishubEventList = events
-        self.seishubEventCount = len(events)
+        url = (self.jane_url_rest +
+               '/document_indices/quakeml' +
+               '?min_origin_time=%s&max_origin_time=%s' % (self.T0, self.T1))
+        try:
+            response = self.jane_http_request(
+                method='get', url=url, auth=self.jane_auth)
+        except JaneNotConnectedError:
+            return
+        assert response.ok
+        events = sorted(response.json()['results'],
+                        key=lambda x: x['containing_document_url'])
+        self.check_for_public_event_duplicates_by_event_list(events)
+        self.janeEventList = events
+        self.janeEventCount = len(events)
         # we set the current event-pointer to the last list element, because we
         # iterate the counter immediately when fetching the first event...
-        self.seishubEventCurrent = len(events) - 1
-        msg = "%i events are available from SeisHub" % len(events)
+        self.janeEventCurrent = len(events) - 1
+        msg = "%i events are available from Jane" % len(events)
         for event in events:
-            resource_name = event.get('resource_name', "???")
-            public = event.get('public', "???")
-            author = event.get('author', "???")
+            resource_name = event['containing_document_url'].split('/')[-1]
+            public = event['indexed_data']['public']
+            author = event['indexed_data']['author']
             msg += "\n  - %s (public: %s, author: %s)" % (resource_name,
                                                           public, author)
         self.critical(msg)
 
-    def checkForSysopEventDuplicates(self, starttime, endtime):
+    def check_for_public_event_duplicates_by_event_list(self, events):
         """
-        checks if there is more than one public event with picks in between
-        starttime and endtime. if that is the case, a warning is issued.
+        checks if there is more than one public event in given event list.
+        if that is the case, a warning is issued.
         the user should then resolve this conflict by deleting events until
         only one instance remains.
-        at the moment this check is conducted for the current timewindow when
-        submitting a sysop event.
         """
-        events = self.event_server.event.get_list(min_last_pick=starttime,
-                                                  max_first_pick=endtime)
-        # XXX TODO: we don't have sysop as author anymore!
-        # all controlled by public tag now.
-        sysop_events = []
-        for ev in events:
-            public = ev.get("public", False)
-            if public:
-                sysop_events.append(str(ev.get("resource_name", "???")))
+        public_events = [
+            ev['containing_document_url'].split('/')[-1] for ev in events
+            if ev['indexed_data']["public"]]
 
         # if there is a possible duplicate, pop up a warning window and print a
         # warning in the GUI error textview:
-        if len(sysop_events) > 1:
-            err = "ObsPyck found more than one public event with picks in " + \
+        if len(public_events) > 1:
+            err = "ObsPyck found more than one public event with origin time in " + \
                   "the current time window! Please check if these are " + \
                   "duplicate events and delete old resources."
-            errlist = "\n".join(sysop_events)
+            errlist = "\n".join(public_events)
             self.error(err)
             self.error(errlist)
             qMessageBox = QtGui.QMessageBox()
@@ -4777,7 +4676,7 @@ class ObsPyck(QtGui.QMainWindow):
 
     def checkForCompleteEvent(self):
         """
-        checks if the event has the necessary information a sysop event should
+        checks if the event has the necessary information a public event should
         have::
 
           - datetime (origin time)
