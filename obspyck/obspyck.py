@@ -3329,7 +3329,7 @@ class ObsPyck(QtGui.QMainWindow):
         m = event.magnitudes and event.magnitudes[0] or None
         try:
             self.critical("%s %.2f %.6f %.6f %.3f %.3f %.3f %.4f %.6f" % (
-                o.time, m.mag, o.longitude, o.latitude, o.depth / 1e3,
+                o.time, m.mag, o.latitude, o.longitude, o.depth / 1e3,
                 errX / 1e3, errY / 1e3,
                 o.depth_errors.uncertainty / 1e3, o.quality.standard_error))
         except:
@@ -3365,7 +3365,10 @@ class ObsPyck(QtGui.QMainWindow):
         #              family='monospace')
         link = "http://maps.google.de/maps?f=q&q=%.6f,%.6f" % \
                (o.latitude, o.longitude)
-        self.widgets.qPlainTextEdit_stdout.appendHtml("<a href='%s'>%s</a> &nbsp;" % (link, link))
+        self.info(link)
+        link = "http://geoportal.bayern.de/bayernatlas/?lat=%.6f&lon=%.6f" % \
+               (o.latitude, o.longitude)
+        self.info(link)
 
         self.scatterMagIndices = []
         self.scatterMagLon = []
