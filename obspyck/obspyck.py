@@ -4604,17 +4604,40 @@ class ObsPyck(QtGui.QMainWindow):
         :param starttime: Start datetime as UTCDateTime
         :param endtime: End datetime as UTCDateTime
         """
+        limit = 100  # we should never hit that insane limit
+        limit_msg = ('More than %d events for given time span (hitting '
+                     'internally set limit') % limit
+        # first search by origin time
         url = (self.jane_url_rest +
                '/document_indices/quakeml' +
-               '?min_origin_time=%s&max_origin_time=%s' % (self.T0, self.T1))
+               '?min_origin_time=%s&max_origin_time=%s&limit=%d' % (self.T0, self.T1, limit))
         try:
             response = self.jane_http_request(
                 method='get', url=url, auth=self.jane_auth)
         except JaneNotConnectedError:
             return
-        assert response.ok
-        events = sorted(response.json()['results'],
-                        key=lambda x: x['containing_document_url'])
+        assert response.ok, 'HTTP %s fetching events: %s' % (response.status_code, response.text)
+        events = response.json()['results']
+        assert len(events) < limit, limit_msg
+        # now add events by pick time (could not get the query via REST filter
+        # by None value in origin_time, sadly.. so some gymnastics to avoid
+        # duplicates)
+        url = (self.jane_url_rest +
+               '/document_indices/quakeml' +
+               '?min_last_pick_time=%s&max_first_pick_time=%s&limit=%d' % (self.T0, self.T1, limit))
+        try:
+            response = self.jane_http_request(
+                method='get', url=url, auth=self.jane_auth)
+        except JaneNotConnectedError:
+            return
+        assert response.ok, 'HTTP %s fetching events: %s' % (response.status_code, response.text)
+        events2 = response.json()['results']
+        assert len(events2) < limit, limit_msg
+        # combine into a unique list and sort
+        for event in events2:
+            if event not in events:
+                events.append(event)
+        events = sorted(events, key=lambda x: x['containing_document_url'])
         self.check_for_public_event_duplicates_by_event_list(events)
         self.janeEventList = events
         self.janeEventCount = len(events)
