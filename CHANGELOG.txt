@@ -1,6 +1,9 @@
 master:
  - ..
 
+0.7.2
+ - also fetch picks-only events from Jane (see #95)
+
 0.7.1
  - minor fixes and changes (see #94)
 
