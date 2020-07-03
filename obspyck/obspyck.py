@@ -487,7 +487,7 @@ class ObsPyck(QtGui.QMainWindow):
         """
         Cleanup and prepare for quit.
         Do:
-            - check if sysop duplicates are there
+            - check if public duplicates are there
             - remove temporary directory and all contents
         """
         if not skip_duplicate_check and self.jane_session:
@@ -721,12 +721,8 @@ class ObsPyck(QtGui.QMainWindow):
             msg = "Not connected to Jane ('event_server' not set in config, section [base]?)"
             self.error(msg)
             return
-        # if sysop event and information missing show error and abort upload
+        # if public event and information missing show error and abort upload
         if self.widgets.qCheckBox_public.isChecked():
-            if not self.widgets.qCheckBox_sysop.isChecked():
-                err = "Error: Enter password for \"sysop\"-account first."
-                self.error(err)
-                return
             ok, msg = self.checkForCompleteEvent()
             if not ok:
                 self.popupBadEventError(msg)
@@ -742,7 +738,7 @@ class ObsPyck(QtGui.QMainWindow):
             msg = "Not connected to Jane ('event_server' not set in config, section [base]?)"
             self.error(msg)
             return
-        # if sysop event and information missing show error and abort upload
+        # if public event and information missing show error and abort upload
         if self.widgets.qCheckBox_public.isChecked():
             ok, msg = self.checkForCompleteEvent()
             if not ok:
@@ -814,20 +810,6 @@ class ObsPyck(QtGui.QMainWindow):
         if args:
             return
         self.save_event_locally()
-
-    def on_qCheckBox_sysop_toggled(self):
-        # XXX remove button, not used anymore
-        msg = "Button not used anymore."
-        self.error(msg)
-        return
-
-    # the corresponding signal is emitted when hitting return after entering
-    # the password
-    def on_qLineEdit_sysopPassword_editingFinished(self):
-        # XXX remove text box, not used anymore
-        msg = "Text field not used anymore."
-        self.error(msg)
-        return
 
     def on_qToolButton_debug_clicked(self, *args):
         if args:
@@ -3347,7 +3329,7 @@ class ObsPyck(QtGui.QMainWindow):
         m = event.magnitudes and event.magnitudes[0] or None
         try:
             self.critical("%s %.2f %.6f %.6f %.3f %.3f %.3f %.4f %.6f" % (
-                o.time, m.mag, o.longitude, o.latitude, o.depth / 1e3,
+                o.time, m.mag, o.latitude, o.longitude, o.depth / 1e3,
                 errX / 1e3, errY / 1e3,
                 o.depth_errors.uncertainty / 1e3, o.quality.standard_error))
         except:
@@ -3383,7 +3365,10 @@ class ObsPyck(QtGui.QMainWindow):
         #              family='monospace')
         link = "http://maps.google.de/maps?f=q&q=%.6f,%.6f" % \
                (o.latitude, o.longitude)
-        self.widgets.qPlainTextEdit_stdout.appendHtml("<a href='%s'>%s</a> &nbsp;" % (link, link))
+        self.info(link)
+        link = "http://geoportal.bayern.de/bayernatlas/?lat=%.6f&lon=%.6f" % \
+               (o.latitude, o.longitude)
+        self.info(link)
 
         self.scatterMagIndices = []
         self.scatterMagLon = []
@@ -3990,16 +3975,17 @@ class ObsPyck(QtGui.QMainWindow):
         except JaneNotConnectedError:
             return
         if not r.ok:
-            msg = 'Something went wrong during upload to JANE! (HTTP: {!s} {!s})'.format(
+            msg = 'Something went wrong during upload to JANE! (HTTP {!s}: {!s})'.format(
                 r.status_code, r.text)
             self.error(msg)
             return
 
-        msg = "Uploading Event"
-        msg += "\nJane Account: %s" % self.jane_user
-        msg += "\nJane Server: %s" % self.jane_url_base
-        msg += "\nName: %s" % name
-        msg += "\nResponse: %s %s" % (r.status_code, r.text)
+        msg = "Uploading Event: %s" % name
+        msg += "\n  Response: HTTP %s %s" % (r.status_code, r.reason)
+        try:
+            msg += " %s" % r.json()['status']
+        except:
+            pass
         self.critical(msg)
 
         if not self.catalog[0].origins:
@@ -4038,7 +4024,11 @@ class ObsPyck(QtGui.QMainWindow):
                 self.error(msg)
 
         msg = "Uploaded NonLinLoc Scatter as attachment"
-        msg += "\nResponse: %s %s" % (r.status_code, r.text)
+        msg += "\n  Response: HTTP %s %s" % (r.status_code, r.reason)
+        try:
+            msg += " %s" % r.json()['status']
+        except:
+            pass
         self.critical(msg)
 
     def delete_event(self, resource_name):
@@ -4058,11 +4048,12 @@ class ObsPyck(QtGui.QMainWindow):
             self.error(msg)
             return
 
-        msg = "Deleting Event!"
-        msg += "\nJane Account: %s" % self.jane_user
-        msg += "\nJane Server: %s" % self.jane_url_base
-        msg += "\nName: %s" % resource_name
-        msg += "\nResponse: %s %s" % (r.status_code, r.text)
+        msg = "Deleting Event: %s" % resource_name
+        msg += "\n  Response: HTTP %s %s" % (r.status_code, r.reason)
+        try:
+            msg += " %s" % r.json()['status']
+        except:
+            pass
         self.critical(msg)
 
     def clearEvent(self):
