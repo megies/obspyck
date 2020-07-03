@@ -811,20 +811,6 @@ class ObsPyck(QtGui.QMainWindow):
             return
         self.save_event_locally()
 
-    def on_qCheckBox_sysop_toggled(self):
-        # XXX remove button, not used anymore
-        msg = "Button not used anymore."
-        self.error(msg)
-        return
-
-    # the corresponding signal is emitted when hitting return after entering
-    # the password
-    def on_qLineEdit_sysopPassword_editingFinished(self):
-        # XXX remove text box, not used anymore
-        msg = "Text field not used anymore."
-        self.error(msg)
-        return
-
     def on_qToolButton_debug_clicked(self, *args):
         if args:
             return
