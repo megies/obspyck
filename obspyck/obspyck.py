@@ -3975,13 +3975,17 @@ class ObsPyck(QtGui.QMainWindow):
         except JaneNotConnectedError:
             return
         if not r.ok:
-            msg = 'Something went wrong during upload to JANE! (HTTP: {!s} {!s})'.format(
+            msg = 'Something went wrong during upload to JANE! (HTTP {!s}: {!s})'.format(
                 r.status_code, r.text)
             self.error(msg)
             return
 
         msg = "Uploading Event: %s" % name
-        msg += "\n  Response: HTTP %s %s %s" % (r.status_code, r.reason, r.text)
+        msg += "\n  Response: HTTP %s %s" % (r.status_code, r.reason)
+        try:
+            msg += " %s" % r.json()['status']
+        except:
+            pass
         self.critical(msg)
 
         if not self.catalog[0].origins:
@@ -4020,7 +4024,11 @@ class ObsPyck(QtGui.QMainWindow):
                 self.error(msg)
 
         msg = "Uploaded NonLinLoc Scatter as attachment"
-        msg += "\nResponse: %s %s" % (r.status_code, r.text)
+        msg += "\n  Response: HTTP %s %s" % (r.status_code, r.reason)
+        try:
+            msg += " %s" % r.json()['status']
+        except:
+            pass
         self.critical(msg)
 
     def delete_event(self, resource_name):
@@ -4041,7 +4049,11 @@ class ObsPyck(QtGui.QMainWindow):
             return
 
         msg = "Deleting Event: %s" % resource_name
-        msg += "\n  Response: HTTP %s %s %s" % (r.status_code, r.reason, r.text)
+        msg += "\n  Response: HTTP %s %s" % (r.status_code, r.reason)
+        try:
+            msg += " %s" % r.json()['status']
+        except:
+            pass
         self.critical(msg)
 
     def clearEvent(self):
