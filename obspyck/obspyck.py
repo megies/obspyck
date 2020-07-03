@@ -3991,11 +3991,8 @@ class ObsPyck(QtGui.QMainWindow):
             self.error(msg)
             return
 
-        msg = "Uploading Event"
-        msg += "\nJane Account: %s" % self.jane_user
-        msg += "\nJane Server: %s" % self.jane_url_base
-        msg += "\nName: %s" % name
-        msg += "\nResponse: %s %s" % (r.status_code, r.text)
+        msg = "Uploading Event: %s" % name
+        msg += "\n  Response: HTTP %s %s %s" % (r.status_code, r.reason, r.text)
         self.critical(msg)
 
         if not self.catalog[0].origins:
@@ -4054,11 +4051,8 @@ class ObsPyck(QtGui.QMainWindow):
             self.error(msg)
             return
 
-        msg = "Deleting Event!"
-        msg += "\nJane Account: %s" % self.jane_user
-        msg += "\nJane Server: %s" % self.jane_url_base
-        msg += "\nName: %s" % resource_name
-        msg += "\nResponse: %s %s" % (r.status_code, r.text)
+        msg = "Deleting Event: %s" % resource_name
+        msg += "\n  Response: HTTP %s %s %s" % (r.status_code, r.reason, r.text)
         self.critical(msg)
 
     def clearEvent(self):
