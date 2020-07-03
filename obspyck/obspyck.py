@@ -487,7 +487,7 @@ class ObsPyck(QtGui.QMainWindow):
         """
         Cleanup and prepare for quit.
         Do:
-            - check if sysop duplicates are there
+            - check if public duplicates are there
             - remove temporary directory and all contents
         """
         if not skip_duplicate_check and self.jane_session:
@@ -721,12 +721,8 @@ class ObsPyck(QtGui.QMainWindow):
             msg = "Not connected to Jane ('event_server' not set in config, section [base]?)"
             self.error(msg)
             return
-        # if sysop event and information missing show error and abort upload
+        # if public event and information missing show error and abort upload
         if self.widgets.qCheckBox_public.isChecked():
-            if not self.widgets.qCheckBox_sysop.isChecked():
-                err = "Error: Enter password for \"sysop\"-account first."
-                self.error(err)
-                return
             ok, msg = self.checkForCompleteEvent()
             if not ok:
                 self.popupBadEventError(msg)
@@ -742,7 +738,7 @@ class ObsPyck(QtGui.QMainWindow):
             msg = "Not connected to Jane ('event_server' not set in config, section [base]?)"
             self.error(msg)
             return
-        # if sysop event and information missing show error and abort upload
+        # if public event and information missing show error and abort upload
         if self.widgets.qCheckBox_public.isChecked():
             ok, msg = self.checkForCompleteEvent()
             if not ok:
