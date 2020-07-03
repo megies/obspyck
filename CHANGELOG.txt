@@ -1,6 +1,9 @@
 master:
  - ..
 
+0.7.1
+ - minor fixes and changes (see #94)
+
 0.7.0
  - try to be even more robust when reading lat/lon from Hyp2000 output
  - switch all event fetching/pushing to Jane (see #93)
