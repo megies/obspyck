@@ -1135,6 +1135,16 @@ class SplitWriter():
             else:
                 obj.write(msg)
 
+    def flush(self, *args, **kwargs):
+        """
+        Delegates `flush()` calls to children if applicable
+        """
+        for obj in self.children:
+            try:
+                obj.flush(*args, **kwargs)
+            except AttributeError:
+                pass
+
 
 def getArrivalForPick(arrivals, pick):
     """
