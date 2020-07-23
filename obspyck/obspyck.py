@@ -4738,10 +4738,15 @@ class ObsPyck(QtWidgets.QMainWindow):
         qMessageBox.exec_()
 
 
+def except_hook(cls, exception, traceback):
+    sys.__excepthook__(cls, exception, traceback)
+
+
 def main():
     """
     Gets executed when the program starts.
     """
+    sys.excepthook = except_hook
     usage = (
         "\n %prog -t 2010-08-01T12:00:00 -d 30 "
         "[local waveform or station metadata files]"
