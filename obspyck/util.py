@@ -925,8 +925,8 @@ def setup_external_programs(options, config):
             returncode = sub.returncode
         else:
             returncode = sub.wait()
-        msg = "".join(sub.stdout.readlines())
-        err = "".join(sub.stderr.readlines())
+        msg = sub.stdout.read().decode('UTF-8')
+        err = sub.stderr.read().decode('UTF-8')
         for pattern, key in [("nlloc.*.*.*.loc.scat", 'scatter'),
                              ("nlloc.*.*.*.loc.hyp", 'summary')]:
             pattern = os.path.join(prog_dict['dir'], pattern)
@@ -945,8 +945,8 @@ def setup_external_programs(options, config):
             returncode = sub.returncode
         else:
             returncode = sub.wait()
-        msg = "".join(sub.stdout.readlines())
-        err = "".join(sub.stderr.readlines())
+        msg = sub.stdout.read().decode('UTF-8')
+        err = sub.stderr.read().decode('UTF-8')
         return (msg, err, returncode)
     prog_dict['Call'] = tmp
     #######################################################################
