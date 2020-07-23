@@ -16,13 +16,11 @@ import optparse
 import os
 import re
 import shutil
-import socket
 import sys
 import tempfile
 import warnings
 from collections import OrderedDict
-from ConfigParser import SafeConfigParser, NoOptionError, NoSectionError
-from StringIO import StringIO
+from configparser import SafeConfigParser, NoOptionError, NoSectionError
 
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import Qt
@@ -76,7 +74,7 @@ NSMAP = {"edb": NAMESPACE}
 ICON_PATH = os.path.join(os.path.dirname(
     sys.modules[__name__].__file__), 'obspyck{}.gif')
 
-if map(int, obspy.__version__.split('.')[:2]) < [1, 1]:
+if list(map(int, obspy.__version__.split('.')))[:2] < [1, 1]:
     msg = "Needing ObsPy version >= 1.1.0 (current version is: {})"
     warnings.warn(msg.format(obspy.__version__))
 
@@ -1526,7 +1524,7 @@ class ObsPyck(QtGui.QMainWindow):
                 assert(len(self.catalog[0].origins) > 0), "No origin data"
                 origin = self.catalog[0].origins[0]
                 self._rotateLQT(st, origin)
-            except Exception, e:
+            except Exception as e:
                 self.widgets.qToolButton_rotateLQT.setChecked(False)
                 err = str(e)
                 err += "\nError during rotating to LQT. Showing unrotated data."
@@ -1536,7 +1534,7 @@ class ObsPyck(QtGui.QMainWindow):
                 assert(len(self.catalog[0].origins) > 0), "No origin data"
                 origin = self.catalog[0].origins[0]
                 self._rotateZRT(st, origin)
-            except Exception, e:
+            except Exception as e:
                 self.widgets.qToolButton_rotateZRT.setChecked(False)
                 err = str(e)
                 err += "\nError during rotating to ZRT. Showing unrotated data."
@@ -2254,7 +2252,7 @@ class ObsPyck(QtGui.QMainWindow):
             sta_map_tmp.setdefault(sta[:4], set()).add(sta)
         sta_map = {}
         sta_map_reverse = {}
-        for sta_short, stations in sta_map_tmp.iteritems():
+        for sta_short, stations in sta_map_tmp.items():
             stations = list(stations)
             if len(stations) == 1:
                 sta_map[stations[0]] = sta_short
@@ -3994,7 +3992,7 @@ class ObsPyck(QtGui.QMainWindow):
         origin = self.catalog[0].origins[0]
         nlloc_scatter = origin.get("nonlinloc_scatter")
         if nlloc_scatter is not None:
-            sio = StringIO()
+            sio = io.StringIO()
             header = "\n".join([
                 "NonLinLoc Scatter",
                 "Origin ID: {}".format(str(origin.resource_id)),
@@ -4520,7 +4518,7 @@ class ObsPyck(QtGui.QMainWindow):
             self.error(msg)
             merge_events_in_catalog(self.catalog)
 
-        string_io = StringIO()
+        string_io = io.StringIO()
         catalog.write(string_io, format="QUAKEML")
         string_io.seek(0)
 
@@ -4761,14 +4759,13 @@ def main():
             src = os.path.join(
                 os.path.dirname(__file__), "example.cfg")
             shutil.copy(src, config_file)
-            print "created example config file: {}".format(config_file)
+            print(f"created example config file: {config_file}")
 
     if options.time is None:
         msg = 'Time option ("-t", "--time") must be specified.'
         raise Exception(msg)
-    print "Running ObsPyck version {} (location: {})".format(__version__,
-                                                             __file__)
-    print "using config file: {}".format(config_file)
+    print(f"Running ObsPyck version {__version__} (location: {__file__})")
+    print(f"using config file: {config_file}")
     config = SafeConfigParser(allow_no_value=True)
     # make all config keys case sensitive
     config.optionxform = str
