@@ -1005,18 +1005,18 @@ def gk2lonlat(x, y, m_to_km=True):
     """
     import pyproj
 
-    # pyproj has deprecated the old 'init="epsg:4326"' syntax
-    try:
-        proj_wgs84 = pyproj.Proj(projparams="epsg:4326")
-        proj_gk4 = pyproj.Proj(projparams="epsg:31468")
-    except Exception:
-        proj_wgs84 = pyproj.Proj(init="epsg:4326")
-        proj_gk4 = pyproj.Proj(init="epsg:31468")
     # convert to meters first
     if m_to_km:
         x = x * 1000.
         y = y * 1000.
-    lon, lat = pyproj.transform(proj_gk4, proj_wgs84, x, y)
+    # pyproj has deprecated the old 'init="epsg:4326"' syntax
+    try:
+        transformer = pyproj.Transformer.from_crs(31468, 4326, always_xy=True)
+        lon, lat = transformer.transform(x, y)
+    except Exception:
+        proj_wgs84 = pyproj.Proj(init="epsg:4326")
+        proj_gk4 = pyproj.Proj(init="epsg:31468")
+        lon, lat = pyproj.transform(proj_gk4, proj_wgs84, x, y)
     return (lon, lat)
 
 
