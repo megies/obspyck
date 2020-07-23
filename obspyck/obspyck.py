@@ -4517,11 +4517,11 @@ class ObsPyck(QtWidgets.QMainWindow):
             self.error(msg)
             merge_events_in_catalog(self.catalog)
 
-        string_io = io.StringIO()
-        catalog.write(string_io, format="QUAKEML")
-        string_io.seek(0)
+        with io.BytesIO() as fh:
+            catalog.write(fh, format="QUAKEML")
+            fh.seek(0)
+            self.update_qml_text(fh.read().decode('UTF-8'))
 
-        self.update_qml_text(string_io.read())
         ev = self.catalog[0]
 
         public = ev.get("extra", {}).get('public', {}).get('value', "false")
