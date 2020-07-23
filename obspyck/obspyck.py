@@ -3389,8 +3389,9 @@ class ObsPyck(QtWidgets.QMainWindow):
             else:
                 stationColor = 'gray'
             # plot stations at respective coordinates with names
-            axEM.scatter((coords.longitude,), (coords.latitude,), s=300,
-                         marker='v', color='', edgecolor=stationColor)
+            axEM.plot((coords.longitude,), (coords.latitude,), markersize=17,
+                      marker='v', ls='', color=(0, 0, 0, 0),
+                      markeredgecolor=stationColor)
             axEM.text(coords.longitude, coords.latitude, '  ' + sta,
                       color=stationColor, va='top', family='monospace')
             for _i, (pick, arrival) in enumerate([[pick_p, arrival_p], [pick_s, arrival_s]]):
@@ -3423,7 +3424,7 @@ class ObsPyck(QtWidgets.QMainWindow):
 
         if len(self.scatterMagLon) > 0:
             self.scatterMag = axEM.scatter(self.scatterMagLon,
-                    self.scatterMagLat, s=150, marker='v', color='',
+                    self.scatterMagLat, s=150, marker='v', color=(0, 0, 0, 0),
                     edgecolor='black', picker=10)
 
         axEM.set_xlabel('Longitude')
