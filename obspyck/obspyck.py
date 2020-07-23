@@ -4787,7 +4787,7 @@ def main():
     # Create the GUI application
     qApp = QtWidgets.QApplication(sys.argv)
     obspyck = ObsPyck(clients, streams, options, KEYS, config, inventories)
-    qApp.connect(qApp, QtCore.SIGNAL("aboutToQuit()"), obspyck.cleanup)
+    qApp.aboutToQuit.connect(obspyck.cleanup)
     os._exit(qApp.exec_())
 
 
