@@ -20,7 +20,7 @@ import sys
 import tempfile
 import warnings
 
-import PyQt4
+from PyQt5 import QtWidgets
 import numpy as np
 import matplotlib as mpl
 from matplotlib.colors import ColorConverter
@@ -1124,7 +1124,7 @@ class SplitWriter():
         Sends msg to all childrens write method.
         """
         for obj in self.children:
-            if isinstance(obj, PyQt4.QtGui.QPlainTextEdit):
+            if isinstance(obj, QtWidgets.QPlainTextEdit):
                 if msg == '\n':
                     return
                 if msg.endswith('\n'):

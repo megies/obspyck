@@ -7,7 +7,7 @@ INSTALL_REQUIRES = [
     'obspy>=1.1.0',
     # pyqt can not be declared as a dependency cleanly it seems, see
     # http://stackoverflow.com/questions/4628519/
-    # 'PyQt4',
+    # 'PyQt5',
     'numpy',
     'scipy',
     'matplotlib',
