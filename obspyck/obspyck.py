@@ -23,7 +23,6 @@ from collections import OrderedDict
 from configparser import SafeConfigParser, NoOptionError, NoSectionError
 
 from PyQt5 import QtCore, QtWidgets, QtGui
-from PyQt4.QtCore import Qt
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -344,7 +343,7 @@ class ObsPyck(QtWidgets.QMainWindow):
             #self.showMaximized()
             self.show()
             # XXX XXX the good old focus issue again!?! no events get to the mpl canvas
-            # XXX self.canv.setFocusPolicy(Qt.WheelFocus)
+            # XXX self.canv.setFocusPolicy(QtCore.WheelFocus)
             #print self.canv.hasFocus()
 
             if self.jane_session:
@@ -4536,10 +4535,12 @@ class ObsPyck(QtWidgets.QMainWindow):
         index = 0
         event_quakeml_type = ev.event_type
         if event_quakeml_type is not None:
-            index = self.widgets.qComboBox_eventType.findText(event_quakeml_type.lower(), Qt.MatchExactly)
+            index = self.widgets.qComboBox_eventType.findText(
+                event_quakeml_type.lower(), QtCore.Qt.MatchExactly)
             if index == -1:
                 self.widgets.qComboBox_eventType.addItem(event_quakeml_type)
-                index = self.widgets.qComboBox_eventType.findText(event_quakeml_type.lower(), Qt.MatchExactly)
+                index = self.widgets.qComboBox_eventType.findText(
+                    event_quakeml_type.lower(), QtCore.Qt.MatchExactly)
         self.widgets.qComboBox_eventType.setCurrentIndex(index)
 
         # remove duplicate picks (unless explicitly opted out by user, added by
