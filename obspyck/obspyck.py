@@ -1829,14 +1829,14 @@ class ObsPyck(QtWidgets.QMainWindow):
         # Use bitwise or to compare...hope this is correct.
         if ev.modifiers() == QtCore.Qt.NoModifier:
             # Zoom in.
-            if ev.delta() < 0:
+            if ev.angleDelta().y() < 0:
                 left -= (mpl_ev.xdata - left) / 2
                 right += (right - mpl_ev.xdata) / 2
                 if self.widgets.qToolButton_showMap.isChecked():
                     top -= (mpl_ev.ydata - top) / 2
                     bottom += (bottom - mpl_ev.ydata) / 2
             # Zoom out.
-            elif ev.delta() > 0:
+            elif ev.angleDelta().y() > 0:
                 left += (mpl_ev.xdata - left) / 2
                 right -= (right - mpl_ev.xdata) / 2
                 if self.widgets.qToolButton_showMap.isChecked():
@@ -1847,20 +1847,20 @@ class ObsPyck(QtWidgets.QMainWindow):
                 '%sModifier' % self.keys['switchWheelZoomAxis'].capitalize()):
             if self.widgets.qToolButton_spectrogram.isChecked():
             # Zoom in on wheel-up
-                if ev.delta() < 0:
+                if ev.angleDelta().y() < 0:
                     top -= (mpl_ev.ydata - top) / 2
                     bottom += (bottom - mpl_ev.ydata) / 2
                 # Zoom out on wheel-down
-                elif ev.delta() > 0:
+                elif ev.angleDelta().y() > 0:
                     top += (mpl_ev.ydata - top) / 2
                     bottom -= (bottom - mpl_ev.ydata) / 2
             else:
             # Zoom in on wheel-up
-                if ev.delta() < 0:
+                if ev.angleDelta().y() < 0:
                     top *= 2
                     bottom *= 2
                 # Zoom out on wheel-down
-                elif ev.delta() > 0:
+                elif ev.angleDelta().y() > 0:
                     top /= 2
                     bottom /= 2
         # Still able to use the dictionary.
@@ -1875,11 +1875,11 @@ class ObsPyck(QtWidgets.QMainWindow):
                 pass
             else:
                 # scroll left
-                if ev.delta() * direction < 0:
+                if ev.angleDelta().y() * direction < 0:
                     left -= shift
                     right -= shift
                 # scroll right
-                elif ev.delta() * direction > 0:
+                elif ev.angleDelta().y() * direction > 0:
                     left += shift
                     right += shift
         ax.set_xbound(lower=left, upper=right)
