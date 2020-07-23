@@ -1032,7 +1032,7 @@ def readNLLocScatter(scat_filename, textviewStdErrImproved):
     """
     # read data, omit the first 4 values (header information) and reshape
     data = np.fromfile(scat_filename, dtype="<f4").astype("float")[4:]
-    data = data.reshape((len(data)/4, 4)).swapaxes(0, 1)
+    data = data.reshape((-1, 4)).swapaxes(0, 1)
     data[0], data[1] = gk2lonlat(data[0], data[1])
     return data.T
 
