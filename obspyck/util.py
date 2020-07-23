@@ -1344,7 +1344,8 @@ def _save_input_data(streams, inventories, directory):
     st = Stream()
     for st_ in streams:
         st += st_
-    st.write(os.path.join(directory, 'waveforms.mseed'), format='MSEED')
+    with warnings.catch_warnings(record=True):
+        st.write(os.path.join(directory, 'waveforms.mseed'), format='MSEED')
     # write inventories
     inv = Inventory(networks=[], source='')
     for inv_ in inventories:
