@@ -1,5 +1,7 @@
 qt_designer: qt_designer.ui
-	pyuic4 qt_designer.ui > obspyck/qt_designer.py
+	pyuic5 qt_designer.ui > obspyck/qt_designer.py
+	# for whatever reason we have to manually fix the local import..
+	sed --in-place 's#from util import QMplCanvas#from .util import QMplCanvas#' obspyck/qt_designer.py
 
 # making a source distribution release (commented out because the git clean
 # removes all local changes and untracked files)

@@ -314,7 +314,7 @@ def readQuakeML(*args, **kwargs):
     from obspy.io.quakeml.core import _read_quakeml
     ret = obspy.io.quakeml.core._read_quakeml(*args, **kwargs)
     # reset original event classes
-    for classname, class_ in bkp.iteritems():
+    for classname, class_ in bkp.items():
         obspy.io.quakeml.core.__dict__[classname] = bkp[classname]
     return ret
 
