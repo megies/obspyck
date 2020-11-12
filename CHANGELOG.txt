@@ -1,6 +1,9 @@
 master:
  - ..
 
+0.8.0
+ - port to Python 3 and Qt 5 (see #96)
+
 0.7.2
  - also fetch picks-only events from Jane (see #95)
 
