@@ -4,6 +4,9 @@ import warnings
 from copy import deepcopy
 
 import obspy.core.event
+import obspy.io
+import obspy.io.quakeml
+import obspy.io.quakeml.core
 from obspy import UTCDateTime
 from obspy.core.event import WaveformStreamID, ResourceIdentifier, \
     TimeWindow, CreationInfo, Comment
