@@ -1,6 +1,10 @@
 master:
  - ..
 
+0.8.1
+ - fix reading QuakeML after Python3 port (see #98)
+ - fix calling hyp2000 binary after Python3 port (see #99)
+
 0.8.0
  - port to Python 3 and Qt 5 (see #96)
 
