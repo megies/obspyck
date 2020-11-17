@@ -900,7 +900,7 @@ def setup_external_programs(options, config):
                 cwd=prog_dict['dir'], env=prog_dict['env'],
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        input = open(prog_dict['files']['control'], "rt").read()
+        input = open(prog_dict['files']['control'], "rb").read()
         (msg, err) = sub.communicate(input)
         if system == "Darwin":
             returncode = sub.returncode
