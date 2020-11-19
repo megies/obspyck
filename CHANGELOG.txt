@@ -1,5 +1,6 @@
 master:
- - ..
+ - strip overlong decimals for x-Axis coordinates, especially in the matplotlib
+   mouse pointer coordinate info pane
 
 0.8.1
  - fix reading QuakeML after Python3 port (see #98)

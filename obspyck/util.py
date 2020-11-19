@@ -1096,7 +1096,7 @@ def formatXTicklabels(x, *pos):
         info.append('%imin' % minutes)
 
     if seconds != 0:
-        info.append("%ss" % seconds)
+        info.append(("%.3f" % seconds).rstrip('0').rstrip('.') + 's')
 
     return ' '.join(info)
 
