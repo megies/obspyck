@@ -2,6 +2,9 @@ master:
  - strip overlong decimals for x-Axis coordinates, especially in the matplotlib
    mouse pointer coordinate info pane
  - make it possible to set a custom FMTSTR for SDS clients
+ - fix reusing existing matplotlib Axes on newer matplotlibs (which disallows
+   setting things like Axes.lines, so we have to use the existing methods on
+   these objects instead, like .pop())
 
 0.8.1
  - fix reading QuakeML after Python3 port (see #98)

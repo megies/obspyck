@@ -4083,11 +4083,14 @@ class ObsPyck(QtWidgets.QMainWindow):
         ylims = [list(ax.get_ylim()) for ax in self.axs]
         for _i, ax in enumerate(self.axs):
             # first line is waveform, leave it
-            ax.lines = ax.lines[:1]
+            while len(ax.lines) > 1:
+                ax.lines.pop()
             # first text is trace id, leave it
-            ax.texts = ax.texts[:1]
+            while len(ax.texts) > 1:
+                ax.texts.pop()
             # all patches are related to picks/amplitudes right now, remove all
-            ax.patches = []
+            while len(ax.patches):
+                ax.patches.pop()
             ids.append(st[_i].id)
         # plot picks and arrivals
         # seiscomp does not store location code with picks, so allow to
