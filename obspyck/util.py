@@ -725,6 +725,9 @@ def connect_to_server(server_name, config, clients):
             kwargs[key] = value
 
     client = client_classes[server_type](**kwargs)
+    # ugly workaround to be able to set a custom FMTSTR for SDS clients
+    if server_type == 'sds' and config.has_option(server_name, 'FMTSTR'):
+        client.FMTSTR = config.get(server_name, 'FMTSTR')
     clients[server_name] = client
     return client
 

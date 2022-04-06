@@ -1,6 +1,7 @@
 master:
  - strip overlong decimals for x-Axis coordinates, especially in the matplotlib
    mouse pointer coordinate info pane
+ - make it possible to set a custom FMTSTR for SDS clients
 
 0.8.1
  - fix reading QuakeML after Python3 port (see #98)
