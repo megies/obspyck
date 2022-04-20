@@ -30,9 +30,7 @@ from matplotlib.widgets import MultiCursor as MplMultiCursor
 
 import obspy
 from obspy import Trace, Inventory
-import obspy.clients.arclink
 from obspy import UTCDateTime, read_inventory, read, Stream
-from obspy.clients.arclink import Client as ArcLinkClient
 from obspy.clients.fdsn import Client as FDSNClient
 from obspy.clients.filesystem.sds import Client as SDSClient
 from obspy.clients.seedlink import Client as SeedlinkClient
@@ -44,8 +42,6 @@ from . import __version__
 from .rotate_to_zne import (
     _rotate_specific_channels_to_zne, get_orientation_from_parser,
     get_orientation)
-
-obspy.clients.arclink.client.MAX_REQUESTS = 200
 
 mpl.rc('figure.subplot', left=0.05, right=0.98, bottom=0.10, top=0.92,
        hspace=0.28)
@@ -326,13 +322,7 @@ def fetch_waveforms_with_metadata(options, args, config):
     """
     Sets up obspy clients and fetches waveforms and metadata according to
     command line options.
-    Now also fetches data via arclink if --arclink-ids is used.
     Args are tried to read as local waveform files or metadata files.
-
-    XXX Notes: XXX
-     - there is a problem in the arclink client with duplicate traces in
-       fetched streams. therefore at the moment it might be necessary to use
-       "-m overwrite" option.
 
     :returns: (dictionary with clients,
                list(:class:`obspy.core.stream.Stream`s),
@@ -452,8 +442,12 @@ def fetch_waveforms_with_metadata(options, args, config):
     print("-" * 80)
     for seed_id, server in sorted(seed_id_lookup.items()):
         server_type = config.get(server, "type")
-        if server_type not in ("seishub", "fdsn", "jane", "arclink",
-                               "seedlink", "sds"):
+        if server_type == "arclink":
+            msg = ("Arclink was removed in obspy 1.3.0 and therefore is not "
+                   "supported in obspyck anymore (config section "
+                   "'{}')").format(server)
+            raise NotImplementedError(msg)
+        if server_type not in ("seishub", "fdsn", "jane", "seedlink", "sds"):
             msg = ("Unknown server type '{}' in server definition section "
                    "'{}' in config file.").format(server_type, server)
             raise NotImplementedError(msg)
@@ -491,25 +485,6 @@ def fetch_waveforms_with_metadata(options, args, config):
                         bio.seek(0)
                         inv = read_inventory(bio, format='XSEED')
                         inventories.append(inv)
-                    # look in all metadata available, but prefer metadata from
-                    # same source (by putting it in front in list)
-                    all_inventories = inventories + all_inventories
-                    _attach_metadata(st, all_inventories)
-            # ArcLink
-            elif server_type == "arclink":
-                st = client.get_waveforms(
-                    network=net, station=sta, location=loc, channel=cha,
-                    starttime=t1, endtime=t2)
-                if not no_metadata:
-                    inventories = []
-                    for net_, sta_, loc_, cha_ in set([
-                            tuple(tr.id.split(".")) for tr in st]):
-                        bio = io.BytesIO()
-                        client.save_response(bio, net_, sta_, loc_, cha_,
-                                             t1-10, t2+10)
-                        bio.seek(0)
-                        inventories.append(
-                            read_inventory(bio, format='SEED'))
                     # look in all metadata available, but prefer metadata from
                     # same source (by putting it in front in list)
                     all_inventories = inventories + all_inventories
@@ -620,10 +595,6 @@ def fetch_waveforms_with_metadata(options, args, config):
                 if tr.stats._format == 'GSE2':
                     apply_gse2_calib(tr)
                 tr.stats['_format'] = "SeisHub"
-        # ArcLink
-        elif server_type == "arclink":
-            for tr in st:
-                tr.stats['_format'] = "ArcLink"
         # FDSN (or JANE)
         elif server_type in ("fdsn", "jane"):
             for tr in st:
@@ -677,11 +648,8 @@ def connect_to_server(server_name, config, clients):
         return clients[server_name]
 
     server_type = config.get(server_name, "type")
-    # # doesnt work on obspy <1.0, so set it above on module level:
-    # ArcLinkClient.max_status_requests = 2000
 
     client_classes = {
-        "arclink": ArcLinkClient,
         "fdsn": FDSNClient,
         "jane": FDSNClient,
         "seishub": SeisHubClient,
@@ -695,9 +663,6 @@ def connect_to_server(server_name, config, clients):
         raise NotImplementedError(msg)
 
     config_keys = {
-        "arclink": (
-            "host", "port", "user", "password", "institution", "timeout",
-            "dcid_key_file", "debug", "command_delay", "status_delay"),
         "fdsn": (
             "base_url", "user", "password", "user_agent", "debug", "timeout"),
         "jane": (

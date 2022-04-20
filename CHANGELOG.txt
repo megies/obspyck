@@ -5,6 +5,8 @@ master:
  - fix reusing existing matplotlib Axes on newer matplotlibs (which disallows
    setting things like Axes.lines, so we have to use the existing methods on
    these objects instead, like .pop())
+ - removed support for ArcLink clients, since it was dropped in obspy 1.3.0
+   (and main servers have been shut down years ago)
 
 0.8.1
  - fix reading QuakeML after Python3 port (see #98)
