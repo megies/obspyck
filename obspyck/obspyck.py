@@ -73,7 +73,7 @@ NSMAP = {"edb": NAMESPACE}
 ICON_PATH = os.path.join(os.path.dirname(
     sys.modules[__name__].__file__), 'obspyck{}.gif')
 
-if list(map(int, obspy.__version__.split('.')))[:2] < [1, 1]:
+if list(map(int, obspy.__version__.split('.')[:2])) < [1, 1]:
     msg = "Needing ObsPy version >= 1.1.0 (current version is: {})"
     warnings.warn(msg.format(obspy.__version__))
 
