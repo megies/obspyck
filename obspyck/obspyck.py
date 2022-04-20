@@ -3193,8 +3193,12 @@ class ObsPyck(QtWidgets.QMainWindow):
         t = []
         alphas = {'Z': 1.0, 'L': 1.0,
                   'N': 0.4, 'Q': 0.4, 'R': 0.4, 'E': 0.4, 'T': 0.4}
+        ax = None
         for i, st in enumerate(self.streams_bkp):
             st = st.copy()
+            ax = fig.add_subplot(stNum, 1, i+1, sharex=ax, sharey=ax)
+            axs.append(ax)
+            trans.append(mpl.transforms.blended_transform_factory(ax.transData, ax.transAxes))
             for j, tr in enumerate(st):
                 net, sta, loc, cha = tr.id.split(".")
                 color = COMPONENT_COLORS.get(cha[-1], "gray")
@@ -3210,17 +3214,6 @@ class ObsPyck(QtWidgets.QMainWindow):
                 if len(sampletimes) == tr.stats.npts + 1:
                     sampletimes = sampletimes[:-1]
                 t.append(sampletimes)
-                if i == 0:
-                    ax = fig.add_subplot(stNum, 1, i+1)
-                else:
-                    ax = fig.add_subplot(stNum, 1, i+1, sharex=axs[0], sharey=axs[0])
-                    ax.xaxis.set_ticks_position("top")
-                # only add axes for first trace in each stream to avoid
-                # duplicates
-                if j == 0:
-                    axs.append(ax)
-                    trans.append(mpl.transforms.blended_transform_factory(ax.transData, ax.transAxes))
-                ax.xaxis.set_major_formatter(FuncFormatter(formatXTicklabels))
                 # normalize with overall sensitivity and convert to nm/s
                 # if not explicitly deactivated on command line
                 if self.config.getboolean("base", "normalization") and not self.config.getboolean("base", "no_metadata"):
@@ -3264,6 +3257,8 @@ class ObsPyck(QtWidgets.QMainWindow):
             amplitudes = self.getAmplitudes(network=net, station=sta, location=loc)
             for amplitude in amplitudes:
                 self.drawAmplitude(ax, amplitude, scaling=scaling)
+        axs[0].xaxis.set_ticks_position("top")
+        axs[-1].xaxis.set_major_formatter(FuncFormatter(formatXTicklabels))
         self.drawIds()
         axs[-1].xaxis.set_ticks_position("both")
         label = self.TREF.isoformat().replace("T", "  ")
