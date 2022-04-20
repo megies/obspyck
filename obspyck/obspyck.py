@@ -3048,8 +3048,6 @@ class ObsPyck(QtWidgets.QMainWindow):
                     paz = None
                 self.debug("PAZ/response: " + str(paz))
                 if paz is None:
-                    # XXX TODO we could fetch the metadata from seishub if we
-                    # don't have a trace with PAZ and still use the stored info
                     msg = ("Skipping amplitude for station "
                            "'%s': Missing PAZ/response metadata" % sta)
                     self.error(msg)

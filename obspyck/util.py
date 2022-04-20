@@ -34,7 +34,6 @@ from obspy import UTCDateTime, read_inventory, read, Stream
 from obspy.clients.fdsn import Client as FDSNClient
 from obspy.clients.filesystem.sds import Client as SDSClient
 from obspy.clients.seedlink import Client as SeedlinkClient
-from obspy.clients.seishub import Client as SeisHubClient
 from obspy.geodetics.base import gps2dist_azimuth
 from obspy.io.xseed import Parser
 
@@ -447,6 +446,11 @@ def fetch_waveforms_with_metadata(options, args, config):
                    "supported in obspyck anymore (config section "
                    "'{}')").format(server)
             raise NotImplementedError(msg)
+        if server_type == "seishub":
+            msg = ("SeisHub was removed in obspy >1.3 and therefore is not "
+                   "supported in obspyck anymore (config section "
+                   "'{}')").format(server)
+            raise NotImplementedError(msg)
         if server_type not in ("seishub", "fdsn", "jane", "seedlink", "sds"):
             msg = ("Unknown server type '{}' in server definition section "
                    "'{}' in config file.").format(server_type, server)
@@ -468,29 +472,8 @@ def fetch_waveforms_with_metadata(options, args, config):
             sys.stdout.write("\r%s (%s: %s) ..." % (
                 seed_id.ljust(15), server_type, server))
             sys.stdout.flush()
-            # SeisHub
-            if server_type == "seishub":
-                st = client.waveform.get_waveforms(
-                    net, sta, loc, cha, t1, t2, apply_filter=True)
-                if not no_metadata:
-                    data = client.station.get_list(
-                        network=net, station=sta, datetime=t1)
-                    if len(data) == 0:
-                        msg = "No station metadata on server."
-                        raise Exception(msg)
-                    inventories = []
-                    for d in data:
-                        bio = io.BytesIO(
-                            client.station.get_resource(d['resource_name']))
-                        bio.seek(0)
-                        inv = read_inventory(bio, format='XSEED')
-                        inventories.append(inv)
-                    # look in all metadata available, but prefer metadata from
-                    # same source (by putting it in front in list)
-                    all_inventories = inventories + all_inventories
-                    _attach_metadata(st, all_inventories)
             # FDSN (or JANE)
-            elif server_type in ("fdsn", "jane"):
+            if server_type in ("fdsn", "jane"):
                 st = client.get_waveforms(
                     network=net, station=sta, location=loc, channel=cha,
                     starttime=t1, endtime=t2)
@@ -589,14 +572,8 @@ def fetch_waveforms_with_metadata(options, args, config):
             if config.has_section("rotate_channels"):
                 if net_sta_loc in config.options("rotate_channels"):
                     rotate_channels(st, net, sta, loc, config)
-        # SeisHub
-        if server_type == "seishub":
-            for tr in st:
-                if tr.stats._format == 'GSE2':
-                    apply_gse2_calib(tr)
-                tr.stats['_format'] = "SeisHub"
         # FDSN (or JANE)
-        elif server_type in ("fdsn", "jane"):
+        if server_type in ("fdsn", "jane"):
             for tr in st:
                 tr.stats['_format'] = "FDSN"
         # seedlink
@@ -652,7 +629,6 @@ def connect_to_server(server_name, config, clients):
     client_classes = {
         "fdsn": FDSNClient,
         "jane": FDSNClient,
-        "seishub": SeisHubClient,
         "seedlink": SeedlinkClient,
         "sds": SDSClient,
         }
@@ -667,8 +643,6 @@ def connect_to_server(server_name, config, clients):
             "base_url", "user", "password", "user_agent", "debug", "timeout"),
         "jane": (
             "base_url", "user", "password", "user_agent", "debug", "timeout"),
-        "seishub": (
-            "base_url", "user", "password", "timeout", "debug", "retries"),
         "seedlink": (
             "server", "port", "timeout", "debug"),
         "sds": (
