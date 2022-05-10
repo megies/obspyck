@@ -740,17 +740,22 @@ def merge_check_and_cleanup_streams(streams, options, config):
         sta_list.add(net_sta)
     # demean traces if not explicitly deactivated on command line
     if config.getboolean("base", "zero_mean"):
+        to_remove = []
         for st in streams:
             try:
                 st.detrend('simple')
                 st.detrend('constant')
             except NotImplementedError as e:
-                if "Trace with masked values found." in e.message:
+                if "Trace with masked values found." in str(e):
+                    to_remove.append(st)
                     msg = 'Detrending/demeaning not possible for station ' + \
-                          '(masked Traces): %s' % net_sta
+                          '"%s.%s" (masked Traces). Removing stream' % (
+                              st[0].stats.network, st[0].stats.station)
                     warn_msg += msg + "\n"
                 else:
-                    raise
+                    raise e
+        for st in to_remove:
+            streams.remove(st)
     return (warn_msg, merge_msg, streams)
 
 
