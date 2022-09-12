@@ -3356,8 +3356,9 @@ class ObsPyck(QtWidgets.QMainWindow):
         link = "http://maps.google.de/maps?f=q&q=%.6f,%.6f" % \
                (o.latitude, o.longitude)
         self.info(link)
-        link = "http://geoportal.bayern.de/bayernatlas/?lat=%.6f&lon=%.6f" % \
-               (o.latitude, o.longitude)
+        link = ("http://geoportal.bayern.de/bayernatlas/"
+                "?lat=%.6f&lon=%.6f&crosshair=marker" % \
+                    (o.latitude, o.longitude))
         self.info(link)
 
         self.scatterMagIndices = []
