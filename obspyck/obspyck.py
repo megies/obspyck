@@ -1827,43 +1827,67 @@ class ObsPyck(QtWidgets.QMainWindow):
         (bottom, top) = ax.get_ybound()
         # Get the keyboard modifiers. They are a enum type.
         # Use bitwise or to compare...hope this is correct.
+
+        # no modifier: zoom time axis in timeseries view spectrogram view or
+        # zoom the map
         if ev.modifiers() == QtCore.Qt.NoModifier:
-            # Zoom in.
+            # wheel down, zoom out
             if ev.angleDelta().y() < 0:
-                left -= (mpl_ev.xdata - left) / 2
-                right += (right - mpl_ev.xdata) / 2
+                left -= abs(left - mpl_ev.xdata) / 2 * \
+                    self.config.getfloat('misc', 'scrollWheelPercentage')
+                right += abs(right - mpl_ev.xdata) / 2 * \
+                    self.config.getfloat('misc', 'scrollWheelPercentage')
                 if self.widgets.qToolButton_showMap.isChecked():
-                    top -= (mpl_ev.ydata - top) / 2
-                    bottom += (bottom - mpl_ev.ydata) / 2
-            # Zoom out.
+                    top += abs(top - mpl_ev.ydata) / 2 * \
+                        self.config.getfloat('misc', 'scrollWheelPercentage')
+                    bottom -= abs(bottom - mpl_ev.ydata) / 2 * \
+                        self.config.getfloat('misc', 'scrollWheelPercentage')
+            # wheel up, zoom in
             elif ev.angleDelta().y() > 0:
-                left += (mpl_ev.xdata - left) / 2
-                right -= (right - mpl_ev.xdata) / 2
+                left += abs(left - mpl_ev.xdata) / 2 * \
+                    self.config.getfloat('misc', 'scrollWheelPercentage')
+                right -= abs(right - mpl_ev.xdata) / 2 * \
+                    self.config.getfloat('misc', 'scrollWheelPercentage')
                 if self.widgets.qToolButton_showMap.isChecked():
-                    top += (mpl_ev.ydata - top) / 2
-                    bottom -= (bottom - mpl_ev.ydata) / 2
+                    top -= abs(top - mpl_ev.ydata) / 2 * \
+                        self.config.getfloat('misc', 'scrollWheelPercentage')
+                    bottom += abs(bottom - mpl_ev.ydata) / 2 * \
+                        self.config.getfloat('misc', 'scrollWheelPercentage')
         # Still able to use the dictionary.
+        # switch to zoomin in y direction in timeseries/spectrogram
         elif ev.modifiers() == getattr(QtCore.Qt,
                 '%sModifier' % self.keys['switchWheelZoomAxis'].capitalize()):
+            # spectrogram view
             if self.widgets.qToolButton_spectrogram.isChecked():
-            # Zoom in on wheel-up
+                # wheel down, zoom out
                 if ev.angleDelta().y() < 0:
-                    top -= (mpl_ev.ydata - top) / 2
-                    bottom += (bottom - mpl_ev.ydata) / 2
-                # Zoom out on wheel-down
+                    top += abs(top - mpl_ev.ydata) / 2 * \
+                        self.config.getfloat('misc', 'scrollWheelPercentage')
+                    bottom -= abs(bottom - mpl_ev.ydata) / 2 * \
+                        self.config.getfloat('misc', 'scrollWheelPercentage')
+                # wheel up, zoom in
                 elif ev.angleDelta().y() > 0:
-                    top += (mpl_ev.ydata - top) / 2
-                    bottom -= (bottom - mpl_ev.ydata) / 2
+                    top -= abs(top - mpl_ev.ydata) / 2 * \
+                        self.config.getfloat('misc', 'scrollWheelPercentage')
+                    bottom += abs(bottom - mpl_ev.ydata) / 2 * \
+                        self.config.getfloat('misc', 'scrollWheelPercentage')
+            # timeseries view
             else:
-            # Zoom in on wheel-up
+                # wheel down, zoom out
+                _scaling = 1 + \
+                    self.config.getfloat('misc', 'scrollWheelPercentage')
                 if ev.angleDelta().y() < 0:
-                    top *= 2
-                    bottom *= 2
-                # Zoom out on wheel-down
+                    top *= _scaling
+                    bottom *= _scaling
+                # wheel up, zoom in
                 elif ev.angleDelta().y() > 0:
-                    top /= 2
-                    bottom /= 2
+                    top /= _scaling
+                    bottom /= _scaling
         # Still able to use the dictionary.
+        # there is a bug with the wheel angle always reported as "0" when alt
+        # key modifier is present, reported at pyqt/python-qt5 as issue 73,
+        # so currently if Alt key is used as a modifier the scrolling does not
+        # work
         elif ev.modifiers() == getattr(
                 QtCore.Qt,
                 '%sModifier' % self.keys['scrollWheelZoom'].capitalize()):
