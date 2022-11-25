@@ -1298,3 +1298,19 @@ def _save_input_data(streams, inventories, directory):
     for inv_ in inventories:
         inv += inv_
     inv.write(os.path.join(directory, 'inventory.xml'), format='STATIONXML')
+
+
+def wheel_angle(ev):
+    """
+    Get mouse wheel angle from a `QWheelEvent`
+    """
+    # most wheel scrolling should be in "y"
+    angle = ev.angleDelta().y()
+    if angle:
+        return angle
+    # sometimes angle is in "x", this supposedly should only happen when Alt
+    # key is held down
+    # https://bugreports.qt.io/browse/QTBUG-78550
+    # https://bugreports.qt.io/browse/QTBUG-78550
+    angle = ev.angleDelta().x()
+    return angle

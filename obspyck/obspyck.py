@@ -61,7 +61,7 @@ from .util import (
     AXVLINEWIDTH, PROGRAMS, getArrivalForPick, POLARITY_2_FOCMEC, gk2lonlat,
     errorEllipsoid2CartesianErrors, readNLLocScatter, ONE_SIGMA, VERSION_INFO,
     MAG_MARKER, getPickForArrival, COMMANDLINE_OPTIONS, set_matplotlib_defaults,
-    check_keybinding_conflicts)
+    check_keybinding_conflicts, wheel_angle)
 from .event_helper import Catalog, Event, Origin, Pick, Arrival, \
     Magnitude, StationMagnitude, StationMagnitudeContribution, \
     FocalMechanism, ResourceIdentifier, ID_ROOT, readQuakeML, Amplitude, \
@@ -1817,6 +1817,7 @@ class ObsPyck(QtWidgets.QMainWindow):
         # create mpl event from QEvent to get cursor position in data coords
         x = ev.x()
         y = self.canv.height() - ev.y()
+        angle = wheel_angle(ev)
         mpl_ev = MplMouseEvent("scroll_event", self.canv, x, y, "up", guiEvent=ev)
         # Calculate and set new axes boundaries from old ones
         if self.widgets.qToolButton_showMap.isChecked():
@@ -1832,7 +1833,7 @@ class ObsPyck(QtWidgets.QMainWindow):
         # zoom the map
         if ev.modifiers() == QtCore.Qt.NoModifier:
             # wheel down, zoom out
-            if ev.angleDelta().y() < 0:
+            if angle < 0:
                 left -= abs(left - mpl_ev.xdata) / 2 * \
                     self.config.getfloat('misc', 'scrollWheelPercentage')
                 right += abs(right - mpl_ev.xdata) / 2 * \
@@ -1843,7 +1844,7 @@ class ObsPyck(QtWidgets.QMainWindow):
                     bottom -= abs(bottom - mpl_ev.ydata) / 2 * \
                         self.config.getfloat('misc', 'scrollWheelPercentage')
             # wheel up, zoom in
-            elif ev.angleDelta().y() > 0:
+            elif angle > 0:
                 left += abs(left - mpl_ev.xdata) / 2 * \
                     self.config.getfloat('misc', 'scrollWheelPercentage')
                 right -= abs(right - mpl_ev.xdata) / 2 * \
@@ -1860,13 +1861,13 @@ class ObsPyck(QtWidgets.QMainWindow):
             # spectrogram view
             if self.widgets.qToolButton_spectrogram.isChecked():
                 # wheel down, zoom out
-                if ev.angleDelta().y() < 0:
+                if angle < 0:
                     top += abs(top - mpl_ev.ydata) / 2 * \
                         self.config.getfloat('misc', 'scrollWheelPercentage')
                     bottom -= abs(bottom - mpl_ev.ydata) / 2 * \
                         self.config.getfloat('misc', 'scrollWheelPercentage')
                 # wheel up, zoom in
-                elif ev.angleDelta().y() > 0:
+                elif angle > 0:
                     top -= abs(top - mpl_ev.ydata) / 2 * \
                         self.config.getfloat('misc', 'scrollWheelPercentage')
                     bottom += abs(bottom - mpl_ev.ydata) / 2 * \
@@ -1876,11 +1877,11 @@ class ObsPyck(QtWidgets.QMainWindow):
                 # wheel down, zoom out
                 _scaling = 1 + \
                     self.config.getfloat('misc', 'scrollWheelPercentage')
-                if ev.angleDelta().y() < 0:
+                if angle < 0:
                     top *= _scaling
                     bottom *= _scaling
                 # wheel up, zoom in
-                elif ev.angleDelta().y() > 0:
+                elif angle > 0:
                     top /= _scaling
                     bottom /= _scaling
         # Still able to use the dictionary.
@@ -1899,11 +1900,11 @@ class ObsPyck(QtWidgets.QMainWindow):
                 pass
             else:
                 # scroll left
-                if ev.angleDelta().y() * direction < 0:
+                if angle * direction < 0:
                     left -= shift
                     right -= shift
                 # scroll right
-                elif ev.angleDelta().y() * direction > 0:
+                elif angle * direction > 0:
                     left += shift
                     right += shift
         ax.set_xbound(lower=left, upper=right)

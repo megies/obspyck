@@ -14,6 +14,7 @@ master:
  - fix overview plot on newer matplotlib versions
  - remove streams that make problems due to masked values and show a warning
  - make scrollWheelPercentage from config affect all scroll events
+ - fix mouse wheel scrolling with Alt key held down
 
 0.8.1
  - fix reading QuakeML after Python3 port (see #98)
