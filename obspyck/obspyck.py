@@ -94,6 +94,9 @@ class ObsPyck(QtWidgets.QMainWindow):
         self.streams = streams
         self.keys = keys
         self.config = config
+        self.inventory = inventories[0]
+        for inv in inventories[1:]:
+            self.inventory += inv
 
         # make a mapping of seismic phases to colors as specified in config
         self.seismic_phases = OrderedDict(config.items('seismic_phases'))
