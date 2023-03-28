@@ -10,7 +10,6 @@
 # -------------------------------------------------------------------
 import copy
 import glob
-import io
 import math
 import os
 import platform
@@ -35,12 +34,9 @@ from obspy.clients.fdsn import Client as FDSNClient
 from obspy.clients.filesystem.sds import Client as SDSClient
 from obspy.clients.seedlink import Client as SeedlinkClient
 from obspy.geodetics.base import gps2dist_azimuth
-from obspy.io.xseed import Parser
 
 from . import __version__
-from .rotate_to_zne import (
-    _rotate_specific_channels_to_zne, get_orientation_from_parser,
-    get_orientation)
+from .rotate_to_zne import get_orientation
 
 mpl.rc('figure.subplot', left=0.05, right=0.98, bottom=0.10, top=0.92,
        hspace=0.28)
@@ -428,11 +424,6 @@ def fetch_waveforms_with_metadata(options, args, config):
         for net, sta, loc in ids:
             stream_tmp_ = stream_tmp.select(
                 network=net, station=sta, location=loc)
-            # check whether to attempt rotation
-            if config.has_section("rotate_channels"):
-                net_sta_loc = ".".join((net, sta, loc))
-                if net_sta_loc in config.options("rotate_channels"):
-                    rotate_channels(stream_tmp_, net, sta, loc, config)
             streams.append(stream_tmp_)
     all_inventories += inventories
 
@@ -567,11 +558,6 @@ def fetch_waveforms_with_metadata(options, args, config):
                     seed_id.ljust(15), server_type, server, e))
             sys.stdout.flush()
             continue
-        # check whether to attempt rotation
-        if not no_metadata:
-            if config.has_section("rotate_channels"):
-                if net_sta_loc in config.options("rotate_channels"):
-                    rotate_channels(st, net, sta, loc, config)
         # FDSN (or JANE)
         if server_type in ("fdsn", "jane"):
             for tr in st:
@@ -587,24 +573,6 @@ def fetch_waveforms_with_metadata(options, args, config):
         streams.append(st)
     print("=" * 80)
     return (clients, streams, all_inventories)
-
-
-def rotate_channels(st, net, sta, loc, config):
-    net_sta_loc = ".".join((net, sta, loc))
-    channels = config.get("rotate_channels", net_sta_loc).split(",")
-    tr = st.select(id=".".join((net_sta_loc, channels[0])))[0]
-    parser = tr.stats.get("parser")
-    coordinates = tr.stats.get("coordinates")
-    response = tr.stats.get("response")
-    st = _rotate_specific_channels_to_zne(
-        st, net, sta, loc, channels)
-    for tr in st:
-        if parser is not None:
-            tr.stats.parser = copy.deepcopy(parser)
-        if coordinates is not None:
-            tr.stats.coordinates = copy.deepcopy(coordinates)
-        if response is not None:
-            tr.stats.response = copy.deepcopy(response)
 
 
 def connect_to_server(server_name, config, clients):
