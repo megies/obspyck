@@ -66,6 +66,7 @@ from .event_helper import Catalog, Event, Origin, Pick, Arrival, \
     Magnitude, StationMagnitude, StationMagnitudeContribution, \
     FocalMechanism, ResourceIdentifier, ID_ROOT, readQuakeML, Amplitude, \
     merge_events_in_catalog
+from .rotate_to_zne import _trim_common_channels
 
 NAMESPACE = "http://erdbeben-in-bayern.de/xmlns/0.1"
 NSMAP = {"edb": NAMESPACE}
@@ -1174,6 +1175,18 @@ class ObsPyck(QtWidgets.QMainWindow):
                    "data.\n" + str(e))
             self.error(err)
 
+    def _rotate_to_ZNE(self, stream):
+        """
+        Rotate unaligned channels (e.g. HHZ,HH1,HH2) into ZNE
+        """
+        # cut data so that we end up with a set of matching pieces for the tree
+        # components (i.e. cut away any parts where one of the three components
+        # has no data)
+        st = _trim_common_channels(stream)
+        stream.rotate(method='->ZNE', inventory=self.inventory)
+        stream.sort(reverse=True)
+        self.info("Showing traces rotated to ZNE.")
+
     def _rotateLQT(self, stream, origin):
         """
         Rotates stream to LQT with respect to station location in first trace
@@ -1512,10 +1525,14 @@ class ObsPyck(QtWidgets.QMainWindow):
         # XXX it is simpler for the code to just copy in any case..
         self.streams[self.stPt] = self.streams_bkp[self.stPt].copy()
         st = self.streams[self.stPt]
+        net_sta_loc = st[0].id.rsplit('.', 1)[0]
         # To display filtered data we overwrite our alias to current stream
         # and replace it with the filtered data.
         if self.widgets.qToolButton_physical_units.isChecked():
             self._physical_units(st)
+        if self.config.has_section("rotate_channels") and \
+                net_sta_loc in self.config.options("rotate_channels"):
+            self._rotate_to_ZNE(st)
         if self.widgets.qToolButton_filter.isChecked():
             self._filter(st)
         else:

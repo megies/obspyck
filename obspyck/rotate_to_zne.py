@@ -78,67 +78,6 @@ def _trim_common_channels(self):
     return self
 
 
-def _rotate_specific_channels_to_zne(
-        self, network, station, location, channels):
-    """
-    Rotate three explicitly specified channels to ZNE.
-
-    :type network: str
-    :param network: Network code of channels that should be rotated.
-    :type station: str
-    :param station: Station code of channels that should be rotated.
-    :type location: str
-    :param location: Location code of channels that should be rotated.
-    :type channels: list
-    :param channels: The three channel codes of channels that should be
-        rotated.
-    """
-    from obspy.signal.rotate import rotate2zne
-    # build temporary stream that has only those traces that are supposed
-    # to be used in rotation
-    st = self.select(network=network, station=station, location=location)
-    st = (st.select(channel=channels[0]) + st.select(channel=channels[1]) +
-          st.select(channel=channels[2]))
-    # remove the original unrotated traces from the stream
-    for tr in st.traces:
-        self.remove(tr)
-    # cut data so that we end up with a set of matching pieces for the tree
-    # components (i.e. cut away any parts where one of the three components
-    # has no data)
-    st = _trim_common_channels(st)
-    # sort by start time, so each three consecutive traces can then be used
-    # in one rotation run
-    st.sort(keys=["starttime"])
-    # woooops, that's unexpected. must be a bug in the trimming helper
-    # routine
-    if len(st) % 3 != 0:
-        msg = ("Unexpected behavior in rotation. Please file a bug "
-               "report on github.")
-        raise NotImplementedError(msg)
-    num_pieces = len(st) // 3
-    for i in range(num_pieces):
-        # three consecutive traces are always the ones that combine for one
-        # rotation run
-        traces = [st.pop() for i in range(3)]
-        # paranoid.. do a quick check of the channels again.
-        if set([tr.stats.channel for tr in traces]) != set(channels):
-            msg = ("Unexpected behavior in rotation. Please file a bug "
-                   "report on github.")
-            raise NotImplementedError(msg)
-        zne = rotate2zne(
-            traces[0], traces[0].stats.orientation["azimuth"],
-            traces[0].stats.orientation["dip"],
-            traces[1], traces[1].stats.orientation["azimuth"],
-            traces[1].stats.orientation["dip"],
-            traces[2], traces[2].stats.orientation["azimuth"],
-            traces[2].stats.orientation["dip"])
-        for tr, new_data, component in zip(traces, zne, "ZNE"):
-            tr.data = new_data
-            tr.stats.channel = tr.stats.channel[:-1] + component
-        self.traces += traces
-    return self
-
-
 def _get_channel_metadata_from_network(net, seed_id, datetime=None):
     """
     Return basic metadata for a given channel.
@@ -264,24 +203,3 @@ def get_orientation(inventory, seed_id, datetime=None):
     for key in ['azimuth', 'dip']:
         orientation[key] = metadata[key]
     return orientation
-
-
-def get_orientation_from_parser(parser, seed_id, datetime=None):
-    """
-    Return orientation (from blockette 52) of a channel.
-
-    :type seed_id: str
-    :param seed_id: SEED or channel id, e.g. ``"BW.RJOB..EHZ"`` or
-        ``"EHE"``.
-    :type datetime: :class:`~obspy.core.utcdatetime.UTCDateTime`, optional
-    :param datetime: Timestamp of requested PAZ values
-    :return: Dictionary containing orientation (azimuth, dip)
-    """
-    blockettes = parser._select(seed_id, datetime)
-    data = {}
-    for blkt in blockettes:
-        if blkt.id == 52:
-            data['azimuth'] = blkt.azimuth
-            data['dip'] = blkt.dip
-            break
-    return data
