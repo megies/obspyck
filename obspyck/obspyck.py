@@ -4626,6 +4626,8 @@ class ObsPyck(QtWidgets.QMainWindow):
             tr = self.getTrace(ampl.waveform_id.get_seed_string())
             if tr is None:
                 continue
+            tr = tr.copy()
+            self._filter(tr, verbose=False)
             ampl.setFromTimeWindow(tr)
 
         # XXX TODO: set station_magnitudes' "used" attribute depending if
