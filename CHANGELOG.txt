@@ -16,6 +16,7 @@ master:
  - make scrollWheelPercentage from config affect all scroll events
  - fix mouse wheel scrolling with Alt key held down
  - cleanup and modernize rotation to ZNE (see #101)
+ - improve setting amplitude picks when loading existing events (see #102)
 
 0.8.1
  - fix reading QuakeML after Python3 port (see #98)
