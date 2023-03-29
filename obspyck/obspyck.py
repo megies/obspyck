@@ -1065,7 +1065,52 @@ class ObsPyck(QtWidgets.QMainWindow):
             qml = self.get_QUAKEML_string()
         self.widgets.qTextEdit_qml.setText(qml)
 
-    def _filter(self, stream):
+    def _process_stream(self, stream, verbose=True):
+        """
+        Applies all selected processing steps on Trace or Stream object.
+        """
+        st = stream
+        net_sta_loc = st[0].id.rsplit('.', 1)[0]
+        if self.widgets.qToolButton_physical_units.isChecked():
+            self._physical_units(st, verbose=verbose)
+        if self.config.has_section("rotate_channels") and \
+                net_sta_loc in self.config.options("rotate_channels"):
+            self._rotate_to_ZNE(st, verbose=verbose)
+        if self.widgets.qToolButton_filter.isChecked():
+            self._filter(st, verbose=verbose)
+        else:
+            self.info("Unfiltered Traces.")
+        # check if rotation should be performed
+        if self.widgets.qToolButton_rotateLQT.isChecked():
+            try:
+                assert len(self.catalog[0].origins) > 0, "No origin data"
+                origin = self.catalog[0].origins[0]
+                self._rotateLQT(st, origin)
+            except Exception as e:
+                self.widgets.qToolButton_rotateLQT.setChecked(False)
+                err = str(e)
+                err += "\nError during rotating to LQT. Showing unrotated data."
+                self.error(err)
+        elif self.widgets.qToolButton_rotateZRT.isChecked():
+            try:
+                assert len(self.catalog[0].origins) > 0, "No origin data"
+                origin = self.catalog[0].origins[0]
+                self._rotateZRT(st, origin)
+            except Exception as e:
+                self.widgets.qToolButton_rotateZRT.setChecked(False)
+                err = str(e)
+                err += "\nError during rotating to ZRT. Showing unrotated data."
+                self.error(err)
+        # check if trigger should be performed
+        if self.widgets.qToolButton_trigger.isChecked():
+            try:
+                self._trigger(st)
+            except Exception:
+                self.widgets.qToolButton_trigger.setChecked(False)
+                err = "Error during triggering. Showing waveform data."
+                self.error(err)
+
+    def _filter(self, stream, verbose=True):
         """
         Applies filter currently selected in GUI to Trace or Stream object.
         Also displays a message.
@@ -1103,25 +1148,26 @@ class ObsPyck(QtWidgets.QMainWindow):
             try:
                 stream.taper(max_percentage=taper_max_percentage,
                              max_length=taper_max_length, type=taper_type)
-            except:
+            except Exception:
                 stream.taper()
                 msg = ('Error in stream tapering (old obspy version?). '
                        'Tapering will be performed with Trace.taper() '
                        'defaults.')
                 self.error(msg)
             if w.qCheckBox_50Hz.isChecked():
-                for i_ in xrange(2):
+                for i_ in range(2):
                     stream.filter("bandstop", freqmin=46, freqmax=54,
                                   corners=2, zerophase=options['zerophase'])
                 msg2 = "50Hz Bandstop"
                 self.info(msg2)
             stream.filter(type, **options)
-            self.info(msg)
-        except:
+            if verbose:
+                self.info(msg)
+        except Exception:
             err = "Error during filtering. Showing unfiltered data."
             self.error(err)
 
-    def _physical_units(self, stream):
+    def _physical_units(self, stream, verbose=True):
         """
         Corrects to physical units (m/s or m or m/s**2), as specified by
         configuration file.
@@ -1168,14 +1214,16 @@ class ObsPyck(QtWidgets.QMainWindow):
             else:
                 msg = ('No Response object attached to trace, '
                        'can not convert to physical units:\n')
-                self.error(msg + str(stream[0].stats))
-            self.info(msg)
+                raise Exception(msg + str(stream[0].stats))
         except Exception as e:
             err = ("Error during instrument correction. Showing uncorrected "
                    "data.\n" + str(e))
             self.error(err)
+        else:
+            if verbose:
+                self.info(msg)
 
-    def _rotate_to_ZNE(self, stream):
+    def _rotate_to_ZNE(self, stream, verbose=True):
         """
         Rotate unaligned channels (e.g. HHZ,HH1,HH2) into ZNE
         """
@@ -1185,9 +1233,10 @@ class ObsPyck(QtWidgets.QMainWindow):
         st = _trim_common_channels(stream)
         stream.rotate(method='->ZNE', inventory=self.inventory)
         stream.sort(reverse=True)
-        self.info("Showing traces rotated to ZNE.")
+        if verbose:
+            self.info("Showing traces rotated to ZNE.")
 
-    def _rotateLQT(self, stream, origin):
+    def _rotateLQT(self, stream, origin, verbose=True):
         """
         Rotates stream to LQT with respect to station location in first trace
         of stream and origin information.
@@ -1200,16 +1249,18 @@ class ObsPyck(QtWidgets.QMainWindow):
         z = stream.select(component="Z")[0].data
         n = stream.select(component="N")[0].data
         e = stream.select(component="E")[0].data
-        self.info("using baz, takeoff: %s, %s" % (bazim, inci))
+        if verbose:
+            self.info("using baz, takeoff: %s, %s" % (bazim, inci))
         l, q, t = rotate_zne_lqt(z, n, e, bazim, inci)
         for comp, data in zip("ZNE", (l, q, t)):
             tr = stream.select(component=comp)[0]
             tr.data = data
             tr.stats.channel = map_rotated_channel_code(tr.stats.channel,
                                                         "LQT")
-        self.info("Showing traces rotated to LQT.")
+        if verbose:
+            self.info("Showing traces rotated to LQT.")
 
-    def _rotateZRT(self, stream, origin):
+    def _rotateZRT(self, stream, origin, verbose=True):
         """
         Rotates stream to ZRT with respect to station location in first trace
         of stream and origin information.
@@ -1221,7 +1272,8 @@ class ObsPyck(QtWidgets.QMainWindow):
         # replace NE data with rotated data
         n = stream.select(component="N")[0].data
         e = stream.select(component="E")[0].data
-        self.info("using baz: %s" % bazim)
+        if verbose:
+            self.info("using baz: %s" % bazim)
         r, t = rotate_ne_rt(n, e, bazim)
         stream.select(component="N")[0].data = r
         stream.select(component="E")[0].data = t
@@ -1230,9 +1282,10 @@ class ObsPyck(QtWidgets.QMainWindow):
             tr.data = data
             tr.stats.channel = map_rotated_channel_code(tr.stats.channel,
                                                         "ZRT")
-        self.info("Showing traces rotated to ZRT.")
+        if verbose:
+            self.info("Showing traces rotated to ZRT.")
 
-    def _trigger(self, stream):
+    def _trigger(self, stream, verbose=True):
         """
         Run recSTALTA trigger on stream/trace.
         Exception handling should be done outside this function.
@@ -1241,9 +1294,10 @@ class ObsPyck(QtWidgets.QMainWindow):
         sta = self.widgets.qDoubleSpinBox_sta.value()
         lta = self.widgets.qDoubleSpinBox_lta.value()
         stream.trigger("recstalta", sta=sta, lta=lta)
-        self.info("Showing recSTALTA triggered traces.")
+        if verbose:
+            self.info("Showing recSTALTA triggered traces.")
 
-    def _arpicker(self):
+    def _arpicker(self, verbose=True):
         """
         Run AR picker on all streams and set P/S picks accordingly.
         Also displays a message.
@@ -1267,7 +1321,8 @@ class ObsPyck(QtWidgets.QMainWindow):
                    'obspy.signal.trigger.ar_pick\n%s') % str(e)
             self.error(msg)
             return
-        self.info("Setting automatic picks using AR picker:")
+        if verbose:
+            self.info("Setting automatic picks using AR picker:")
         for i, st in enumerate(self.streams):
             try:
                 z = st.select(component="Z")[0]
@@ -1525,47 +1580,9 @@ class ObsPyck(QtWidgets.QMainWindow):
         # XXX it is simpler for the code to just copy in any case..
         self.streams[self.stPt] = self.streams_bkp[self.stPt].copy()
         st = self.streams[self.stPt]
-        net_sta_loc = st[0].id.rsplit('.', 1)[0]
         # To display filtered data we overwrite our alias to current stream
         # and replace it with the filtered data.
-        if self.widgets.qToolButton_physical_units.isChecked():
-            self._physical_units(st)
-        if self.config.has_section("rotate_channels") and \
-                net_sta_loc in self.config.options("rotate_channels"):
-            self._rotate_to_ZNE(st)
-        if self.widgets.qToolButton_filter.isChecked():
-            self._filter(st)
-        else:
-            self.info("Unfiltered Traces.")
-        # check if rotation should be performed
-        if self.widgets.qToolButton_rotateLQT.isChecked():
-            try:
-                assert(len(self.catalog[0].origins) > 0), "No origin data"
-                origin = self.catalog[0].origins[0]
-                self._rotateLQT(st, origin)
-            except Exception as e:
-                self.widgets.qToolButton_rotateLQT.setChecked(False)
-                err = str(e)
-                err += "\nError during rotating to LQT. Showing unrotated data."
-                self.error(err)
-        elif self.widgets.qToolButton_rotateZRT.isChecked():
-            try:
-                assert(len(self.catalog[0].origins) > 0), "No origin data"
-                origin = self.catalog[0].origins[0]
-                self._rotateZRT(st, origin)
-            except Exception as e:
-                self.widgets.qToolButton_rotateZRT.setChecked(False)
-                err = str(e)
-                err += "\nError during rotating to ZRT. Showing unrotated data."
-                self.error(err)
-        # check if trigger should be performed
-        if self.widgets.qToolButton_trigger.isChecked():
-            try:
-                self._trigger(st)
-            except:
-                self.widgets.qToolButton_trigger.setChecked(False)
-                err = "Error during triggering. Showing waveform data."
-                self.error(err)
+        self._process_stream(st)
 
     def updatePlot(self, keep_ylims=True):
         """
