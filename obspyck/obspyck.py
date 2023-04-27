@@ -4139,14 +4139,45 @@ class ObsPyck(QtWidgets.QMainWindow):
         ylims = [list(ax.get_ylim()) for ax in self.axs]
         for _i, ax in enumerate(self.axs):
             # first line is waveform, leave it
-            while len(ax.lines) > 1:
-                ax.lines.pop()
+            if len(ax.lines) > 1:
+                # API change in matplotlib 3.6
+                # https://matplotlib.org/stable/api/prev_api_changes/api_changes_3.5.0.html#axes-children-are-no-longer-separated-by-type
+                # https://matplotlib.org/stable/api/prev_api_changes/api_changes_3.6.0.html#artistlist-proxies-copy-contents-on-iteration
+                # old for matplotlib up to 3.5
+                try:
+                    while len(ax.lines) > 1:
+                        ax.lines.pop()
+                # new for matplotlib 3.6 and above
+                except AttributeError:
+                    for artist in ax.lines[1:]:
+                        artist.remove()
             # first text is trace id, leave it
-            while len(ax.texts) > 1:
-                ax.texts.pop()
+            if len(ax.texts) > 1:
+                # API change in matplotlib 3.6
+                # https://matplotlib.org/stable/api/prev_api_changes/api_changes_3.5.0.html#axes-children-are-no-longer-separated-by-type
+                # https://matplotlib.org/stable/api/prev_api_changes/api_changes_3.6.0.html#artistlist-proxies-copy-contents-on-iteration
+                # old for matplotlib up to 3.5
+                try:
+                    while len(ax.texts) > 1:
+                        ax.texts.pop()
+                # new for matplotlib 3.6 and above
+                except AttributeError:
+                    for artist in ax.texts[1:]:
+                        artist.remove()
             # all patches are related to picks/amplitudes right now, remove all
             while len(ax.patches):
                 ax.patches.pop()
+            # API change in matplotlib 3.6
+            # https://matplotlib.org/stable/api/prev_api_changes/api_changes_3.5.0.html#axes-children-are-no-longer-separated-by-type
+            # https://matplotlib.org/stable/api/prev_api_changes/api_changes_3.6.0.html#artistlist-proxies-copy-contents-on-iteration
+            # old for matplotlib up to 3.5
+            try:
+                while len(ax.patches) > 1:
+                    ax.patches.pop()
+            # new for matplotlib 3.6 and above
+            except AttributeError:
+                for artist in ax.patches[1:]:
+                    artist.remove()
             ids.append(st[_i].id)
         # plot picks and arrivals
         # seiscomp does not store location code with picks, so allow to
