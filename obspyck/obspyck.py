@@ -4165,18 +4165,16 @@ class ObsPyck(QtWidgets.QMainWindow):
                     for artist in ax.texts[1:]:
                         artist.remove()
             # all patches are related to picks/amplitudes right now, remove all
-            while len(ax.patches):
-                ax.patches.pop()
             # API change in matplotlib 3.6
             # https://matplotlib.org/stable/api/prev_api_changes/api_changes_3.5.0.html#axes-children-are-no-longer-separated-by-type
             # https://matplotlib.org/stable/api/prev_api_changes/api_changes_3.6.0.html#artistlist-proxies-copy-contents-on-iteration
             # old for matplotlib up to 3.5
             try:
-                while len(ax.patches) > 1:
+                while len(ax.patches):
                     ax.patches.pop()
             # new for matplotlib 3.6 and above
             except AttributeError:
-                for artist in ax.patches[1:]:
+                for artist in ax.patches:
                     artist.remove()
             ids.append(st[_i].id)
         # plot picks and arrivals
