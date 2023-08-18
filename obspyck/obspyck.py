@@ -3298,7 +3298,7 @@ class ObsPyck(QtWidgets.QMainWindow):
             # plot picks and arrivals
             # seiscomp does not store location code with picks, so allow to
             # match any location code in that case..
-            if str(event.get("creation_info", {}).get("author", "")).startswith("scevent"):
+            if str((event.creation_info or {}).get("author", "")).startswith("scevent"):
                 loc = None
             picks = self.getPicks(network=net, station=sta)
             try:
@@ -4180,7 +4180,7 @@ class ObsPyck(QtWidgets.QMainWindow):
         # plot picks and arrivals
         # seiscomp does not store location code with picks, so allow to
         # match any location code in that case..
-        author_ = event.get("creation_info", {}).get("author", "")
+        author_ = (event.creation_info or {}).get("author", "")
         if author_ and author_.startswith("scevent"):
             loc = None
         picks = self.getPicks(network=net, station=sta)
