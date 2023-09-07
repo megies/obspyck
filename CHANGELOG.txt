@@ -22,6 +22,8 @@ master:
  - adjust to an API change in matplotlib 3.6 in removing old/unwanted artists
    from axes (see #104)
  - fix handling of events without creation info in some cases (see #106)
+ - print message for SEED IDs that are requested but are missing a lookup
+   definition in the config file. these were skipped silently before.
 
 0.8.1
  - fix reading QuakeML after Python3 port (see #98)
