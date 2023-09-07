@@ -9,6 +9,7 @@
 # Copyright (C) 2010 Tobias Megies, Lion Krischer
 # -------------------------------------------------------------------
 import copy
+import fnmatch
 import glob
 import math
 import os
@@ -357,6 +358,7 @@ def fetch_waveforms_with_metadata(options, args, config):
         seed_ids_to_fetch.add(seed_id)
 
     seed_id_lookup = {}
+    missing_lookup = set()
     seed_id_lookup_keys = config.options("seed_id_lookup")
     for seed_id in seed_ids_to_fetch:
         netstaloc = seed_id.rsplit(".", 1)[0]
@@ -374,6 +376,8 @@ def fetch_waveforms_with_metadata(options, args, config):
         # look up by network code
         elif net in seed_id_lookup_keys:
             seed_id_lookup[seed_id] = config.get("seed_id_lookup", net)
+        else:
+            missing_lookup.add(seed_id)
 
     clients = {}
 
@@ -430,6 +434,17 @@ def fetch_waveforms_with_metadata(options, args, config):
     print("=" * 80)
     print("Fetching waveforms and metadata from servers:")
     print("-" * 80)
+    # Print info on requested SEED IDs that lack a lookup info in config file
+    for seed_id in sorted(missing_lookup):
+        # check if covered by local data
+        for st in streams:
+            if any(fnmatch.fnmatch(tr.id, seed_id) for tr in st):
+                print(f"{seed_id.ljust(15)}  Missing lookup definition in "
+                      "config, but covered by local files")
+                break
+        else:
+            print(f"{seed_id.ljust(15)}  Missing lookup definition in config!")
+    # Fetch data..
     for seed_id, server in sorted(seed_id_lookup.items()):
         server_type = config.get(server, "type")
         if server_type == "arclink":
