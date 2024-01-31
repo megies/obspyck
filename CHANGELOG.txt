@@ -24,6 +24,8 @@ master:
  - fix handling of events without creation info in some cases (see #106)
  - print message for SEED IDs that are requested but are missing a lookup
    definition in the config file. these were skipped silently before.
+ - make it possible to set defaults for spectrogram settings in config
+   (see 9ac238cb4b6b17bce)
 
 0.8.1
  - fix reading QuakeML after Python3 port (see #98)
