@@ -324,6 +324,12 @@ class ObsPyck(QtWidgets.QMainWindow):
                 self.config.getfloat("gui_defaults", "lta"))
             self.widgets.qToolButton_filter.setChecked(
                 self.config.getboolean("gui_defaults", "filter"))
+            self.widgets.qCheckBox_spectrogramLog.setChecked(
+                self.config.getboolean("gui_defaults", "spectrogram_log"))
+            self.widgets.qDoubleSpinBox_wlen.setValue(
+                self.config.getfloat("gui_defaults", "spectrogram_wlen"))
+            self.widgets.qDoubleSpinBox_perlap.setValue(
+                self.config.getfloat("gui_defaults", "spectrogram_overlap"))
             self.updateStreamLabels()
 
             self.error(warn_msg)
