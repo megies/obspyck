@@ -26,6 +26,8 @@ master:
    definition in the config file. these were skipped silently before.
  - make it possible to set defaults for spectrogram settings in config
    (see 9ac238cb4b6b17bce)
+ - make sure to unset preferred focal mechanism when deleting focal mechanism
+   data
 
 0.8.1
  - fix reading QuakeML after Python3 port (see #98)

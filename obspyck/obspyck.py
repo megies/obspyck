@@ -4132,6 +4132,7 @@ class ObsPyck(QtWidgets.QMainWindow):
     def clearFocmec(self):
         self.info("Clearing previous focal mechanism data.")
         self.catalog[0].focal_mechanisms = []
+        self.catalog[0].preferred_focal_mechanism_id = None
         self.focMechCurrent = None
 
     def updateAllItems(self):
