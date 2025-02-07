@@ -28,6 +28,7 @@ master:
    (see 9ac238cb4b6b17bce)
  - make sure to unset preferred focal mechanism when deleting focal mechanism
    data
+ - add "Referer" header when connecting/logging in to jane
 
 0.8.1
  - fix reading QuakeML after Python3 port (see #98)

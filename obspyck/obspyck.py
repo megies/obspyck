@@ -401,6 +401,9 @@ class ObsPyck(QtWidgets.QMainWindow):
         url_current_user = self.jane_url_rest + '/current_user'
         # start a session
         session = requests.Session()
+        # after jane switch to Debian bookworm and HTTPS, connection started to
+        # fail with CSRF error because of missing "Referer" header, so.. add it
+        headers = {'Referer': self.jane_url_base.rstrip('/')}
         # need to first get CSRF token in a plain GET
         response = session.get(url_login)
         assert response.ok
@@ -409,7 +412,7 @@ class ObsPyck(QtWidgets.QMainWindow):
         login_data = {'username': user, 'password': password,
                       'csrfmiddlewaretoken': csrf_token,
                       'next': url_current_user}
-        response = session.post(url_login, data=login_data)
+        response = session.post(url_login, data=login_data, headers=headers)
         assert response.ok
         # finally check if we got properly logged in
         response = session.get(url_current_user)
