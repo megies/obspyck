@@ -3424,13 +3424,17 @@ class ObsPyck(QtWidgets.QMainWindow):
         #              o.quality.standard_error, va='top', ha='left',
         #              color=PHASE_COLORS['P'], transform=axEM.transAxes,
         #              family='monospace')
-        link = "http://maps.google.de/maps?f=q&q=%.6f,%.6f" % \
+        link = "https://www.openstreetmap.org/?mlat=%.6f&mlon=%.6f&layers=P" % \
                (o.latitude, o.longitude)
         self.info(link)
-        link = ("http://geoportal.bayern.de/bayernatlas/"
-                "?lat=%.6f&lon=%.6f&crosshair=marker" % \
-                    (o.latitude, o.longitude))
+        link = "https://opentopomap.org/#marker=11/%.6f/%.6f" % \
+               (o.latitude, o.longitude)
         self.info(link)
+        # doesnt show marker pin anymore
+        # link = ("https://geoportal.bayern.de/bayernatlas/"
+        #         "?lat=%.6f&lon=%.6f&crosshair=marker" % \
+        #             (o.latitude, o.longitude))
+        # self.info(link)
 
         self.scatterMagIndices = []
         self.scatterMagLon = []
