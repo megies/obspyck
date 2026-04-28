@@ -20,7 +20,7 @@ import sys
 import tempfile
 import warnings
 from collections import OrderedDict
-from configparser import SafeConfigParser, NoOptionError, NoSectionError
+from configparser import ConfigParser, NoOptionError, NoSectionError
 
 from PyQt5 import QtCore, QtWidgets, QtGui
 import numpy as np
@@ -4878,7 +4878,7 @@ def main():
         raise Exception(msg)
     print(f"Running ObsPyck version {__version__} (location: {__file__})")
     print(f"using config file: {config_file}")
-    config = SafeConfigParser(allow_no_value=True)
+    config = ConfigParser(allow_no_value=True)
     # make all config keys case sensitive
     config.optionxform = str
     config.read(config_file)
