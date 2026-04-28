@@ -1,4 +1,4 @@
-master:
+0.8.2
  - strip overlong decimals for x-Axis coordinates, especially in the matplotlib
    mouse pointer coordinate info pane
  - make it possible to set a custom FMTSTR for SDS clients
@@ -29,6 +29,8 @@ master:
  - make sure to unset preferred focal mechanism when deleting focal mechanism
    data
  - add "Referer" header when connecting/logging in to jane
+ - replace SafeConfigParser (was deprecated and now removed in Python 3.12)
+   with ConfigParser
 
 0.8.1
  - fix reading QuakeML after Python3 port (see #98)
